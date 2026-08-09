@@ -290,6 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const qrPanel = document.getElementById('qr-panel');
   const mapPanel = document.getElementById('map-panel');
   const modalMapFrame = document.getElementById('modal-map-frame');
+  const modalMapName = document.getElementById('modal-map-name');
+  const modalMapAddress = document.getElementById('modal-map-address');
   const mapLoading = document.getElementById('map-loading');
   const modalMapExternal = document.getElementById('modal-map-external');
   const downloadQr = document.getElementById('download-qr');
@@ -574,6 +576,8 @@ document.addEventListener('DOMContentLoaded', () => {
     modalMapLink.setAttribute('aria-label', `Buka ${item.name} dalam Google Maps`);
     modalMapExternal.href = details.mapsUrl;
     modalMapExternal.setAttribute('aria-label', `Buka ${item.name} dalam Google Maps`);
+    modalMapName.textContent = item.name;
+    modalMapAddress.textContent = details.address;
     modalMapFrame.title = `Peta lokasi ${item.name}`;
     modalMapFrame.removeAttribute('src');
     activeMapEmbedUrl = details.mapsEmbedUrl;
