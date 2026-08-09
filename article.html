@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d513f" />
+  <meta name="description" content="Baca artikel Islamik daripada SedekahQR Malaysia." />
+  <title>Artikel Islamik - SedekahQR Malaysia</title>
+  <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260809-6" />
+  <link rel="stylesheet" href="styles.css?v=20260809-6" />
+  <link rel="stylesheet" href="blog.css?v=20260809-1" />
+</head>
+<body class="directory-body blog-body">
+  <header class="directory-header">
+    <div class="directory-container header-inner">
+      <a class="directory-brand" href="index.html" aria-label="SedekahQR Malaysia - halaman utama">
+        <span class="brand-mark" aria-hidden="true"><img src="assets/sedekahqr-logo.svg" alt="" /></span>
+        <span class="brand-wordmark">
+          <strong><span>Sedekah</span><b>QR</b></strong>
+          <small>Malaysia</small>
+        </span>
+      </a>
+
+      <nav class="directory-nav" aria-label="Navigasi utama">
+        <a href="index.html#direktori">Direktori</a>
+        <a href="index.html#panduan">Cara Sedekah</a>
+        <a href="blog.html" aria-current="page">Blog</a>
+      </nav>
+
+      <a class="directory-badge" href="blog.html">Semua artikel</a>
+    </div>
+  </header>
+
+  <main>
+    <div id="article-loading" class="article-loading" role="status">Memuatkan artikel...</div>
+
+    <section id="article-not-found" class="article-not-found" hidden>
+      <div class="directory-container">
+        <p class="blog-eyebrow">Artikel tidak ditemui</p>
+        <h1>Pautan ini mungkin telah berubah</h1>
+        <p>Kembali ke halaman blog untuk memilih artikel lain.</p>
+        <a href="blog.html">Lihat semua artikel</a>
+      </div>
+    </section>
+
+    <article id="article-page" class="article-page" hidden>
+      <header class="article-header">
+        <div class="article-reading-column">
+          <nav class="article-breadcrumb" aria-label="Jejak halaman">
+            <a href="blog.html">Blog Islamik</a>
+            <span aria-hidden="true">/</span>
+            <span id="article-category"></span>
+          </nav>
+          <h1 id="article-title"></h1>
+          <p id="article-excerpt" class="article-excerpt"></p>
+          <div class="article-meta">
+            <span id="article-author"></span>
+            <time id="article-date"></time>
+            <span id="article-reading"></span>
+          </div>
+          <div class="article-actions">
+            <button id="share-article" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <path d="m8.6 10.5 6.8-4"></path>
+                <path d="m8.6 13.5 6.8 4"></path>
+              </svg>
+              Kongsi artikel
+            </button>
+            <span id="share-status" role="status" aria-live="polite"></span>
+          </div>
+        </div>
+      </header>
+
+      <figure class="article-cover-wrap">
+        <img id="article-cover" alt="" width="1536" height="1024" />
+      </figure>
+
+      <div class="article-reading-column">
+        <div id="article-content" class="article-content"></div>
+
+        <aside class="article-sources" aria-labelledby="source-title">
+          <p class="blog-eyebrow">Semak rujukan</p>
+          <h2 id="source-title">Sumber utama</h2>
+          <ul id="article-sources"></ul>
+          <p>Artikel ini ialah bahan pendidikan umum dan bukan fatwa atau nasihat hukum khusus.</p>
+        </aside>
+      </div>
+
+      <section class="related-section" aria-labelledby="related-title">
+        <div class="directory-container">
+          <div class="related-heading">
+            <div>
+              <p class="blog-eyebrow">Teruskan membaca</p>
+              <h2 id="related-title">Artikel berkaitan</h2>
+            </div>
+            <a href="blog.html">Semua artikel</a>
+          </div>
+          <div id="related-grid" class="related-grid"></div>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <footer class="directory-footer">
+    <div class="directory-container footer-inner">
+      <div>
+        <strong>SedekahQR Malaysia</strong>
+        <p>Direktori QR dan bacaan Islamik untuk komuniti.</p>
+      </div>
+      <p>Portal direktori bebas. Bukan gerbang pembayaran atau pengendali transaksi.</p>
+    </div>
+  </footer>
+
+  <script src="blog-config.js?v=20260809-1"></script>
+  <script src="blog-api.js?v=20260809-1"></script>
+  <script src="article.js?v=20260809-1"></script>
+</body>
+</html>

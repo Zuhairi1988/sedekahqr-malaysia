@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d513f" />
+  <meta name="description" content="Artikel Islamik ringkas dan bersumber tentang Al-Quran, hadis, akhlak, ibadah dan sedekah." />
+  <title>Blog Islamik - SedekahQR Malaysia</title>
+  <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260809-6" />
+  <link rel="stylesheet" href="styles.css?v=20260809-6" />
+  <link rel="stylesheet" href="blog.css?v=20260809-1" />
+</head>
+<body class="directory-body blog-body">
+  <header class="directory-header">
+    <div class="directory-container header-inner">
+      <a class="directory-brand" href="index.html" aria-label="SedekahQR Malaysia - halaman utama">
+        <span class="brand-mark" aria-hidden="true"><img src="assets/sedekahqr-logo.svg" alt="" /></span>
+        <span class="brand-wordmark">
+          <strong><span>Sedekah</span><b>QR</b></strong>
+          <small>Malaysia</small>
+        </span>
+      </a>
+
+      <nav class="directory-nav" aria-label="Navigasi utama">
+        <a href="index.html#waktu-solat">Waktu Solat</a>
+        <a href="index.html#direktori">Direktori</a>
+        <a href="index.html#panduan">Cara Sedekah</a>
+        <a href="blog.html" aria-current="page">Blog</a>
+      </nav>
+
+      <a class="directory-badge" href="index.html#direktori">Direktori QR</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="blog-masthead" aria-labelledby="blog-title">
+      <img src="assets/blog-hero-quran.jpg" alt="" fetchpriority="high" />
+      <div class="blog-masthead-shade"></div>
+      <div class="directory-container blog-masthead-content">
+        <p class="blog-eyebrow">SedekahQR Malaysia</p>
+        <h1 id="blog-title">Blog Islamik</h1>
+        <p>Renungan dan panduan ringkas yang bersumber untuk dibaca, difahami dan diamalkan.</p>
+        <a href="#artikel">Baca artikel terkini</a>
+      </div>
+    </section>
+
+    <section class="blog-index" id="artikel" aria-labelledby="article-list-title">
+      <div class="directory-container">
+        <div class="blog-index-heading">
+          <div>
+            <p class="blog-eyebrow">Bacaan pilihan</p>
+            <h2 id="article-list-title">Artikel terkini</h2>
+          </div>
+          <label class="blog-search" for="blog-search-input">
+            <span>Cari artikel</span>
+            <input id="blog-search-input" type="search" autocomplete="off" placeholder="Contoh: sabar, ibu bapa, sedekah" />
+          </label>
+        </div>
+
+        <div id="blog-categories" class="blog-category-list" aria-label="Tapis mengikut kategori"></div>
+        <p id="blog-result-text" class="blog-result-text" role="status" aria-live="polite">Memuatkan artikel...</p>
+
+        <div id="blog-grid" class="blog-grid" aria-live="polite">
+          <div class="blog-loading-block"></div>
+          <div class="blog-loading-block"></div>
+          <div class="blog-loading-block"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="directory-footer">
+    <div class="directory-container footer-inner">
+      <div>
+        <strong>SedekahQR Malaysia</strong>
+        <p>Direktori QR dan bacaan Islamik untuk komuniti.</p>
+      </div>
+      <p>Artikel untuk pendidikan umum. Rujuk pihak berautoriti bagi persoalan hukum khusus.</p>
+    </div>
+  </footer>
+
+  <script src="blog-config.js?v=20260809-1"></script>
+  <script src="blog-api.js?v=20260809-1"></script>
+  <script src="blog.js?v=20260809-1"></script>
+</body>
+</html>

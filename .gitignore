@@ -2,8 +2,16 @@
 !.gitignore
 !.nojekyll
 !index.html
+!blog.html
+!article.html
 !styles.css
+!blog.css
 !script.js
+!blog.js
+!article.js
+!blog-api.js
+!blog-config.js
+!articles.json
 !notification.js
 !service-worker.js
 !manifest.webmanifest
@@ -25,6 +33,7 @@
 !assets/sedekahqr-logo.svg
 !assets/sedekahqr-icon-192.png
 !assets/sedekahqr-icon-512.png
+!assets/blog-hero-quran.jpg
 !scraper_qr/
 !scraper_qr/muamalat_ederma/
 !scraper_qr/muamalat_ederma/*/

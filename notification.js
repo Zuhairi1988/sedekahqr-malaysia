@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerServiceWorker = async () => {
     if (!('serviceWorker' in navigator)) throw new Error('Pelayar ini tidak menyokong notifikasi aplikasi web.');
     if (serviceWorkerRegistration) return serviceWorkerRegistration;
-    serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js?v=20260809-5', { scope: './' });
+    serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js?v=20260809-6', { scope: './' });
     await navigator.serviceWorker.ready;
     return serviceWorkerRegistration;
   };

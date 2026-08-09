@@ -1,9 +1,17 @@
-const CACHE_NAME = 'sedekahqr-shell-v3';
+const CACHE_NAME = 'sedekahqr-shell-v4';
 const APP_SHELL = [
   './',
   './index.html',
+  './blog.html',
+  './article.html',
   './styles.css',
+  './blog.css',
   './script.js',
+  './blog.js',
+  './article.js',
+  './blog-api.js',
+  './blog-config.js',
+  './articles.json',
   './notification.js',
   './push-config.js',
   './prayer-zones.js',
@@ -12,6 +20,7 @@ const APP_SHELL = [
   './assets/sedekahqr-logo.svg',
   './assets/sedekahqr-icon-192.png',
   './assets/sedekahqr-icon-512.png',
+  './assets/blog-hero-quran.jpg',
   './assets/banner-sedekah-subuh.jpg',
   './assets/banner-sedekah-komuniti.jpg'
 ];
@@ -37,14 +46,19 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
+    const navigationKey = url.pathname.endsWith('/blog.html')
+      ? './blog.html'
+      : url.pathname.endsWith('/article.html')
+        ? './article.html'
+        : './index.html';
     event.respondWith(
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy));
+          caches.open(CACHE_NAME).then((cache) => cache.put(navigationKey, copy));
           return response;
         })
-        .catch(() => caches.match('./index.html'))
+        .catch(() => caches.match(navigationKey).then((cached) => cached || caches.match('./index.html')))
     );
     return;
   }
