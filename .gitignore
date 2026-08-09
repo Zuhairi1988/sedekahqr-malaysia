@@ -4,6 +4,14 @@
 !index.html
 !styles.css
 !script.js
+!notification.js
+!service-worker.js
+!manifest.webmanifest
+!push-config.js
+!package.json
+!package-lock.json
+!supabase/
+!supabase/**
 !prayer-zones.js
 !qr-data.js
 !assets/
@@ -15,6 +23,8 @@
 !assets/google-maps-icon.svg
 !assets/google-street-view-icon.svg
 !assets/sedekahqr-logo.svg
+!assets/sedekahqr-icon-192.png
+!assets/sedekahqr-icon-512.png
 !scraper_qr/
 !scraper_qr/muamalat_ederma/
 !scraper_qr/muamalat_ederma/*/

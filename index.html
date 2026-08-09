@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d513f" />
   <meta name="description" content="Cari kod QR sedekah masjid dan surau di seluruh Malaysia mengikut nama dan negeri." />
   <title>SedekahQR Malaysia - Direktori QR Masjid & Surau</title>
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=20260809-2" />
+  <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260809-4" />
+  <link rel="stylesheet" href="styles.css?v=20260809-4" />
 </head>
 <body class="directory-body">
   <header class="directory-header">
@@ -67,6 +70,14 @@
               <option value="">Memuatkan zon...</option>
             </select>
           </div>
+          <button id="open-reminder" class="prayer-reminder-button" type="button" aria-label="Tetapan peringatan Subuh" title="Peringatan Subuh">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path>
+              <path d="M3.3 17h17.4"></path>
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+            </svg>
+            <span class="reminder-active-dot" aria-hidden="true"></span>
+          </button>
           <a class="prayer-source" href="https://www.e-solat.gov.my/" target="_blank" rel="noopener noreferrer">JAKIM</a>
         </div>
 
@@ -341,8 +352,69 @@
 
   <div id="site-toast" class="directory-toast" role="status" aria-live="polite"></div>
 
+  <div id="reminder-modal" class="reminder-modal" hidden>
+    <div class="reminder-backdrop" data-close-reminder></div>
+    <section class="reminder-dialog" role="dialog" aria-modal="true" aria-labelledby="reminder-title">
+      <button class="reminder-close" type="button" data-close-reminder aria-label="Tutup tetapan peringatan" title="Tutup">&times;</button>
+      <div class="reminder-heading">
+        <span class="reminder-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path>
+            <path d="M3.3 17h17.4"></path>
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+          </svg>
+        </span>
+        <div>
+          <p class="directory-eyebrow">Peringatan harian</p>
+          <h2 id="reminder-title">Sedekah Subuh</h2>
+        </div>
+      </div>
+
+      <p class="reminder-intro">Terima satu renungan ringkas dan peringatan sedekah pada waktu Subuh mengikut zon anda.</p>
+
+      <form id="reminder-form" class="reminder-form">
+        <label class="reminder-field" for="reminder-zone-select">
+          <span>Zon waktu solat</span>
+          <select id="reminder-zone-select" required>
+            <option value="">Pilih zon</option>
+          </select>
+        </label>
+
+        <div class="reminder-notification-preview" aria-label="Contoh notifikasi">
+          <img src="assets/sedekahqr-logo.svg" alt="" />
+          <div>
+            <strong>Sudahkah anda bersedekah Subuh hari ini?</strong>
+            <p>Mulakan pagi dengan satu kebaikan.</p>
+          </div>
+        </div>
+
+        <label class="reminder-consent">
+          <input id="reminder-consent" type="checkbox" required />
+          <span>Benarkan notifikasi pada peranti ini.</span>
+        </label>
+
+        <p id="reminder-install-note" class="reminder-install-note" hidden>Tambah laman ini ke Skrin Utama, kemudian buka melalui ikon SedekahQR untuk mengaktifkan notifikasi.</p>
+        <p id="reminder-status" class="reminder-status" role="status" aria-live="polite"></p>
+
+        <div class="reminder-modal-actions">
+          <button id="enable-reminder" class="reminder-primary" type="submit">Aktifkan peringatan</button>
+          <button id="test-reminder" class="reminder-icon-button" type="button" aria-label="Uji notifikasi" title="Uji notifikasi" hidden>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 3 14 9-14 9V3Z"></path>
+            </svg>
+          </button>
+          <button id="disable-reminder" class="reminder-secondary" type="button" hidden>Matikan</button>
+        </div>
+      </form>
+
+      <p class="reminder-privacy">Tiada nombor telefon diperlukan.</p>
+    </section>
+  </div>
+
   <script src="prayer-zones.js?v=20260809-2"></script>
   <script src="qr-data.js"></script>
-  <script src="script.js?v=20260809-2"></script>
+  <script src="script.js?v=20260809-4"></script>
+  <script src="push-config.js?v=20260809-4"></script>
+  <script src="notification.js?v=20260809-4"></script>
 </body>
 </html>

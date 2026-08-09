@@ -1,0 +1,7 @@
+project_id = "sedekahqr-malaysia"
+
+[functions.subscribe]
+verify_jwt = false
+
+[functions.send-subuh]
+verify_jwt = false

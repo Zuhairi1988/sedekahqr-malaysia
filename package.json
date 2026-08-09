@@ -1,0 +1,11 @@
+{
+  "name": "sedekahqr-malaysia",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check script.js && node --check notification.js && node --check service-worker.js"
+  },
+  "devDependencies": {
+    "supabase": "^2.113.0"
+  }
+}

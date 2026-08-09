@@ -363,6 +363,48 @@
   height: 13px;
 }
 
+.prayer-reminder-button {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  flex: 0 0 26px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+
+.prayer-reminder-button:hover,
+.prayer-reminder-button.is-active {
+  border-color: var(--directory-yellow);
+  background: var(--directory-yellow);
+  color: var(--directory-ink);
+}
+
+.prayer-reminder-button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.reminder-active-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+}
+
+.prayer-reminder-button.is-active .reminder-active-dot {
+  opacity: 1;
+}
+
 .prayer-zone-field {
   min-width: 0;
   flex: 0 0 116px;
@@ -1462,6 +1504,257 @@
   transform: translateY(0);
 }
 
+.reminder-modal {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.reminder-modal[hidden] {
+  display: none;
+}
+
+.reminder-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 25, 19, 0.72);
+}
+
+.reminder-dialog {
+  position: relative;
+  width: min(100%, 470px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 30px;
+  border-top: 4px solid var(--directory-yellow);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(4, 25, 18, 0.3);
+}
+
+.reminder-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--directory-border);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--directory-ink);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.reminder-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-right: 42px;
+}
+
+.reminder-heading-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--directory-green);
+  color: #fff;
+}
+
+.reminder-heading-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.reminder-heading h2 {
+  margin-top: 2px;
+  color: var(--directory-ink);
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.reminder-intro {
+  margin-top: 18px;
+  color: var(--directory-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.reminder-form {
+  margin-top: 20px;
+}
+
+.reminder-field {
+  display: grid;
+  gap: 7px;
+  color: var(--directory-ink);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.reminder-field select {
+  width: 100%;
+  height: 44px;
+  padding: 0 36px 0 12px;
+  border: 1px solid var(--directory-border);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--directory-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reminder-notification-preview {
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #d9e6e1;
+  border-radius: 6px;
+  background: #f2f8f5;
+}
+
+.reminder-notification-preview img {
+  width: 42px;
+  height: 42px;
+}
+
+.reminder-notification-preview strong {
+  display: block;
+  color: var(--directory-ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.reminder-notification-preview p {
+  margin-top: 3px;
+  color: var(--directory-muted);
+  font-size: 12px;
+}
+
+.reminder-consent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  color: var(--directory-ink);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reminder-consent input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  accent-color: var(--directory-green);
+}
+
+.reminder-install-note,
+.reminder-status {
+  margin-top: 13px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--directory-yellow);
+  background: #fff9e9;
+  color: #5d4a18;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.reminder-status:empty {
+  display: none;
+}
+
+.reminder-status.is-success {
+  border-left-color: var(--directory-green);
+  background: #edf7f2;
+  color: var(--directory-green-dark);
+}
+
+.reminder-status.is-error {
+  border-left-color: #bf433a;
+  background: #fff0ed;
+  color: #7f2d27;
+}
+
+.reminder-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.reminder-modal-actions button {
+  height: 44px;
+  border-radius: 5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.reminder-modal-actions button:disabled {
+  opacity: 0.62;
+  cursor: wait;
+}
+
+.reminder-primary,
+.reminder-secondary {
+  flex: 1 1 auto;
+  padding: 0 18px;
+}
+
+.reminder-primary {
+  border: 1px solid var(--directory-green);
+  background: var(--directory-green);
+  color: #fff;
+}
+
+.reminder-secondary {
+  border: 1px solid #b7c8c1;
+  background: #fff;
+  color: var(--directory-green-dark);
+}
+
+.reminder-icon-button {
+  width: 44px;
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #b7c8c1;
+  background: #fff;
+  color: var(--directory-green-dark);
+}
+
+.reminder-icon-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.reminder-privacy {
+  margin-top: 12px;
+  color: var(--directory-muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+.directory-body.reminder-open {
+  overflow: hidden;
+}
+
 .directory-body.modal-open {
   overflow: hidden;
 }
@@ -1554,7 +1847,7 @@
   }
 
   .prayer-controls {
-    gap: 5px;
+    gap: 4px;
   }
 
   .prayer-zone-field {
@@ -1575,6 +1868,22 @@
 
   .prayer-time strong {
     font-size: 13px;
+  }
+
+  .reminder-modal {
+    align-items: end;
+    padding: 0;
+  }
+
+  .reminder-dialog {
+    width: 100%;
+    max-height: 92dvh;
+    padding: 25px 20px calc(22px + env(safe-area-inset-bottom));
+    border-radius: 6px 6px 0 0;
+  }
+
+  .reminder-heading h2 {
+    font-size: 23px;
   }
 
   .directory-hero {

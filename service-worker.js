@@ -1,0 +1,108 @@
+const CACHE_NAME = 'sedekahqr-shell-v2';
+const APP_SHELL = [
+  './',
+  './index.html',
+  './styles.css',
+  './script.js',
+  './notification.js',
+  './push-config.js',
+  './prayer-zones.js',
+  './qr-data.js',
+  './manifest.webmanifest',
+  './assets/sedekahqr-logo.svg',
+  './assets/sedekahqr-icon-192.png',
+  './assets/sedekahqr-icon-512.png',
+  './assets/banner-sedekah-subuh.jpg',
+  './assets/banner-sedekah-komuniti.jpg'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      if (response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+      }
+      return response;
+    }))
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (!['SHOW_TEST_NOTIFICATION', 'SHOW_PUSH_NOTIFICATION'].includes(event.data?.type)) return;
+
+  const isTest = event.data.type === 'SHOW_TEST_NOTIFICATION';
+
+  event.waitUntil(self.registration.showNotification(event.data.title || 'Peringatan Sedekah Subuh', {
+    body: event.data.body || 'Sudahkah anda bersedekah Subuh hari ini?',
+    icon: './assets/sedekahqr-logo.svg',
+    badge: './assets/sedekahqr-logo.svg',
+    tag: isTest ? 'sedekahqr-test' : `sedekahqr-subuh-${event.data.date || 'today'}`,
+    data: { url: event.data.url || './#direktori' }
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = new URL(event.notification.data?.url || './#direktori', self.registration.scope).href;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const matchingClient = clients.find((client) => client.url.startsWith(self.registration.scope));
+      if (matchingClient) {
+        matchingClient.navigate(targetUrl);
+        return matchingClient.focus();
+      }
+      return self.clients.openWindow(targetUrl);
+    })
+  );
+});
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data?.json() || {};
+  } catch {
+    data = { body: event.data?.text() || '' };
+  }
+
+  event.waitUntil(self.registration.showNotification(data.title || 'Peringatan Sedekah Subuh', {
+    body: data.body || 'Sudahkah anda bersedekah Subuh hari ini?',
+    icon: './assets/sedekahqr-icon-192.png',
+    badge: './assets/sedekahqr-icon-192.png',
+    tag: `sedekahqr-subuh-${data.date || 'today'}`,
+    data: { url: data.url || './#direktori' }
+  }));
+});

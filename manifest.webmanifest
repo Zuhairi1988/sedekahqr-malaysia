@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "SedekahQR Malaysia",
+  "short_name": "SedekahQR",
+  "description": "Direktori QR sedekah masjid dan surau di seluruh Malaysia.",
+  "lang": "ms-MY",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d513f",
+  "icons": [
+    {
+      "src": "assets/sedekahqr-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/sedekahqr-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/sedekahqr-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
