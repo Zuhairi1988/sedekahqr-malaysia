@@ -539,7 +539,7 @@
 }
 
 .catalog-card-body {
-  min-height: 168px;
+  min-height: 250px;
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -565,6 +565,43 @@
   font-size: 17px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.card-contact {
+  margin: 13px 0 15px;
+  padding-top: 11px;
+  border-top: 1px solid #e6ece9;
+}
+
+.card-contact-label {
+  display: block;
+  color: #71817b;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.card-address {
+  margin-top: 3px;
+  color: #4f625b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.card-map-link,
+.card-phone {
+  display: inline-block;
+  margin-top: 7px;
+  color: var(--directory-green-dark);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.card-phone {
+  display: block;
+  margin-left: 0;
 }
 
 .view-qr-button {
@@ -789,6 +826,40 @@
   margin-top: 10px;
   color: var(--directory-muted);
   font-weight: 700;
+}
+
+.modal-contact-info {
+  display: grid;
+  gap: 13px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--directory-line);
+  border-radius: 6px;
+  background: #f7faf8;
+}
+
+.modal-contact-info span {
+  display: block;
+  color: #71817b;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modal-contact-info p {
+  margin-top: 3px;
+  color: #364b43;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.modal-contact-info a {
+  justify-self: start;
+  color: var(--directory-green-dark);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .modal-notice {
@@ -1052,7 +1123,7 @@
   }
 
   .catalog-card-body {
-    min-height: 180px;
+    min-height: 250px;
     padding: 13px;
   }
 
@@ -1145,7 +1216,7 @@
   }
 
   .catalog-card-body {
-    min-height: 150px;
+    min-height: 225px;
   }
 }
 

@@ -278,6 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('qr-modal');
   const modalName = document.getElementById('modal-name');
   const modalMeta = document.getElementById('modal-meta');
+  const modalAddress = document.getElementById('modal-address');
+  const modalMapLink = document.getElementById('modal-map-link');
+  const modalPhoneRow = document.getElementById('modal-phone-row');
+  const modalPhone = document.getElementById('modal-phone');
   const modalImage = document.getElementById('modal-image');
   const modalLoading = document.getElementById('modal-loading');
   const modalQrFrame = modal.querySelector('.modal-qr-frame');
@@ -351,7 +355,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  const getItemDetails = (item) => {
+    const nameParts = item.name.split(',').map((part) => part.trim()).filter(Boolean);
+    const locality = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+    const localityMatchesState = normalizeText(locality) === normalizeText(item.state);
+    const address = item.address || [
+      locality && !localityMatchesState ? locality : '',
+      item.state,
+      'Malaysia'
+    ].filter(Boolean).join(', ');
+    const phone = String(item.phone || '').trim();
+    const mapQuery = item.address || `${item.name}, ${item.state}, Malaysia`;
+
+    return {
+      address,
+      phone,
+      mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+    };
+  };
+
   const createCard = (item) => {
+    const details = getItemDetails(item);
     const article = document.createElement('article');
     article.className = 'catalog-card';
 
@@ -389,6 +413,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const heading = document.createElement('h3');
     heading.textContent = item.name;
 
+    const contact = document.createElement('div');
+    contact.className = 'card-contact';
+
+    const addressLabel = document.createElement('span');
+    addressLabel.className = 'card-contact-label';
+    addressLabel.textContent = 'Lokasi';
+
+    const address = document.createElement('p');
+    address.className = 'card-address';
+    address.textContent = details.address;
+
+    const mapLink = document.createElement('a');
+    mapLink.className = 'card-map-link';
+    mapLink.href = details.mapsUrl;
+    mapLink.target = '_blank';
+    mapLink.rel = 'noopener noreferrer';
+    mapLink.textContent = 'Buka Maps';
+    mapLink.setAttribute('aria-label', `Buka ${item.name} dalam Google Maps`);
+
+    contact.append(addressLabel, address, mapLink);
+
+    if (details.phone) {
+      const phone = document.createElement('a');
+      phone.className = 'card-phone';
+      phone.href = `tel:${details.phone.replace(/[^+\d]/g, '')}`;
+      phone.textContent = details.phone;
+      contact.appendChild(phone);
+    }
+
     const button = document.createElement('button');
     button.className = 'view-qr-button';
     button.type = 'button';
@@ -398,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     imageButton.addEventListener('click', open);
     button.addEventListener('click', open);
 
-    body.append(tags, heading, button);
+    body.append(tags, heading, contact, button);
     article.append(imageButton, body);
     return article;
   };
@@ -482,10 +535,17 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function openModal(item, trigger) {
+    const details = getItemDetails(item);
     activeItem = item;
     modalTrigger = trigger || document.activeElement;
     modalName.textContent = item.name;
     modalMeta.textContent = `${item.type} · ${item.state}`;
+    modalAddress.textContent = details.address;
+    modalMapLink.href = details.mapsUrl;
+    modalMapLink.setAttribute('aria-label', `Buka ${item.name} dalam Google Maps`);
+    modalPhoneRow.hidden = !details.phone;
+    modalPhone.textContent = details.phone;
+    modalPhone.href = details.phone ? `tel:${details.phone.replace(/[^+\d]/g, '')}` : '';
     modalLoading.textContent = 'Memuatkan kod QR...';
     modalQrFrame.classList.add('loading');
     modalImage.src = item.image;
