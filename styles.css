@@ -436,8 +436,7 @@
 }
 
 .directory-section h2,
-.guide-section h2,
-.safety-section h2 {
+.guide-section h2 {
   color: var(--directory-ink);
   font-size: 36px;
   line-height: 1.15;
@@ -703,52 +702,6 @@
   font-size: 14px;
 }
 
-.safety-section {
-  padding: 42px 0;
-  background: #fff4ef;
-  border-top: 1px solid #efc9be;
-  border-bottom: 1px solid #efc9be;
-}
-
-.safety-layout {
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  align-items: center;
-  gap: 20px;
-}
-
-.safety-symbol {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--directory-red);
-  color: #fff;
-  font-family: Georgia, serif;
-  font-size: 24px;
-  font-weight: 900;
-}
-
-.safety-section h2 {
-  font-size: 24px;
-}
-
-.safety-section p {
-  max-width: 790px;
-  margin-top: 5px;
-  color: #684a42;
-  font-size: 14px;
-}
-
-.safety-section a {
-  color: #7f3029;
-  font-size: 13px;
-  font-weight: 900;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
 .directory-footer {
   padding: 38px 0;
   background: #152c25;
@@ -976,14 +929,6 @@
     gap: 32px;
   }
 
-  .safety-layout {
-    grid-template-columns: 48px 1fr;
-  }
-
-  .safety-layout > a {
-    grid-column: 2;
-    justify-self: start;
-  }
 }
 
 @media (max-width: 720px) {
@@ -1126,19 +1071,6 @@
 
   .guide-section {
     padding: 56px 0;
-  }
-
-  .safety-layout {
-    display: block;
-  }
-
-  .safety-symbol {
-    margin-bottom: 14px;
-  }
-
-  .safety-section a {
-    display: inline-block;
-    margin-top: 16px;
   }
 
   .footer-inner {
