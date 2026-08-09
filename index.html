@@ -207,11 +207,29 @@
           </div>
           <a class="source-link" href="https://www.muamalat.com.my/muamalatcares/e-derma/?lang=ms" target="_blank" rel="noopener noreferrer">Semak di laman sumber e-Derma</a>
         </div>
-        <figure class="modal-qr-frame">
-          <p id="modal-loading" class="modal-loading">Memuatkan kod QR...</p>
-          <img id="modal-image" src="" alt="" />
-          <figcaption>Imbas menggunakan aplikasi bank atau e-dompet anda</figcaption>
-        </figure>
+        <div class="modal-media">
+          <div class="modal-media-tabs" role="tablist" aria-label="Paparan QR dan peta">
+            <button id="qr-tab" class="modal-media-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="qr-panel">Kod QR</button>
+            <button id="map-tab" class="modal-media-tab" type="button" role="tab" aria-selected="false" aria-controls="map-panel">Peta</button>
+          </div>
+
+          <figure id="qr-panel" class="modal-qr-frame" role="tabpanel" aria-labelledby="qr-tab">
+            <p id="modal-loading" class="modal-loading">Memuatkan kod QR...</p>
+            <img id="modal-image" src="" alt="" />
+            <figcaption>Imbas menggunakan aplikasi bank atau e-dompet anda</figcaption>
+          </figure>
+
+          <section id="map-panel" class="modal-map-frame" role="tabpanel" aria-labelledby="map-tab" hidden>
+            <div class="map-embed-wrap">
+              <p id="map-loading">Peta akan dimuatkan sebentar lagi...</p>
+              <iframe id="modal-map-frame" title="Peta lokasi masjid atau surau" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+            <div class="map-frame-footer">
+              <p>Street View boleh dibuka di Google Maps jika liputan tersedia.</p>
+              <a id="modal-map-external" target="_blank" rel="noopener noreferrer">Buka Google Maps</a>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
   </div>

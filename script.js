@@ -285,12 +285,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalImage = document.getElementById('modal-image');
   const modalLoading = document.getElementById('modal-loading');
   const modalQrFrame = modal.querySelector('.modal-qr-frame');
+  const qrTab = document.getElementById('qr-tab');
+  const mapTab = document.getElementById('map-tab');
+  const qrPanel = document.getElementById('qr-panel');
+  const mapPanel = document.getElementById('map-panel');
+  const modalMapFrame = document.getElementById('modal-map-frame');
+  const mapLoading = document.getElementById('map-loading');
+  const modalMapExternal = document.getElementById('modal-map-external');
   const downloadQr = document.getElementById('download-qr');
   const shareQr = document.getElementById('share-qr');
   const toast = document.getElementById('site-toast');
   const pageSize = 12;
   let currentPage = 1;
   let activeItem = null;
+  let activeMapEmbedUrl = '';
+  let mapLoadingTimer = null;
   let modalTrigger = null;
   let toastTimer = null;
 
@@ -370,8 +379,28 @@ document.addEventListener('DOMContentLoaded', () => {
     return {
       address,
       phone,
-      mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+      mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`,
+      mapsEmbedUrl: `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=16&output=embed`
     };
+  };
+
+  const selectMediaTab = (target) => {
+    const showMap = target === 'map';
+    qrTab.classList.toggle('is-active', !showMap);
+    mapTab.classList.toggle('is-active', showMap);
+    qrTab.setAttribute('aria-selected', String(!showMap));
+    mapTab.setAttribute('aria-selected', String(showMap));
+    qrPanel.hidden = showMap;
+    mapPanel.hidden = !showMap;
+
+    if (showMap && activeMapEmbedUrl && !modalMapFrame.getAttribute('src')) {
+      mapLoading.hidden = false;
+      modalMapFrame.src = activeMapEmbedUrl;
+      window.clearTimeout(mapLoadingTimer);
+      mapLoadingTimer = window.setTimeout(() => {
+        mapLoading.hidden = true;
+      }, 1200);
+    }
   };
 
   const createCard = (item) => {
@@ -543,6 +572,12 @@ document.addEventListener('DOMContentLoaded', () => {
     modalAddress.textContent = details.address;
     modalMapLink.href = details.mapsUrl;
     modalMapLink.setAttribute('aria-label', `Buka ${item.name} dalam Google Maps`);
+    modalMapExternal.href = details.mapsUrl;
+    modalMapExternal.setAttribute('aria-label', `Buka ${item.name} dalam Google Maps`);
+    modalMapFrame.title = `Peta lokasi ${item.name}`;
+    modalMapFrame.removeAttribute('src');
+    activeMapEmbedUrl = details.mapsEmbedUrl;
+    selectMediaTab('qr');
     modalPhoneRow.hidden = !details.phone;
     modalPhone.textContent = details.phone;
     modalPhone.href = details.phone ? `tel:${details.phone.replace(/[^+\d]/g, '')}` : '';
@@ -566,6 +601,9 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.hidden = true;
     document.body.classList.remove('modal-open');
     activeItem = null;
+    activeMapEmbedUrl = '';
+    window.clearTimeout(mapLoadingTimer);
+    modalMapFrame.removeAttribute('src');
 
     const url = new URL(window.location.href);
     url.searchParams.delete('qr');
@@ -598,6 +636,18 @@ document.addEventListener('DOMContentLoaded', () => {
   clearFilters.addEventListener('click', resetFilters);
   emptyClear.addEventListener('click', resetFilters);
   modal.querySelectorAll('[data-close-modal]').forEach((element) => element.addEventListener('click', closeModal));
+  qrTab.addEventListener('click', () => selectMediaTab('qr'));
+  mapTab.addEventListener('click', () => selectMediaTab('map'));
+
+  [qrTab, mapTab].forEach((tab) => {
+    tab.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const target = tab === qrTab ? 'map' : 'qr';
+      selectMediaTab(target);
+      (target === 'map' ? mapTab : qrTab).focus();
+    });
+  });
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !modal.hidden) closeModal();
@@ -642,6 +692,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   modalImage.addEventListener('load', () => {
     modalQrFrame.classList.remove('loading');
+  });
+
+  modalMapFrame.addEventListener('load', () => {
+    window.clearTimeout(mapLoadingTimer);
+    mapLoading.hidden = true;
   });
 
   renderCatalog();
