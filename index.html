@@ -227,10 +227,6 @@
               <a id="modal-phone"></a>
             </div>
           </div>
-          <div class="modal-actions">
-            <a id="download-qr" class="primary-action" download>Muat turun QR</a>
-            <button id="share-qr" class="secondary-action" type="button">Kongsi pautan</button>
-          </div>
         </div>
         <div class="modal-media">
           <div class="modal-media-tabs" role="tablist" aria-label="Paparan Kod QR dan Maps">
@@ -239,9 +235,27 @@
           </div>
 
           <figure id="qr-panel" class="modal-qr-frame" role="tabpanel" aria-labelledby="qr-tab">
+            <figcaption>Imbas menggunakan aplikasi bank atau e-wallet anda</figcaption>
             <p id="modal-loading" class="modal-loading">Memuatkan kod QR...</p>
             <img id="modal-image" src="" alt="" />
-            <figcaption>Imbas menggunakan aplikasi bank atau e-wallet anda</figcaption>
+            <div class="modal-actions" role="group" aria-label="Tindakan kod QR">
+              <a id="download-qr" class="modal-icon-action modal-icon-action-primary" download aria-label="Muat turun kod QR" title="Muat turun QR">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" x2="12" y1="15" y2="3"></line>
+                </svg>
+              </a>
+              <button id="share-qr" class="modal-icon-action" type="button" aria-label="Kongsi pautan kod QR" title="Kongsi pautan">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+                  <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>
+                </svg>
+              </button>
+            </div>
           </figure>
 
           <section id="map-panel" class="modal-map-frame" role="tabpanel" aria-labelledby="map-tab" hidden>
