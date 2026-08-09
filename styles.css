@@ -592,30 +592,52 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 14px;
-  margin-top: 7px;
+  gap: 8px;
+  margin-top: 9px;
 }
 
 .card-map-link,
-.card-street-view-link,
-.card-phone {
-  display: inline-block;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--directory-green-dark);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 900;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.card-street-view-link {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 7px;
+  border: 1px solid #cbd9d3;
+  border-radius: 6px;
+  background: #fff;
   cursor: pointer;
+}
+
+.card-map-link:hover,
+.card-street-view-link:hover {
+  border-color: var(--directory-green);
+  background: var(--directory-green-soft);
+}
+
+.card-map-link:focus-visible,
+.card-street-view-link:focus-visible {
+  outline: 3px solid rgba(29, 119, 87, 0.22);
+  outline-offset: 2px;
+}
+
+.card-map-link img,
+.card-street-view-link img {
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
 }
 
 .card-phone {
   display: block;
   margin-top: 7px;
   margin-left: 0;
+  color: var(--directory-green-dark);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .view-qr-button {

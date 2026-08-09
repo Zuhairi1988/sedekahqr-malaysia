@@ -479,8 +479,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapLink = document.createElement('button');
     mapLink.className = 'card-map-link';
     mapLink.type = 'button';
-    mapLink.textContent = 'Maps';
     mapLink.setAttribute('aria-label', `Lihat ${item.name} dalam tab Maps`);
+    mapLink.title = 'Maps';
+    const mapIcon = document.createElement('img');
+    mapIcon.src = 'assets/google-maps-icon.svg';
+    mapIcon.alt = '';
+    mapIcon.setAttribute('aria-hidden', 'true');
+    mapLink.appendChild(mapIcon);
     mapLink.addEventListener('click', (event) => openModal(item, event.currentTarget, 'map'));
 
     locationActions.appendChild(mapLink);
@@ -491,8 +496,13 @@ document.addEventListener('DOMContentLoaded', () => {
       streetViewLink.href = details.streetViewUrl;
       streetViewLink.target = '_blank';
       streetViewLink.rel = 'noopener noreferrer';
-      streetViewLink.textContent = 'Street View';
       streetViewLink.setAttribute('aria-label', `Buka Street View ${item.name} dalam Google Maps`);
+      streetViewLink.title = 'Street View';
+      const streetViewIcon = document.createElement('img');
+      streetViewIcon.src = 'assets/google-street-view-icon.svg';
+      streetViewIcon.alt = '';
+      streetViewIcon.setAttribute('aria-hidden', 'true');
+      streetViewLink.appendChild(streetViewIcon);
       locationActions.appendChild(streetViewLink);
     }
 
