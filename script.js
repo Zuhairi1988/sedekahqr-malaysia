@@ -305,6 +305,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let modalTrigger = null;
   let toastTimer = null;
 
+  const verifiedLocations = {
+    'johor-001-surau-ehsan-johor': {
+      address: 'Jalan Perubatan 22, Taman Universiti, 81300 Skudai, Johor, Malaysia',
+      latitude: 1.5340876,
+      longitude: 103.6110264
+    },
+    'kelantan-001-masjid-an-naim-kota-bharu': {
+      address: 'Jalan Tok Guru, Kampung Cina, 15586 Kota Bharu, Kelantan, Malaysia',
+      latitude: 6.1276501,
+      longitude: 102.2469829
+    }
+  };
+
   const normalizeText = (value) => String(value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -367,22 +380,27 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const getItemDetails = (item) => {
+    const verifiedLocation = verifiedLocations[item.id];
     const nameParts = item.name.split(',').map((part) => part.trim()).filter(Boolean);
     const locality = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
     const localityMatchesState = normalizeText(locality) === normalizeText(item.state);
-    const address = item.address || [
+    const address = verifiedLocation?.address || item.address || [
       locality && !localityMatchesState ? locality : '',
       item.state,
       'Malaysia'
     ].filter(Boolean).join(', ');
     const phone = String(item.phone || '').trim();
-    const mapQuery = item.address || `${item.name}, ${item.state}, Malaysia`;
+    const mapQuery = verifiedLocation?.address || item.address || `${item.name}, ${item.state}, Malaysia`;
+    const streetViewUrl = verifiedLocation
+      ? `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${encodeURIComponent(`${verifiedLocation.latitude},${verifiedLocation.longitude}`)}`
+      : '';
 
     return {
       address,
       phone,
       mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`,
-      mapsEmbedUrl: `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=16&output=embed`
+      mapsEmbedUrl: `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=16&output=embed`,
+      streetViewUrl
     };
   };
 
@@ -455,15 +473,30 @@ document.addEventListener('DOMContentLoaded', () => {
     address.className = 'card-address';
     address.textContent = details.address;
 
-    const mapLink = document.createElement('a');
-    mapLink.className = 'card-map-link';
-    mapLink.href = details.mapsUrl;
-    mapLink.target = '_blank';
-    mapLink.rel = 'noopener noreferrer';
-    mapLink.textContent = 'Buka Maps';
-    mapLink.setAttribute('aria-label', `Buka ${item.name} dalam Google Maps`);
+    const locationActions = document.createElement('div');
+    locationActions.className = 'card-location-actions';
 
-    contact.append(addressLabel, address, mapLink);
+    const mapLink = document.createElement('button');
+    mapLink.className = 'card-map-link';
+    mapLink.type = 'button';
+    mapLink.textContent = 'Maps';
+    mapLink.setAttribute('aria-label', `Lihat ${item.name} dalam tab Maps`);
+    mapLink.addEventListener('click', (event) => openModal(item, event.currentTarget, 'map'));
+
+    locationActions.appendChild(mapLink);
+
+    if (details.streetViewUrl) {
+      const streetViewLink = document.createElement('a');
+      streetViewLink.className = 'card-street-view-link';
+      streetViewLink.href = details.streetViewUrl;
+      streetViewLink.target = '_blank';
+      streetViewLink.rel = 'noopener noreferrer';
+      streetViewLink.textContent = 'Street View';
+      streetViewLink.setAttribute('aria-label', `Buka Street View ${item.name} dalam Google Maps`);
+      locationActions.appendChild(streetViewLink);
+    }
+
+    contact.append(addressLabel, address, locationActions);
 
     if (details.phone) {
       const phone = document.createElement('a');
@@ -478,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     button.type = 'button';
     button.textContent = 'Lihat QR';
 
-    const open = (event) => openModal(item, event.currentTarget);
+    const open = (event) => openModal(item, event.currentTarget, 'qr');
     imageButton.addEventListener('click', open);
     button.addEventListener('click', open);
 
@@ -565,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.focus();
   };
 
-  function openModal(item, trigger) {
+  function openModal(item, trigger, initialTab = 'qr') {
     const details = getItemDetails(item);
     activeItem = item;
     modalTrigger = trigger || document.activeElement;
@@ -581,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalMapFrame.title = `Peta lokasi ${item.name}`;
     modalMapFrame.removeAttribute('src');
     activeMapEmbedUrl = details.mapsEmbedUrl;
-    selectMediaTab('qr');
+    selectMediaTab(initialTab === 'map' ? 'map' : 'qr');
     modalPhoneRow.hidden = !details.phone;
     modalPhone.textContent = details.phone;
     modalPhone.href = details.phone ? `tel:${details.phone.replace(/[^+\d]/g, '')}` : '';
@@ -596,6 +629,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const url = new URL(window.location.href);
     url.searchParams.set('qr', item.id);
+    if (initialTab === 'map') url.searchParams.set('view', 'map');
+    else url.searchParams.delete('view');
     window.history.replaceState({}, '', url);
     modal.querySelector('.modal-close').focus();
   }
@@ -611,6 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const url = new URL(window.location.href);
     url.searchParams.delete('qr');
+    url.searchParams.delete('view');
     window.history.replaceState({}, '', url);
     if (modalTrigger) modalTrigger.focus();
   };
@@ -708,6 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const requestedId = new URL(window.location.href).searchParams.get('qr');
   if (requestedId) {
     const requestedItem = catalog.find((item) => item.id === requestedId);
-    if (requestedItem) openModal(requestedItem, null);
+    const requestedView = new URL(window.location.href).searchParams.get('view');
+    if (requestedItem) openModal(requestedItem, null, requestedView === 'map' ? 'map' : 'qr');
   }
 });
