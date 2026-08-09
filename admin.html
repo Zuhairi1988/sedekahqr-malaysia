@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d513f" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Pengurusan - SedekahQR Malaysia</title>
+  <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css?v=20260809-7" />
+  <link rel="stylesheet" href="admin.css?v=20260809-1" />
+</head>
+<body class="admin-body">
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <a class="directory-brand" href="index.html" aria-label="SedekahQR Malaysia - halaman utama">
+        <span class="brand-mark" aria-hidden="true"><img src="assets/sedekahqr-logo.svg" alt="" /></span>
+        <span class="brand-wordmark">
+          <strong><span>Sedekah</span><b>QR</b></strong>
+          <small>Pengurusan</small>
+        </span>
+      </a>
+      <a class="admin-public-link" href="blog.html">Lihat laman awam</a>
+    </div>
+  </header>
+
+  <main>
+    <section id="login-view" class="admin-login" aria-labelledby="login-title">
+      <form id="login-form" class="admin-login-panel">
+        <p class="admin-kicker">Akses terhad</p>
+        <h1 id="login-title">Log masuk admin</h1>
+        <p class="admin-login-copy">Gunakan akaun yang telah diluluskan untuk mengurus kandungan SedekahQR.</p>
+
+        <label class="admin-field">
+          <span>Alamat e-mel</span>
+          <input id="login-email" type="email" autocomplete="username" required />
+        </label>
+        <label class="admin-field">
+          <span>Kata laluan</span>
+          <span class="admin-password-wrap">
+            <input id="login-password" type="password" autocomplete="current-password" minlength="8" required />
+            <button id="toggle-password" class="admin-password-toggle" type="button" aria-label="Tunjukkan kata laluan" title="Tunjukkan kata laluan">Lihat</button>
+          </span>
+        </label>
+
+        <p id="login-message" class="admin-message" role="alert" hidden></p>
+        <button id="login-submit" class="admin-primary-button" type="submit">Log masuk</button>
+      </form>
+    </section>
+
+    <section id="dashboard-view" class="admin-dashboard" hidden>
+      <div class="admin-dashboard-heading">
+        <div>
+          <p class="admin-kicker">Blog Islamik</p>
+          <h1>Pengurusan artikel</h1>
+          <p id="admin-identity" class="admin-identity"></p>
+        </div>
+        <div class="admin-heading-actions">
+          <button id="new-article-button" class="admin-primary-button" type="button">Artikel baharu</button>
+          <button id="logout-button" class="admin-secondary-button" type="button">Log keluar</button>
+        </div>
+      </div>
+
+      <p id="dashboard-message" class="admin-message admin-dashboard-message" role="status" aria-live="polite" hidden></p>
+
+      <div class="admin-summary" aria-label="Ringkasan artikel">
+        <div><strong id="total-count">0</strong><span>Semua artikel</span></div>
+        <div><strong id="published-count">0</strong><span>Diterbitkan</span></div>
+        <div><strong id="draft-count">0</strong><span>Draf</span></div>
+      </div>
+
+      <div class="admin-workspace">
+        <section class="admin-list-panel" aria-labelledby="article-list-title">
+          <div class="admin-panel-heading">
+            <h2 id="article-list-title">Senarai artikel</h2>
+            <label class="admin-list-search">
+              <span class="sr-only">Cari artikel</span>
+              <input id="admin-search" type="search" placeholder="Cari tajuk atau kategori" autocomplete="off" />
+            </label>
+          </div>
+          <div id="admin-article-list" class="admin-article-list" aria-live="polite"></div>
+        </section>
+
+        <section id="editor-panel" class="admin-editor-panel" aria-labelledby="editor-title" hidden>
+          <form id="article-form">
+            <div class="admin-editor-heading">
+              <div>
+                <p id="editor-mode" class="admin-kicker">Artikel baharu</p>
+                <h2 id="editor-title">Tulis artikel</h2>
+              </div>
+              <button id="close-editor" class="admin-icon-button" type="button" aria-label="Tutup editor" title="Tutup editor">&times;</button>
+            </div>
+
+            <div class="admin-form-grid">
+              <label class="admin-field admin-field-wide">
+                <span>Tajuk artikel</span>
+                <input id="article-title" type="text" minlength="8" maxlength="180" required />
+              </label>
+              <label class="admin-field admin-field-wide">
+                <span>Slug pautan</span>
+                <input id="article-slug" type="text" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required />
+              </label>
+              <label class="admin-field admin-field-wide">
+                <span>Ringkasan</span>
+                <textarea id="article-excerpt" rows="3" minlength="30" maxlength="360" required></textarea>
+              </label>
+              <label class="admin-field">
+                <span>Kategori</span>
+                <select id="article-category" required>
+                  <option value="Al-Quran">Al-Quran</option>
+                  <option value="Hadis">Hadis</option>
+                  <option value="Doa">Doa</option>
+                  <option value="Sirah">Sirah</option>
+                  <option value="Akhlak">Akhlak</option>
+                  <option value="Sedekah">Sedekah</option>
+                </select>
+              </label>
+              <label class="admin-field">
+                <span>Penulis</span>
+                <input id="article-author" type="text" value="Editorial SedekahQR" required />
+              </label>
+              <label class="admin-field admin-field-wide">
+                <span>Imej muka depan</span>
+                <input id="article-cover" type="text" list="cover-options" value="assets/blog-hero-quran.jpg" required />
+                <datalist id="cover-options">
+                  <option value="assets/blog-hero-quran.jpg"></option>
+                  <option value="assets/banner-sedekah-subuh.jpg"></option>
+                  <option value="assets/banner-sedekah-komuniti.jpg"></option>
+                </datalist>
+              </label>
+              <label class="admin-field">
+                <span>Masa bacaan (minit)</span>
+                <input id="article-reading-minutes" type="number" min="1" max="60" value="5" required />
+              </label>
+              <label class="admin-field">
+                <span>Tarikh terbit</span>
+                <input id="article-published-at" type="datetime-local" />
+              </label>
+            </div>
+
+            <label class="admin-publish-toggle">
+              <input id="article-is-published" type="checkbox" />
+              <span><strong>Terbitkan artikel</strong><small>Artikel draf tidak dipaparkan kepada pengguna awam.</small></span>
+            </label>
+
+            <section class="admin-builder" aria-labelledby="content-builder-title">
+              <div class="admin-builder-heading">
+                <div>
+                  <h3 id="content-builder-title">Kandungan artikel</h3>
+                  <p>Susun kandungan mengikut blok.</p>
+                </div>
+                <div class="admin-add-menu" aria-label="Tambah blok kandungan">
+                  <button type="button" data-add-block="paragraph">+ Perenggan</button>
+                  <button type="button" data-add-block="heading">+ Tajuk kecil</button>
+                  <button type="button" data-add-block="quote">+ Petikan</button>
+                  <button type="button" data-add-block="list">+ Senarai</button>
+                </div>
+              </div>
+              <div id="content-blocks" class="admin-content-blocks"></div>
+            </section>
+
+            <section class="admin-builder" aria-labelledby="source-builder-title">
+              <div class="admin-builder-heading">
+                <div>
+                  <h3 id="source-builder-title">Sumber rujukan</h3>
+                  <p>Gunakan pautan kepada sumber asal yang sah.</p>
+                </div>
+                <button id="add-source" class="admin-secondary-button admin-small-button" type="button">+ Tambah sumber</button>
+              </div>
+              <div id="source-rows" class="admin-source-rows"></div>
+            </section>
+
+            <div class="admin-form-actions">
+              <button id="save-article" class="admin-primary-button" type="submit">Simpan artikel</button>
+              <a id="preview-article" class="admin-secondary-link" href="article.html" target="_blank" rel="noopener" hidden>Lihat artikel</a>
+              <button id="cancel-editor" class="admin-text-button" type="button">Batal</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="blog-config.js?v=20260809-1"></script>
+  <script src="admin.js?v=20260809-1"></script>
+</body>
+</html>

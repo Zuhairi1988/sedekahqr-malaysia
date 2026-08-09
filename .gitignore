@@ -4,11 +4,14 @@
 !index.html
 !blog.html
 !article.html
+!admin.html
 !styles.css
 !blog.css
+!admin.css
 !script.js
 !blog.js
 !article.js
+!admin.js
 !blog-api.js
 !blog-config.js
 !articles.json
