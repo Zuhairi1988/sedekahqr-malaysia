@@ -20,6 +20,7 @@
       </a>
 
       <nav class="directory-nav" aria-label="Navigasi utama">
+        <a href="#waktu-solat">Waktu Solat</a>
         <a href="#direktori">Direktori</a>
         <a href="#panduan">Cara Sedekah</a>
       </nav>
@@ -62,6 +63,59 @@
         <div class="slider-arrows">
           <button class="slider-arrow slider-prev" type="button" aria-label="Banner sebelumnya" title="Sebelumnya">&#8592;</button>
           <button class="slider-arrow slider-next" type="button" aria-label="Banner seterusnya" title="Seterusnya">&#8594;</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="prayer-section" id="waktu-solat" aria-labelledby="prayer-title">
+      <div class="directory-container prayer-layout">
+        <div class="prayer-intro">
+          <p class="directory-eyebrow">Waktu solat hari ini</p>
+          <h2 id="prayer-title">Waktu solat berhampiran anda</h2>
+          <p id="prayer-zone-name" class="prayer-zone-name">Mengesan lokasi...</p>
+          <p id="prayer-date" class="prayer-date"></p>
+
+          <div class="prayer-controls">
+            <button id="locate-prayer" class="prayer-locate-button" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 2v2"></path>
+                <path d="M12 20v2"></path>
+                <path d="m4.93 4.93 1.42 1.42"></path>
+                <path d="m17.66 17.66 1.41 1.41"></path>
+                <path d="M2 12h2"></path>
+                <path d="M20 12h2"></path>
+                <path d="m6.34 17.66-1.41 1.41"></path>
+                <path d="m19.07 4.93-1.41 1.41"></path>
+              </svg>
+              Guna lokasi saya
+            </button>
+            <div class="prayer-zone-field">
+              <label for="prayer-zone-select">Atau pilih zon</label>
+              <select id="prayer-zone-select" disabled>
+                <option value="">Memuatkan senarai zon...</option>
+              </select>
+            </div>
+          </div>
+
+          <p id="prayer-status" class="prayer-status" role="status" aria-live="polite">Lokasi digunakan untuk menentukan zon waktu solat.</p>
+          <p class="prayer-source">Data waktu daripada <a href="https://www.e-solat.gov.my/" target="_blank" rel="noopener noreferrer">e-Solat JAKIM</a>.</p>
+        </div>
+
+        <div class="prayer-schedule">
+          <div class="prayer-next">
+            <span>Waktu seterusnya</span>
+            <strong id="prayer-next-label">Menunggu lokasi</strong>
+            <p id="prayer-countdown">Benarkan lokasi atau pilih zon.</p>
+          </div>
+          <div class="prayer-times" aria-label="Waktu solat hari ini">
+            <div class="prayer-time" data-prayer-key="fajr"><span>Subuh</span><strong>--:--</strong></div>
+            <div class="prayer-time" data-prayer-key="syuruk"><span>Syuruk</span><strong>--:--</strong></div>
+            <div class="prayer-time" data-prayer-key="dhuhr"><span>Zohor</span><strong>--:--</strong></div>
+            <div class="prayer-time" data-prayer-key="asr"><span>Asar</span><strong>--:--</strong></div>
+            <div class="prayer-time" data-prayer-key="maghrib"><span>Maghrib</span><strong>--:--</strong></div>
+            <div class="prayer-time" data-prayer-key="isha"><span>Isyak</span><strong>--:--</strong></div>
+          </div>
         </div>
       </div>
     </section>
@@ -292,6 +346,7 @@
 
   <div id="site-toast" class="directory-toast" role="status" aria-live="polite"></div>
 
+  <script src="prayer-zones.js"></script>
   <script src="qr-data.js"></script>
   <script src="script.js"></script>
 </body>

@@ -260,6 +260,268 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  const prayerSection = document.getElementById('waktu-solat');
+  if (!prayerSection) return;
+
+  const zoneName = document.getElementById('prayer-zone-name');
+  const prayerDate = document.getElementById('prayer-date');
+  const prayerStatus = document.getElementById('prayer-status');
+  const zoneSelect = document.getElementById('prayer-zone-select');
+  const locateButton = document.getElementById('locate-prayer');
+  const nextLabel = document.getElementById('prayer-next-label');
+  const countdown = document.getElementById('prayer-countdown');
+  const timeElements = [...document.querySelectorAll('.prayer-time')];
+  const storageKey = 'sedekahqr-prayer-zone';
+  const malaysiaTimeZone = 'Asia/Kuala_Lumpur';
+  const hijriMonths = [
+    'Muharam', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
+    'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijah'
+  ];
+  const prayerLabels = {
+    fajr: 'Subuh',
+    syuruk: 'Syuruk',
+    dhuhr: 'Zohor',
+    asr: 'Asar',
+    maghrib: 'Maghrib',
+    isha: 'Isyak'
+  };
+  const zones = Array.isArray(window.PRAYER_ZONES) ? window.PRAYER_ZONES : [];
+  let currentZone = '';
+  let currentPrayer = null;
+  let currentDateKey = '';
+  let countdownTimer = null;
+  let locationRequestId = 0;
+  let prayerRequestId = 0;
+
+  const getSavedZone = () => {
+    try {
+      return window.localStorage.getItem(storageKey) || '';
+    } catch {
+      return '';
+    }
+  };
+
+  const saveZone = (zone) => {
+    try {
+      window.localStorage.setItem(storageKey, zone);
+    } catch {}
+  };
+
+  const getMalaysiaDateParts = () => {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: malaysiaTimeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(new Date());
+    return Object.fromEntries(parts.filter((part) => part.type !== 'literal').map((part) => [part.type, part.value]));
+  };
+
+  const getMalaysiaDateKey = () => {
+    const parts = getMalaysiaDateParts();
+    return `${parts.year}-${parts.month}-${parts.day}`;
+  };
+
+  const formatHijriDate = (value) => {
+    const [year, month, day] = String(value || '').split('-').map(Number);
+    if (!year || !month || !day || !hijriMonths[month - 1]) return '';
+    return `${day} ${hijriMonths[month - 1]} ${year}H`;
+  };
+
+  const formatPrayerTime = (value) => String(value || '--:--').slice(0, 5);
+
+  const getZoneDetails = (zone) => zones.find((item) => item.jakimCode === zone);
+
+  const setStatus = (message, isError = false) => {
+    prayerStatus.textContent = message;
+    prayerStatus.classList.toggle('is-error', isError);
+  };
+
+  const updateNextPrayer = () => {
+    if (!currentPrayer) return;
+
+    const latestDateKey = getMalaysiaDateKey();
+    if (currentDateKey && latestDateKey !== currentDateKey) {
+      currentDateKey = latestDateKey;
+      loadPrayerTimes(currentZone, '', 'Waktu dikemas kini untuk hari baharu.');
+      return;
+    }
+
+    const now = Date.now();
+    const upcoming = timeElements
+      .map((element) => {
+        const key = element.dataset.prayerKey;
+        const value = currentPrayer[key];
+        return {
+          element,
+          key,
+          value,
+          timestamp: Date.parse(`${currentDateKey}T${value}+08:00`)
+        };
+      })
+      .find((item) => Number.isFinite(item.timestamp) && item.timestamp > now);
+
+    timeElements.forEach((element) => element.classList.toggle('is-next', element === upcoming?.element));
+
+    if (!upcoming) {
+      nextLabel.textContent = 'Selesai hari ini';
+      countdown.textContent = 'Waktu baharu selepas tengah malam.';
+      return;
+    }
+
+    const remainingMinutes = Math.max(0, Math.ceil((upcoming.timestamp - now) / 60000));
+    const hours = Math.floor(remainingMinutes / 60);
+    const minutes = remainingMinutes % 60;
+    const duration = hours ? `${hours} jam ${minutes} minit` : `${minutes} minit`;
+    nextLabel.textContent = `${prayerLabels[upcoming.key]} · ${formatPrayerTime(upcoming.value)}`;
+    countdown.textContent = `Dalam ${duration}`;
+  };
+
+  const renderPrayerTimes = (item, zone, fallbackLabel = '') => {
+    currentPrayer = item;
+    currentZone = zone;
+    currentDateKey = getMalaysiaDateKey();
+
+    timeElements.forEach((element) => {
+      const value = item[element.dataset.prayerKey];
+      element.querySelector('strong').textContent = formatPrayerTime(value);
+    });
+
+    const details = getZoneDetails(zone);
+    const locationLabel = details?.daerah || fallbackLabel || 'Zon waktu solat Malaysia';
+    zoneName.textContent = `${zone} · ${locationLabel}`;
+    zoneSelect.value = zone;
+
+    const gregorian = new Intl.DateTimeFormat('ms-MY', {
+      timeZone: malaysiaTimeZone,
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date());
+    const hijri = formatHijriDate(item.hijri);
+    prayerDate.textContent = hijri ? `${gregorian} · ${hijri}` : gregorian;
+
+    updateNextPrayer();
+    window.clearInterval(countdownTimer);
+    countdownTimer = window.setInterval(updateNextPrayer, 30000);
+  };
+
+  async function loadPrayerTimes(zone, fallbackLabel = '', successMessage = 'Waktu solat telah dikemas kini.') {
+    if (!zone) return;
+    const requestId = ++prayerRequestId;
+    prayerSection.setAttribute('aria-busy', 'true');
+    setStatus('Memuatkan waktu rasmi e-Solat JAKIM...');
+
+    try {
+      const endpoint = `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=today&zone=${encodeURIComponent(zone)}`;
+      const response = await fetch(endpoint, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      const item = data.prayerTime?.[0];
+      if (data.status !== 'OK!' || !item) throw new Error('Data waktu tidak lengkap');
+      if (requestId !== prayerRequestId) return;
+
+      renderPrayerTimes(item, zone, fallbackLabel);
+      saveZone(zone);
+      setStatus(successMessage);
+    } catch {
+      if (requestId !== prayerRequestId) return;
+      setStatus('Waktu solat tidak dapat dimuatkan. Cuba lagi atau pilih zon lain.', true);
+    } finally {
+      if (requestId === prayerRequestId) prayerSection.removeAttribute('aria-busy');
+    }
+  }
+
+  const populateZoneSelect = () => {
+    const fragment = document.createDocumentFragment();
+    const states = [...new Set(zones.map((item) => item.negeri))];
+
+    states.forEach((state) => {
+      const group = document.createElement('optgroup');
+      group.label = state;
+      zones.filter((item) => item.negeri === state).forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.jakimCode;
+        option.textContent = `${item.jakimCode} - ${item.daerah}`;
+        group.appendChild(option);
+      });
+      fragment.appendChild(group);
+    });
+
+    zoneSelect.replaceChildren(new Option('Pilih zon waktu solat', ''), fragment);
+    zoneSelect.disabled = false;
+    if (currentZone) zoneSelect.value = currentZone;
+  };
+
+  const getCurrentPosition = () => new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolokasi tidak disokong'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: false,
+      timeout: 12000,
+      maximumAge: 21600000
+    });
+  });
+
+  const locatePrayerTimes = async () => {
+    const requestId = ++locationRequestId;
+    locateButton.disabled = true;
+    setStatus('Menunggu kebenaran lokasi...');
+
+    try {
+      const position = await getCurrentPosition();
+      if (requestId !== locationRequestId) return;
+      const latitude = position.coords.latitude.toFixed(6);
+      const longitude = position.coords.longitude.toFixed(6);
+      setStatus('Mengesan zon waktu solat...');
+
+      const response = await fetch(`https://api.waktusolat.app/zones/${latitude}/${longitude}`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const detected = await response.json();
+      if (!detected.zone) throw new Error('Zon tidak ditemui');
+      if (requestId !== locationRequestId) return;
+
+      await loadPrayerTimes(detected.zone, detected.district, 'Lokasi dan zon dikesan secara automatik.');
+    } catch (error) {
+      if (requestId !== locationRequestId) return;
+      const denied = error?.code === 1;
+      const message = denied
+        ? 'Lokasi tidak dibenarkan. Pilih zon secara manual.'
+        : 'Lokasi tidak dapat dikesan. Cuba lagi atau pilih zon secara manual.';
+      setStatus(message, true);
+      if (!currentPrayer) zoneName.textContent = 'Pilih zon waktu solat anda';
+    } finally {
+      if (requestId === locationRequestId) locateButton.disabled = false;
+    }
+  };
+
+  locateButton.addEventListener('click', locatePrayerTimes);
+  zoneSelect.addEventListener('change', () => {
+    if (zoneSelect.value) {
+      locationRequestId += 1;
+      locateButton.disabled = false;
+      loadPrayerTimes(zoneSelect.value, '', 'Menggunakan zon pilihan anda.');
+    }
+  });
+
+  const initializePrayerTimes = async () => {
+    if (zones.length) populateZoneSelect();
+    const savedZone = getSavedZone();
+    if (savedZone) {
+      await loadPrayerTimes(savedZone, '', 'Menggunakan zon pilihan terakhir sementara lokasi dikesan.');
+    }
+    await locatePrayerTimes();
+  };
+
+  initializePrayerTimes();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
   const grid = document.getElementById('catalog-grid');
   if (!grid) return;
 
