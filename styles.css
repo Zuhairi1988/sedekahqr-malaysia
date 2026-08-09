@@ -1002,23 +1002,6 @@
   text-underline-offset: 3px;
 }
 
-.modal-notice {
-  margin-top: 28px;
-  padding: 16px;
-  border-left: 4px solid var(--directory-red);
-  background: #fff4ef;
-}
-
-.modal-notice strong {
-  color: #7f3029;
-}
-
-.modal-notice p {
-  margin-top: 4px;
-  color: #684a42;
-  font-size: 13px;
-}
-
 .modal-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1028,16 +1011,6 @@
 
 .secondary-action {
   min-height: 48px;
-}
-
-.source-link {
-  display: inline-block;
-  margin-top: 18px;
-  color: var(--directory-green-dark);
-  font-size: 12px;
-  font-weight: 800;
-  text-decoration: underline;
-  text-underline-offset: 4px;
 }
 
 .modal-qr-frame {
