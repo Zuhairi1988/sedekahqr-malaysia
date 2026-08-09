@@ -78,33 +78,41 @@
 }
 
 .brand-mark {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 40px;
-  border-radius: 6px;
-  background: var(--directory-green);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 900;
+  width: 44px;
+  height: 44px;
+  display: block;
+  flex: 0 0 44px;
 }
 
-.directory-brand strong,
-.directory-brand small {
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.brand-wordmark strong,
+.brand-wordmark small {
   display: block;
   line-height: 1.05;
 }
 
-.directory-brand strong {
-  font-size: 20px;
+.brand-wordmark strong {
+  color: var(--directory-ink);
+  font-size: 21px;
+  font-weight: 850;
 }
 
-.directory-brand small {
+.brand-wordmark strong b {
+  color: var(--directory-green);
+  font-weight: 900;
+}
+
+.brand-wordmark small {
   margin-top: 4px;
-  color: var(--directory-muted);
-  font-size: 10px;
-  font-weight: 800;
+  color: #6e7e78;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
