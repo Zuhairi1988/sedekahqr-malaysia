@@ -104,13 +104,90 @@ Deno.serve(async (request) => {
   if (!due.length) return jsonResponse({ ok: true, message: `Tiada penghantaran pada ${currentTime}.`, sent: 0 });
 
   const reflections = [
-    { text: 'Berlumba-lumbalah dalam melakukan kebaikan.', source: 'Al-Baqarah 2:148' },
-    { text: 'Apa sahaja yang kamu infakkan, Allah akan menggantikannya.', source: "Saba' 34:39" },
-    { text: 'Kebajikan dicapai dengan menginfakkan apa yang kita cintai.', source: 'Ali Imran 3:92' },
-    { text: 'Perumpamaan sedekah ialah benih yang menumbuhkan banyak kebaikan.', source: 'Al-Baqarah 2:261' },
-    { text: 'Sedekah tidak mengurangi harta.', source: 'Sahih Muslim 2588' },
-    { text: 'Amal yang berterusan walaupun sedikit sangat dicintai Allah.', source: 'Sahih al-Bukhari 6465' },
-    { text: 'Mulakan pagi dengan syukur, doa dan satu kebaikan.', source: 'Renungan harian' }
+    {
+      title: 'Renungan Kebaikan',
+      text: 'Berlumba-lumbalah dalam melakukan kebaikan.',
+      source: 'Al-Baqarah 2:148',
+      prompt: 'Pilih satu kebaikan untuk dilakukan hari ini.'
+    },
+    {
+      title: 'Renungan Syukur',
+      text: 'Jika kamu bersyukur, nescaya Allah menambah nikmat kepadamu.',
+      source: 'Ibrahim 14:7',
+      prompt: 'Sebut satu nikmat yang anda syukuri pagi ini.'
+    },
+    {
+      title: 'Sabar dan Solat',
+      text: 'Mintalah pertolongan dengan sabar dan solat; Allah bersama orang yang sabar.',
+      source: 'Al-Baqarah 2:153',
+      prompt: 'Hadapi urusan hari ini dengan tenang dan jaga solat.'
+    },
+    {
+      title: 'Berbuat Baik kepada Ibu Bapa',
+      text: 'Berbuat baiklah kepada ibu bapa dan berbicaralah kepada mereka dengan mulia.',
+      source: "Al-Isra' 17:23",
+      prompt: 'Doakan mereka dan hubungi mereka apabila berkesempatan.'
+    },
+    {
+      title: 'Renungan Tawakal',
+      text: 'Sesiapa yang bertawakal kepada Allah, maka Allah mencukupkan keperluannya.',
+      source: 'At-Talaq 65:3',
+      prompt: 'Usahakan yang terbaik, kemudian serahkan hasilnya kepada Allah.'
+    },
+    {
+      title: 'Doa Menuntut Ilmu',
+      text: 'Wahai Tuhanku, tambahkanlah ilmuku.',
+      source: 'Taha 20:114',
+      prompt: 'Pelajari satu perkara yang bermanfaat hari ini.'
+    },
+    {
+      title: 'Doa Dunia dan Akhirat',
+      text: 'Ya Tuhan kami, berilah kebaikan di dunia dan kebaikan di akhirat.',
+      source: 'Al-Baqarah 2:201',
+      prompt: 'Mulakan pagi dengan doa dan pengharapan yang baik.'
+    },
+    {
+      title: 'Jaga Solat',
+      text: 'Sesungguhnya solat mencegah perbuatan keji dan mungkar.',
+      source: 'Al-Ankabut 29:45',
+      prompt: 'Jadikan solat panduan untuk tindakan hari ini.'
+    },
+    {
+      title: 'Persaudaraan',
+      text: 'Orang beriman itu bersaudara; damaikanlah antara saudaramu.',
+      source: 'Al-Hujurat 49:10',
+      prompt: 'Jernihkan satu hubungan dengan kata-kata yang baik.'
+    },
+    {
+      title: 'Dekati Al-Quran',
+      text: 'Sebaik-baik kamu ialah yang mempelajari Al-Quran dan mengajarkannya.',
+      source: 'Sahih al-Bukhari 5027',
+      prompt: 'Luangkan beberapa minit bersama Al-Quran hari ini.'
+    },
+    {
+      title: 'Jaga Pertuturan',
+      text: 'Berkatalah yang baik atau diam.',
+      source: 'Sahih al-Bukhari 6018',
+      prompt: 'Pilih perkataan yang menenangkan dan memberi manfaat.'
+    },
+    {
+      title: 'Mukmin yang Kuat',
+      text: 'Berusahalah mendapatkan perkara yang bermanfaat dan mohon pertolongan Allah.',
+      source: 'Sahih Muslim 2664',
+      prompt: 'Ambil satu langkah yang bermanfaat pagi ini.'
+    },
+    {
+      title: 'Kebaikan Kecil',
+      text: 'Jangan meremehkan sesuatu kebaikan, walaupun bertemu saudaramu dengan wajah ceria.',
+      source: 'Sahih Muslim 2626',
+      prompt: 'Sebarkan salam, senyuman dan layanan yang baik.'
+    },
+    {
+      title: 'Renungan Infak',
+      text: 'Apa sahaja yang kamu infakkan, Allah akan menggantikannya.',
+      source: "Saba' 34:39",
+      prompt: 'Jika berkemampuan, kongsikan sedikit rezeki hari ini.'
+    }
   ];
   const dayIndex = Math.floor(Date.UTC(
     Number(dateKey.slice(0, 4)),
@@ -119,8 +196,8 @@ Deno.serve(async (request) => {
   ) / 86400000);
   const reflection = reflections[dayIndex % reflections.length];
   const notification = JSON.stringify({
-    title: 'Peringatan Sedekah Subuh',
-    body: `${reflection.text} (${reflection.source}) Sudahkah anda bersedekah Subuh hari ini?`,
+    title: reflection.title,
+    body: `${reflection.text} (${reflection.source}) ${reflection.prompt}`,
     date: dateKey,
     url: siteUrl
   });

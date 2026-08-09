@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sedekahqr-shell-v2';
+const CACHE_NAME = 'sedekahqr-shell-v3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -65,8 +65,8 @@ self.addEventListener('message', (event) => {
 
   const isTest = event.data.type === 'SHOW_TEST_NOTIFICATION';
 
-  event.waitUntil(self.registration.showNotification(event.data.title || 'Peringatan Sedekah Subuh', {
-    body: event.data.body || 'Sudahkah anda bersedekah Subuh hari ini?',
+  event.waitUntil(self.registration.showNotification(event.data.title || 'Peringatan Subuh', {
+    body: event.data.body || 'Mulakan pagi dengan syukur, doa dan satu kebaikan.',
     icon: './assets/sedekahqr-logo.svg',
     badge: './assets/sedekahqr-logo.svg',
     tag: isTest ? 'sedekahqr-test' : `sedekahqr-subuh-${event.data.date || 'today'}`,
@@ -98,8 +98,8 @@ self.addEventListener('push', (event) => {
     data = { body: event.data?.text() || '' };
   }
 
-  event.waitUntil(self.registration.showNotification(data.title || 'Peringatan Sedekah Subuh', {
-    body: data.body || 'Sudahkah anda bersedekah Subuh hari ini?',
+  event.waitUntil(self.registration.showNotification(data.title || 'Peringatan Subuh', {
+    body: data.body || 'Mulakan pagi dengan syukur, doa dan satu kebaikan.',
     icon: './assets/sedekahqr-icon-192.png',
     badge: './assets/sedekahqr-icon-192.png',
     tag: `sedekahqr-subuh-${data.date || 'today'}`,
