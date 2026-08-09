@@ -1,0 +1,16 @@
+*
+!.gitignore
+!.nojekyll
+!index.html
+!styles.css
+!script.js
+!qr-data.js
+!assets/
+!assets/banner-sedekah-subuh.jpg
+!assets/banner-sedekah-komuniti.jpg
+!scraper_qr/
+!scraper_qr/muamalat_ederma/
+!scraper_qr/muamalat_ederma/*/
+!scraper_qr/muamalat_ederma/**/*.jpg
+!scraper_qr/muamalat_ederma/**/*.jpeg
+!scraper_qr/muamalat_ederma/**/*.png

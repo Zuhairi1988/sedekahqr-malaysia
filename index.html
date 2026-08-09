@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Cari kod QR sedekah masjid dan surau di seluruh Malaysia mengikut nama dan negeri." />
+  <title>SedekahQR Malaysia - Direktori QR Masjid & Surau</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="directory-body">
+  <header class="directory-header">
+    <div class="directory-container header-inner">
+      <a class="directory-brand" href="index.html" aria-label="SedekahQR Malaysia - halaman utama">
+        <span class="brand-mark" aria-hidden="true">SQ</span>
+        <span>
+          <strong>SedekahQR</strong>
+          <small>Malaysia</small>
+        </span>
+      </a>
+
+      <nav class="directory-nav" aria-label="Navigasi utama">
+        <a href="#direktori">Direktori</a>
+        <a href="#panduan">Cara Sedekah</a>
+        <a href="#keselamatan">Keselamatan</a>
+      </nav>
+
+      <span class="directory-badge">Direktori percuma</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="donation-slider" aria-label="Pesanan tentang sedekah">
+      <div class="donation-slides">
+        <article class="donation-slide is-active" aria-hidden="false">
+          <img class="slide-image" src="assets/banner-sedekah-subuh.jpg" alt="" fetchpriority="high" />
+          <div class="slide-shade"></div>
+          <div class="directory-container slide-content">
+            <p class="slide-eyebrow">Sedekah untuk rumah Allah</p>
+            <h1>Sedekah untuk masjid dan surau</h1>
+            <p>Kecil nilainya, besar manfaatnya. Cari penerima pilihan anda dan sumbang terus melalui kod QR.</p>
+            <a href="#direktori">Cari QR Sekarang</a>
+          </div>
+        </article>
+
+        <article class="donation-slide" aria-hidden="true">
+          <img class="slide-image" src="assets/banner-sedekah-komuniti.jpg" alt="" loading="lazy" />
+          <div class="slide-shade"></div>
+          <div class="directory-container slide-content">
+            <p class="slide-eyebrow">Kebaikan yang dikongsi</p>
+            <h2>Sedekah menguatkan komuniti</h2>
+            <p>Daripada pek makanan hingga kemudahan jemaah, setiap sumbangan membantu kebaikan terus bergerak.</p>
+            <a href="#panduan">Lihat Cara Sedekah</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="directory-container slider-controls">
+        <div class="slider-dots" role="group" aria-label="Pilih banner">
+          <button class="slider-dot is-active" type="button" aria-label="Paparkan banner pertama" aria-current="true"></button>
+          <button class="slider-dot" type="button" aria-label="Paparkan banner kedua"></button>
+        </div>
+        <div class="slider-arrows">
+          <button class="slider-arrow slider-prev" type="button" aria-label="Banner sebelumnya" title="Sebelumnya">&#8592;</button>
+          <button class="slider-arrow slider-next" type="button" aria-label="Banner seterusnya" title="Seterusnya">&#8594;</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="directory-hero" aria-labelledby="search-title">
+      <div class="directory-container hero-inner">
+        <div class="hero-intro">
+          <p class="directory-eyebrow">SedekahQR Malaysia</p>
+          <h2 id="search-title">Cari QR masjid dan surau</h2>
+          <p class="directory-lead">Cari masjid atau surau, buka kod QR dan buat sumbangan terus melalui aplikasi bank anda.</p>
+        </div>
+
+        <form class="catalog-search" id="catalog-search" role="search">
+          <label for="search-input">Cari masjid, surau atau kawasan</label>
+          <div class="search-field">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input id="search-input" type="search" autocomplete="off" placeholder="Contoh: Masjid Al-Hidayah, Kajang" />
+            <button type="submit">Cari QR</button>
+          </div>
+        </form>
+
+        <dl class="catalog-stats" aria-label="Statistik direktori">
+          <div>
+            <dt id="total-qr">941</dt>
+            <dd>Kod QR</dd>
+          </div>
+          <div>
+            <dt id="total-states">14</dt>
+            <dd>Negeri & wilayah</dd>
+          </div>
+          <div>
+            <dt>Terus</dt>
+            <dd>Ke aplikasi bank</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="directory-section" id="direktori" aria-labelledby="directory-title">
+      <div class="directory-container">
+        <div class="directory-section-head">
+          <div>
+            <p class="directory-eyebrow">Pilih penerima</p>
+            <h2 id="directory-title">Masjid dan surau</h2>
+            <p id="result-summary" class="result-summary" aria-live="polite">Memuatkan direktori QR...</p>
+          </div>
+
+          <div class="catalog-filters" aria-label="Penapis direktori">
+            <div class="filter-field">
+              <label for="state-filter">Negeri</label>
+              <select id="state-filter">
+                <option value="">Semua negeri</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label for="type-filter">Jenis</label>
+              <select id="type-filter">
+                <option value="">Semua jenis</option>
+                <option value="Masjid">Masjid</option>
+                <option value="Surau">Surau / Musolla</option>
+                <option value="Institusi">Institusi lain</option>
+              </select>
+            </div>
+            <button id="clear-filters" class="clear-filter-button" type="button">Kosongkan</button>
+          </div>
+        </div>
+
+        <div id="catalog-grid" class="catalog-grid" aria-live="polite"></div>
+
+        <div id="empty-state" class="catalog-empty" hidden>
+          <span class="empty-mark" aria-hidden="true">?</span>
+          <h3>Tiada QR ditemui</h3>
+          <p>Cuba nama yang lebih ringkas atau pilih negeri lain.</p>
+          <button id="empty-clear" type="button">Lihat semua QR</button>
+        </div>
+
+        <nav id="pagination" class="catalog-pagination" aria-label="Halaman direktori"></nav>
+      </div>
+    </section>
+
+    <section class="guide-section" id="panduan" aria-labelledby="guide-title">
+      <div class="directory-container guide-layout">
+        <div>
+          <p class="directory-eyebrow">Mudah dan terus</p>
+          <h2 id="guide-title">Cara membuat sedekah</h2>
+          <p class="guide-copy">Portal ini hanya memaparkan kod QR. Transaksi sebenar berlaku di dalam aplikasi bank atau e-dompet pilihan anda.</p>
+        </div>
+        <ol class="guide-steps">
+          <li>
+            <span>01</span>
+            <div><strong>Cari penerima</strong><p>Pilih masjid atau surau mengikut nama dan negeri.</p></div>
+          </li>
+          <li>
+            <span>02</span>
+            <div><strong>Buka atau simpan QR</strong><p>Imbas pada skrin lain atau simpan imej ke telefon.</p></div>
+          </li>
+          <li>
+            <span>03</span>
+            <div><strong>Semak dan bayar</strong><p>Pastikan nama penerima tepat sebelum mengesahkan transaksi.</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="safety-section" id="keselamatan" aria-labelledby="safety-title">
+      <div class="directory-container safety-layout">
+        <span class="safety-symbol" aria-hidden="true">i</span>
+        <div>
+          <h2 id="safety-title">Semak sebelum sahkan</h2>
+          <p>Kod QR dalam direktori ini ialah salinan arkib e-Derma. Sentiasa semak nama penerima yang dipaparkan oleh aplikasi bank. Jangan teruskan jika nama atau butiran akaun meragukan.</p>
+        </div>
+        <a href="https://www.muamalat.com.my/muamalatcares/e-derma/?lang=ms" target="_blank" rel="noopener noreferrer">Rujuk sumber e-Derma</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="directory-footer">
+    <div class="directory-container footer-inner">
+      <div>
+        <strong>SedekahQR Malaysia</strong>
+        <p>Direktori QR masjid, surau dan institusi komuniti.</p>
+      </div>
+      <p>Portal direktori bebas. Bukan gerbang pembayaran atau pengendali transaksi.</p>
+    </div>
+  </footer>
+
+  <div id="qr-modal" class="qr-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="qr-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+      <button class="modal-close" type="button" data-close-modal aria-label="Tutup paparan QR" title="Tutup">&times;</button>
+      <div class="modal-content">
+        <div class="modal-copy">
+          <p class="directory-eyebrow">Kod QR sumbangan</p>
+          <h2 id="modal-name"></h2>
+          <p id="modal-meta" class="modal-meta"></p>
+          <div class="modal-notice">
+            <strong>Perhatian</strong>
+            <p>Semak nama penerima dalam aplikasi bank sebelum memasukkan jumlah dan mengesahkan bayaran.</p>
+          </div>
+          <div class="modal-actions">
+            <a id="download-qr" class="primary-action" download>Muat turun QR</a>
+            <button id="share-qr" class="secondary-action" type="button">Kongsi pautan</button>
+          </div>
+          <a class="source-link" href="https://www.muamalat.com.my/muamalatcares/e-derma/?lang=ms" target="_blank" rel="noopener noreferrer">Semak di laman sumber e-Derma</a>
+        </div>
+        <figure class="modal-qr-frame">
+          <p id="modal-loading" class="modal-loading">Memuatkan kod QR...</p>
+          <img id="modal-image" src="" alt="" />
+          <figcaption>Imbas menggunakan aplikasi bank atau e-dompet anda</figcaption>
+        </figure>
+      </div>
+    </section>
+  </div>
+
+  <div id="site-toast" class="directory-toast" role="status" aria-live="polite"></div>
+
+  <script src="qr-data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
