@@ -296,6 +296,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalMapExternal = document.getElementById('modal-map-external');
   const downloadQr = document.getElementById('download-qr');
   const shareQr = document.getElementById('share-qr');
+  const modalQuote = document.getElementById('modal-quote');
+  const modalQuoteText = document.getElementById('modal-quote-text');
+  const modalQuoteSource = document.getElementById('modal-quote-source');
+  const modalQuoteIndicators = [...document.querySelectorAll('.modal-quote-indicators span')];
   const toast = document.getElementById('site-toast');
   const pageSize = 12;
   let currentPage = 1;
@@ -304,6 +308,27 @@ document.addEventListener('DOMContentLoaded', () => {
   let mapLoadingTimer = null;
   let modalTrigger = null;
   let toastTimer = null;
+  let quoteIndex = 0;
+  let quoteTimer = null;
+  let quoteFadeTimer = null;
+
+  const donationQuotes = [
+    {
+      text: '“Bandingan (derma) orang-orang yang membelanjakan hartanya pada jalan Allah, ialah sama seperti sebiji benih yang tumbuh menerbitkan tujuh tangkai; tiap-tiap tangkai itu pula mengandungi seratus biji.”',
+      source: 'Surah Al-Baqarah, 2:261',
+      url: 'https://quran.com/ms/al-baqarah/261'
+    },
+    {
+      text: '“Orang-orang yang membelanjakan (mendermakan) hartanya pada waktu malam dan siang, dengan cara sulit atau terbuka, maka mereka beroleh pahala di sisi Tuhan mereka...”',
+      source: 'Surah Al-Baqarah, 2:274',
+      url: 'https://quran.com/ms/al-baqarah/274'
+    },
+    {
+      text: '“Kamu tidak sekali-kali akan dapat mencapai (hakikat) kebajikan dan kebaktian (yang sempurna) sebelum kamu dermakan sebahagian dari apa yang kamu sayangi.”',
+      source: 'Surah Ali-‘Imran, 3:92',
+      url: 'https://quran.com/ms/ali-imran/92'
+    }
+  ];
 
   const verifiedLocations = {
     'johor-001-surau-ehsan-johor': {
@@ -364,6 +389,42 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.textContent = message;
     toast.classList.add('show');
     toastTimer = window.setTimeout(() => toast.classList.remove('show'), 2800);
+  };
+
+  const renderDonationQuote = () => {
+    const quote = donationQuotes[quoteIndex];
+    modalQuoteText.textContent = quote.text;
+    modalQuoteSource.textContent = quote.source;
+    modalQuoteSource.href = quote.url;
+    modalQuoteIndicators.forEach((indicator, index) => {
+      indicator.classList.toggle('is-active', index === quoteIndex);
+    });
+  };
+
+  const stopQuoteRotation = () => {
+    window.clearInterval(quoteTimer);
+    window.clearTimeout(quoteFadeTimer);
+    quoteTimer = null;
+    quoteFadeTimer = null;
+    modalQuote.classList.remove('is-changing');
+  };
+
+  const showNextDonationQuote = () => {
+    modalQuote.classList.add('is-changing');
+    quoteFadeTimer = window.setTimeout(() => {
+      quoteIndex = (quoteIndex + 1) % donationQuotes.length;
+      renderDonationQuote();
+      modalQuote.classList.remove('is-changing');
+    }, 220);
+  };
+
+  const startQuoteRotation = () => {
+    stopQuoteRotation();
+    quoteIndex = 0;
+    renderDonationQuote();
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      quoteTimer = window.setInterval(showNextDonationQuote, 7000);
+    }
   };
 
   const getFilteredItems = () => {
@@ -636,6 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadQr.download = `${item.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'sedekah-qr'}.jpg`;
     modal.hidden = false;
     document.body.classList.add('modal-open');
+    startQuoteRotation();
 
     const url = new URL(window.location.href);
     url.searchParams.set('qr', item.id);
@@ -653,6 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
     activeMapEmbedUrl = '';
     window.clearTimeout(mapLoadingTimer);
     modalMapFrame.removeAttribute('src');
+    stopQuoteRotation();
 
     const url = new URL(window.location.href);
     url.searchParams.delete('qr');

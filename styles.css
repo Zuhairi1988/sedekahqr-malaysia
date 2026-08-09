@@ -1002,6 +1002,73 @@
   text-underline-offset: 3px;
 }
 
+.modal-quote-slider {
+  min-height: 190px;
+  margin-top: 26px;
+  padding: 20px 20px 18px;
+  border-left: 3px solid var(--directory-green);
+  background: #f3f8f5;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.modal-quote-slider.is-changing {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.modal-quote-eyebrow {
+  color: var(--directory-green);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modal-quote-slider blockquote {
+  margin: 12px 0 0;
+}
+
+.modal-quote-slider blockquote p {
+  color: #294139;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.modal-quote-slider cite {
+  display: block;
+  margin-top: 12px;
+  font-family: inherit;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.modal-quote-slider cite a {
+  color: var(--directory-green-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.modal-quote-indicators {
+  display: flex;
+  gap: 5px;
+  margin-top: 16px;
+}
+
+.modal-quote-indicators span {
+  width: 14px;
+  height: 3px;
+  display: block;
+  border-radius: 2px;
+  background: #b9cbc4;
+  transition: width 0.22s ease, background 0.22s ease;
+}
+
+.modal-quote-indicators span.is-active {
+  width: 24px;
+  background: var(--directory-green);
+}
+
 .modal-actions {
   order: 2;
   display: flex;
@@ -1472,6 +1539,19 @@
     font-size: 24px;
   }
 
+  .modal-quote-slider {
+    min-height: 0;
+    margin-top: 20px;
+    padding: 18px;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-quote-slider,
+  .modal-quote-indicators span {
+    transition: none;
+  }
 }
 
 @media (max-width: 390px) {
