@@ -573,6 +573,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let quoteIndex = 0;
   let quoteTimer = null;
   let quoteFadeTimer = null;
+  const qrImageVersion = '323f04e';
+
+  const getQrImageUrl = (path) => {
+    const url = new URL(path, document.baseURI);
+    url.searchParams.set('v', qrImageVersion);
+    return url.href;
+  };
 
   const donationQuotes = [
     {
@@ -757,7 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
     imageButton.setAttribute('aria-label', `Lihat QR ${item.name}`);
 
     const image = document.createElement('img');
-    image.src = item.image;
+    image.src = getQrImageUrl(item.image);
     image.alt = `Pratonton QR ${item.name}`;
     image.loading = 'lazy';
     image.decoding = 'async';
@@ -953,9 +960,10 @@ document.addEventListener('DOMContentLoaded', () => {
     modalPhone.href = details.phone ? `tel:${details.phone.replace(/[^+\d]/g, '')}` : '';
     modalLoading.textContent = 'Memuatkan kod QR...';
     modalQrFrame.classList.add('loading');
-    modalImage.src = item.image;
+    const qrImageUrl = getQrImageUrl(item.image);
+    modalImage.src = qrImageUrl;
     modalImage.alt = `Kod QR sumbangan ${item.name}`;
-    downloadQr.href = item.image;
+    downloadQr.href = qrImageUrl;
     downloadQr.download = `${item.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'sedekah-qr'}.jpg`;
     modal.hidden = false;
     document.body.classList.add('modal-open');
