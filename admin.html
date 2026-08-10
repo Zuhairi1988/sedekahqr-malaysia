@@ -8,7 +8,7 @@
   <title>Pengurusan - SedekahQR Malaysia</title>
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css?v=20260809-7" />
-  <link rel="stylesheet" href="admin.css?v=20260810-1" />
+  <link rel="stylesheet" href="admin.css?v=20260810-2" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
@@ -125,6 +125,28 @@
             <div id="analytics-devices" class="analytics-ranked-list"></div>
           </section>
         </div>
+
+        <section class="qr-analytics" aria-labelledby="qr-analytics-title">
+          <div class="analytics-panel-heading">
+            <div>
+              <p class="admin-kicker">Tindakan pengguna</p>
+              <h3 id="qr-analytics-title">Aktiviti kod QR</h3>
+            </div>
+            <p>Screenshot telefon tidak boleh dikesan; bukaan QR digunakan sebagai petunjuk.</p>
+          </div>
+          <div class="qr-analytics-kpis">
+            <div><span>QR dibuka</span><strong id="qr-views">-</strong></div>
+            <div><span>QR dimuat turun</span><strong id="qr-downloads">-</strong></div>
+            <div><span>Pengguna memuat turun</span><strong id="qr-downloaders">-</strong></div>
+            <div><span>Muat turun hari ini</span><strong id="qr-today-downloads">-</strong></div>
+          </div>
+          <div class="analytics-table-wrap">
+            <table class="analytics-table qr-analytics-table">
+              <thead><tr><th>Masjid atau surau</th><th>Negeri</th><th>Dibuka</th><th>Muat turun</th></tr></thead>
+              <tbody id="qr-analytics-list"></tbody>
+            </table>
+          </div>
+        </section>
         <p class="analytics-privacy">Pangkalan data statistik tidak menyimpan nama, e-mel, nombor telefon atau alamat IP.</p>
       </section>
 
@@ -247,6 +269,6 @@
   </main>
 
   <script src="blog-config.js?v=20260809-1"></script>
-  <script src="admin.js?v=20260810-1"></script>
+  <script src="admin.js?v=20260810-2"></script>
 </body>
 </html>

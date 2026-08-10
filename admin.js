@@ -33,6 +33,11 @@
     analyticsPages: document.querySelector('#analytics-pages'),
     analyticsReferrers: document.querySelector('#analytics-referrers'),
     analyticsDevices: document.querySelector('#analytics-devices'),
+    qrViews: document.querySelector('#qr-views'),
+    qrDownloads: document.querySelector('#qr-downloads'),
+    qrDownloaders: document.querySelector('#qr-downloaders'),
+    qrTodayDownloads: document.querySelector('#qr-today-downloads'),
+    qrAnalyticsList: document.querySelector('#qr-analytics-list'),
     totalCount: document.querySelector('#total-count'),
     publishedCount: document.querySelector('#published-count'),
     draftCount: document.querySelector('#draft-count'),
@@ -342,18 +347,52 @@
     renderRankedList(elements.analyticsDevices, devices, 'device');
   };
 
+  const renderQrAnalytics = (data) => {
+    const totals = data.totals || {};
+    elements.qrViews.textContent = formatNumber(totals.views);
+    elements.qrDownloads.textContent = formatNumber(totals.downloads);
+    elements.qrDownloaders.textContent = formatNumber(totals.unique_downloaders);
+    elements.qrTodayDownloads.textContent = formatNumber(totals.today_downloads);
+    elements.qrAnalyticsList.replaceChildren();
+
+    const rows = Array.isArray(data.top_qr) ? data.top_qr : [];
+    if (!rows.length) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 4;
+      cell.append(emptyAnalyticsElement('Belum ada aktiviti QR untuk tempoh ini.'));
+      row.append(cell);
+      elements.qrAnalyticsList.append(row);
+      return;
+    }
+
+    rows.forEach((item) => {
+      const row = document.createElement('tr');
+      [item.name, item.state, formatNumber(item.views), formatNumber(item.downloads)].forEach((value) => {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        row.append(cell);
+      });
+      elements.qrAnalyticsList.append(row);
+    });
+  };
+
   const loadAnalytics = async () => {
     const days = Number(elements.analyticsPeriod.value) || 30;
     elements.analyticsRefresh.disabled = true;
     elements.analyticsRefresh.classList.add('is-loading');
     setAnalyticsStatus('Memuatkan statistik...');
     try {
-      const response = await restRequest('rpc/get_site_analytics', {
-        method: 'POST',
-        body: JSON.stringify({ period_days: days })
-      });
-      if (!response.ok) throw new Error(await parseResponseError(response, 'Statistik tidak dapat dimuatkan.'));
-      renderAnalytics(await response.json());
+      const options = { method: 'POST', body: JSON.stringify({ period_days: days }) };
+      const [response, qrResponse] = await Promise.all([
+        restRequest('rpc/get_site_analytics', options),
+        restRequest('rpc/get_qr_analytics', options)
+      ]);
+      if (!response.ok) throw new Error(await parseResponseError(response, 'Statistik laman tidak dapat dimuatkan.'));
+      if (!qrResponse.ok) throw new Error(await parseResponseError(qrResponse, 'Statistik QR tidak dapat dimuatkan.'));
+      const [analytics, qrAnalytics] = await Promise.all([response.json(), qrResponse.json()]);
+      renderAnalytics(analytics);
+      renderQrAnalytics(qrAnalytics);
       setAnalyticsStatus('');
     } catch (error) {
       setAnalyticsStatus(error.message || 'Statistik tidak dapat dimuatkan.', true);

@@ -38,11 +38,7 @@
     }
   };
 
-  const track = async () => {
-    const path = getAnalyticsPath();
-    if (!path) return;
-    await waitForArticleTitle(path);
-    const pageTitle = document.title.replace(/\s+-\s+SedekahQR Malaysia$/, '').trim() || 'SedekahQR Malaysia';
+  const send = async (payload) => {
     try {
       await fetch(endpoint, {
         method: 'POST',
@@ -50,16 +46,26 @@
         credentials: 'omit',
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          visitorId: getVisitorId(),
-          path,
-          pageTitle,
-          referrer: document.referrer
-        })
+        body: JSON.stringify({ visitorId: getVisitorId(), ...payload })
       });
     } catch {
       // Analytics must never interrupt the public experience.
     }
+  };
+
+  globalThis.SEDEKAHQR_ANALYTICS = Object.freeze({
+    trackQrEvent(eventType, item) {
+      if (!['qr_view', 'qr_download'].includes(eventType) || !item?.name || !item?.state) return;
+      void send({ eventType, itemName: item.name, itemState: item.state });
+    }
+  });
+
+  const track = async () => {
+    const path = getAnalyticsPath();
+    if (!path) return;
+    await waitForArticleTitle(path);
+    const pageTitle = document.title.replace(/\s+-\s+SedekahQR Malaysia$/, '').trim() || 'SedekahQR Malaysia';
+    await send({ path, pageTitle, referrer: document.referrer });
   };
 
   const schedule = () => window.setTimeout(track, 900);

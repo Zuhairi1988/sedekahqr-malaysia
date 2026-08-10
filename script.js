@@ -581,6 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return url.href;
   };
 
+  const trackQrEvent = (eventType, item = activeItem) => {
+    globalThis.SEDEKAHQR_ANALYTICS?.trackQrEvent(eventType, item);
+  };
+
   const donationQuotes = [
     {
       text: '“Bandingan (derma) orang-orang yang membelanjakan hartanya pada jalan Allah, ialah sama seperti sebiji benih yang tumbuh menerbitkan tujuh tangkai; tiap-tiap tangkai itu pula mengandungi seratus biji.”',
@@ -968,6 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.hidden = false;
     document.body.classList.add('modal-open');
     startQuoteRotation();
+    if (initialTab !== 'map') trackQrEvent('qr_view', item);
 
     const url = new URL(window.location.href);
     url.searchParams.set('qr', item.id);
@@ -1019,8 +1024,12 @@ document.addEventListener('DOMContentLoaded', () => {
   clearFilters.addEventListener('click', resetFilters);
   emptyClear.addEventListener('click', resetFilters);
   modal.querySelectorAll('[data-close-modal]').forEach((element) => element.addEventListener('click', closeModal));
-  qrTab.addEventListener('click', () => selectMediaTab('qr'));
+  qrTab.addEventListener('click', () => {
+    selectMediaTab('qr');
+    trackQrEvent('qr_view');
+  });
   mapTab.addEventListener('click', () => selectMediaTab('map'));
+  downloadQr.addEventListener('click', () => trackQrEvent('qr_download'));
 
   [qrTab, mapTab].forEach((tab) => {
     tab.addEventListener('keydown', (event) => {

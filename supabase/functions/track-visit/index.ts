@@ -6,6 +6,9 @@ type VisitPayload = {
   path?: string;
   pageTitle?: string;
   referrer?: string;
+  eventType?: string;
+  itemName?: string;
+  itemState?: string;
 };
 
 const visitorPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -55,9 +58,7 @@ Deno.serve(async (request) => {
   }
 
   const visitorId = String(payload.visitorId || '');
-  const path = String(payload.path || '').toLowerCase().slice(0, 240);
-  const pageTitle = String(payload.pageTitle || '').replace(/\s+/g, ' ').trim().slice(0, 180);
-  if (!visitorPattern.test(visitorId) || !pathPattern.test(path) || !pageTitle) {
+  if (!visitorPattern.test(visitorId)) {
     return jsonResponse(request, { error: 'Butiran lawatan tidak sah.' }, 400);
   }
 
@@ -71,6 +72,41 @@ Deno.serve(async (request) => {
   });
 
   const duplicateThreshold = new Date(Date.now() - 30_000).toISOString();
+  const eventType = String(payload.eventType || '');
+  if (['qr_view', 'qr_download'].includes(eventType)) {
+    const itemName = String(payload.itemName || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+    const itemState = String(payload.itemState || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    if (!itemName || !itemState) return jsonResponse(request, { error: 'Butiran QR tidak sah.' }, 400);
+
+    const { data: duplicate, error: duplicateError } = await supabase
+      .from('site_qr_events')
+      .select('id')
+      .eq('visitor_hash', visitorHash)
+      .eq('event_type', eventType)
+      .eq('qr_name', itemName)
+      .gte('occurred_at', duplicateThreshold)
+      .limit(1)
+      .maybeSingle();
+
+    if (duplicateError) return jsonResponse(request, { error: 'Aktiviti QR tidak dapat disemak.' }, 500);
+    if (duplicate) return jsonResponse(request, { ok: true, deduplicated: true });
+
+    const { error } = await supabase.from('site_qr_events').insert({
+      visitor_hash: visitorHash,
+      event_type: eventType,
+      qr_name: itemName,
+      qr_state: itemState
+    });
+    if (error) return jsonResponse(request, { error: 'Aktiviti QR tidak dapat direkodkan.' }, 500);
+    return jsonResponse(request, { ok: true }, 201);
+  }
+
+  const path = String(payload.path || '').toLowerCase().slice(0, 240);
+  const pageTitle = String(payload.pageTitle || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+  if (!pathPattern.test(path) || !pageTitle) {
+    return jsonResponse(request, { error: 'Butiran lawatan tidak sah.' }, 400);
+  }
+
   const { data: duplicate, error: duplicateError } = await supabase
     .from('site_page_views')
     .select('id')
