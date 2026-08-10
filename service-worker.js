@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sedekahqr-shell-v19';
+const CACHE_NAME = 'sedekahqr-shell-v20';
 const APP_SHELL = [
   './',
   './index.html',
@@ -26,7 +26,8 @@ const APP_SHELL = [
   './assets/sedekahqr-icon-512.png',
   './assets/blog-hero-quran.jpg',
   './assets/banner-sedekah-subuh.jpg',
-  './assets/banner-sedekah-komuniti.jpg'
+  './assets/banner-sedekah-komuniti.jpg',
+  './assets/banner-sedekah-subuh-hadis.png'
 ];
 
 self.addEventListener('install', (event) => {
