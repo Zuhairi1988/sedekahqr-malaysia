@@ -1746,16 +1746,6 @@
   height: 20px;
 }
 
-.install-dialog .reminder-heading-icon {
-  padding: 5px;
-  background: #eff7f3;
-}
-
-.install-dialog .reminder-heading-icon img {
-  width: 100%;
-  height: 100%;
-}
-
 .install-ios-steps {
   margin-top: 16px;
   padding: 12px;
