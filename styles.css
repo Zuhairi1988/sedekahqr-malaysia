@@ -136,6 +136,45 @@
   text-transform: uppercase;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.header-actions .directory-badge {
+  margin-left: 6px;
+}
+
+.header-actions .prayer-locate-button,
+.header-actions .prayer-reminder-button {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+  border-color: var(--directory-line);
+  background: #fff;
+  color: var(--directory-green-dark);
+}
+
+.header-actions .prayer-locate-button:hover,
+.header-actions .prayer-reminder-button:hover {
+  border-color: var(--directory-green);
+  background: #edf6f2;
+}
+
+.header-actions .prayer-reminder-button.is-active {
+  border-color: var(--directory-yellow);
+  background: var(--directory-yellow);
+  color: var(--directory-ink);
+}
+
+.header-actions .prayer-locate-button svg,
+.header-actions .prayer-reminder-button svg {
+  width: 15px;
+  height: 15px;
+}
+
 .donation-slider {
   position: relative;
   height: 510px;
@@ -1728,6 +1767,7 @@
 @media (max-width: 980px) {
   .header-inner {
     grid-template-columns: 1fr auto;
+    gap: 16px;
   }
 
   .directory-nav {
@@ -1764,6 +1804,24 @@
 
   .directory-badge {
     font-size: 10px;
+  }
+
+  .header-actions {
+    gap: 5px;
+  }
+
+  .header-actions .directory-badge {
+    max-width: 54px;
+    margin-left: 2px;
+    line-height: 1.15;
+    text-align: right;
+  }
+
+  .header-actions .prayer-locate-button,
+  .header-actions .prayer-reminder-button {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
   }
 
   .donation-slider {
