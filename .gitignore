@@ -29,6 +29,7 @@
 !supabase/
 !supabase/**
 supabase/.pricing-preview-seed.sql
+supabase/.singapore-secrets.txt
 !prayer-zones.js
 !qr-data.js
 !assets/

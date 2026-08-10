@@ -1,5 +1,5 @@
 (() => {
-  const endpoint = 'https://cuzzbbenqeghmhvxqmtn.supabase.co/functions/v1/track-visit';
+  const endpoint = 'https://wfujqvmqlwqmqmzdkepi.supabase.co/functions/v1/track-visit';
   const storageKey = 'sedekahqr-anonymous-visitor';
   const lifetime = 90 * 24 * 60 * 60 * 1000;
 

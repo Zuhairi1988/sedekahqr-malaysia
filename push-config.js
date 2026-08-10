@@ -1,4 +1,4 @@
 globalThis.SEDEKAHQR_PUSH = {
-  vapidPublicKey: 'BHisgy5YRw8kuyyFByZhhGU8tU17h3GJJZBHRbw6PSmLtMqUuCEGgadhEChB3RHwLYT3HoOF2yH392G0RgYR0kA',
-  subscribeUrl: 'https://cuzzbbenqeghmhvxqmtn.supabase.co/functions/v1/subscribe'
+  vapidPublicKey: 'BF9ZUAcR8dbO5W3FpNDQFk1nl9ofUzq4hEu3HimZhxyJ5w426Hj9ihG5khIchfEG12Co7wjpnuJb0p67oP-TYcM',
+  subscribeUrl: 'https://wfujqvmqlwqmqmzdkepi.supabase.co/functions/v1/subscribe'
 };

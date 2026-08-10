@@ -1,4 +1,4 @@
 globalThis.SEDEKAHQR_BLOG = {
-  supabaseUrl: 'https://cuzzbbenqeghmhvxqmtn.supabase.co',
-  publishableKey: 'sb_publishable_pkQKlv_AIKPD9Y5LvjxtuA_sjGwynFn'
+  supabaseUrl: 'https://wfujqvmqlwqmqmzdkepi.supabase.co',
+  publishableKey: 'sb_publishable_ksMjZxlbWNF4gq3UyU0vuw_pMQmm1Yo'
 };

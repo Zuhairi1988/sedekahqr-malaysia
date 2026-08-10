@@ -40,7 +40,7 @@ select cron.schedule(
   '*/10 * * * *',
   $cron$
     select net.http_post(
-      url := 'https://cuzzbbenqeghmhvxqmtn.supabase.co/functions/v1/send-subuh',
+      url := 'https://wfujqvmqlwqmqmzdkepi.supabase.co/functions/v1/send-subuh',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'x-cron-secret', (
