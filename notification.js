@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const testButton = document.getElementById('test-reminder');
   const installNote = document.getElementById('reminder-install-note');
   const status = document.getElementById('reminder-status');
-  const prayerZoneSelect = document.getElementById('prayer-zone-select');
   const storageKey = 'sedekahqr-subuh-reminder';
   const prayerZoneKey = 'sedekahqr-prayer-zone';
   const pushConfig = window.SEDEKAHQR_PUSH;
@@ -45,9 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const getPrayerZone = () => {
     try {
-      return window.localStorage.getItem(prayerZoneKey) || prayerZoneSelect?.value || '';
+      return window.localStorage.getItem(prayerZoneKey) || 'WLY01';
     } catch {
-      return prayerZoneSelect?.value || '';
+      return 'WLY01';
     }
   };
 

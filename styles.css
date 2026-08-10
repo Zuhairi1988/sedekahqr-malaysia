@@ -405,40 +405,6 @@
   opacity: 1;
 }
 
-.prayer-zone-field {
-  min-width: 0;
-  flex: 0 0 116px;
-}
-
-.prayer-zone-field label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.prayer-zone-field select {
-  width: 100%;
-  height: 26px;
-  padding: 0 23px 0 7px;
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  border-radius: 5px;
-  background: #fff;
-  color: var(--directory-green-dark);
-  font-size: 8px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.prayer-zone-field select:disabled {
-  background: #eef3f0;
-  color: #76857f;
-  cursor: wait;
-}
-
 .prayer-status {
   position: absolute;
   width: 1px;
@@ -1848,10 +1814,6 @@
 
   .prayer-controls {
     gap: 4px;
-  }
-
-  .prayer-zone-field {
-    flex: 0 0 104px;
   }
 
   .prayer-source {

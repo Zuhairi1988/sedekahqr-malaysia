@@ -266,12 +266,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const zoneName = document.getElementById('prayer-zone-name');
   const prayerDate = document.getElementById('prayer-date');
   const prayerStatus = document.getElementById('prayer-status');
-  const zoneSelect = document.getElementById('prayer-zone-select');
   const locateButton = document.getElementById('locate-prayer');
   const nextLabel = document.getElementById('prayer-next-label');
   const countdown = document.getElementById('prayer-countdown');
   const timeElements = [...document.querySelectorAll('.prayer-time')];
   const storageKey = 'sedekahqr-prayer-zone';
+  const defaultZone = 'WLY01';
   const malaysiaTimeZone = 'Asia/Kuala_Lumpur';
   const hijriMonths = [
     'Muharam', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir',
@@ -292,14 +292,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let countdownTimer = null;
   let locationRequestId = 0;
   let prayerRequestId = 0;
-
-  const getSavedZone = () => {
-    try {
-      return window.localStorage.getItem(storageKey) || '';
-    } catch {
-      return '';
-    }
-  };
 
   const saveZone = (zone) => {
     try {
@@ -377,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
     countdown.textContent = `Dalam ${duration}`;
   };
 
-  const renderPrayerTimes = (item, zone, fallbackLabel = '') => {
+  const renderPrayerTimes = (item, zone, fallbackLabel = '', displayLabel = '') => {
     currentPrayer = item;
     currentZone = zone;
     currentDateKey = getMalaysiaDateKey();
@@ -389,8 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const details = getZoneDetails(zone);
     const locationLabel = details?.daerah || fallbackLabel || 'Zon waktu solat Malaysia';
-    zoneName.textContent = `${zone} · ${locationLabel}`;
-    zoneSelect.value = zone;
+    zoneName.textContent = displayLabel || `${zone} · ${locationLabel}`;
 
     const gregorian = new Intl.DateTimeFormat('ms-MY', {
       timeZone: malaysiaTimeZone,
@@ -407,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     countdownTimer = window.setInterval(updateNextPrayer, 30000);
   };
 
-  async function loadPrayerTimes(zone, fallbackLabel = '', successMessage = 'Waktu solat telah dikemas kini.') {
+  async function loadPrayerTimes(zone, fallbackLabel = '', successMessage = 'Waktu solat telah dikemas kini.', displayLabel = '') {
     if (!zone) return;
     const requestId = ++prayerRequestId;
     prayerSection.setAttribute('aria-busy', 'true');
@@ -422,37 +413,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.status !== 'OK!' || !item) throw new Error('Data waktu tidak lengkap');
       if (requestId !== prayerRequestId) return;
 
-      renderPrayerTimes(item, zone, fallbackLabel);
+      renderPrayerTimes(item, zone, fallbackLabel, displayLabel);
       saveZone(zone);
       setStatus(successMessage);
     } catch {
       if (requestId !== prayerRequestId) return;
-      setStatus('Waktu solat tidak dapat dimuatkan. Cuba lagi atau pilih zon lain.', true);
+      setStatus('Waktu solat tidak dapat dimuatkan. Tekan ikon lokasi untuk cuba lagi.', true);
     } finally {
       if (requestId === prayerRequestId) prayerSection.removeAttribute('aria-busy');
     }
   }
-
-  const populateZoneSelect = () => {
-    const fragment = document.createDocumentFragment();
-    const states = [...new Set(zones.map((item) => item.negeri))];
-
-    states.forEach((state) => {
-      const group = document.createElement('optgroup');
-      group.label = state;
-      zones.filter((item) => item.negeri === state).forEach((item) => {
-        const option = document.createElement('option');
-        option.value = item.jakimCode;
-        option.textContent = `${item.jakimCode} - ${item.daerah}`;
-        group.appendChild(option);
-      });
-      fragment.appendChild(group);
-    });
-
-    zoneSelect.replaceChildren(new Option('Pilih zon waktu solat', ''), fragment);
-    zoneSelect.disabled = false;
-    if (currentZone) zoneSelect.value = currentZone;
-  };
 
   const getCurrentPosition = () => new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -491,31 +461,27 @@ document.addEventListener('DOMContentLoaded', () => {
       if (requestId !== locationRequestId) return;
       const denied = error?.code === 1;
       const message = denied
-        ? 'Lokasi tidak dibenarkan. Pilih zon secara manual.'
-        : 'Lokasi tidak dapat dikesan. Cuba lagi atau pilih zon secara manual.';
-      setStatus(message, true);
-      if (!currentPrayer) zoneName.textContent = 'Pilih zon waktu solat anda';
+        ? 'Lokasi tidak dibenarkan. Waktu default Kuala Lumpur/Putrajaya digunakan.'
+        : 'Lokasi tidak dapat dikesan. Waktu default Kuala Lumpur/Putrajaya digunakan.';
+      setStatus(message);
+      if (!currentPrayer) {
+        void loadPrayerTimes(defaultZone, 'Kuala Lumpur dan Putrajaya', message, 'Default · Kuala Lumpur, Putrajaya');
+      }
     } finally {
       if (requestId === locationRequestId) locateButton.disabled = false;
     }
   };
 
   locateButton.addEventListener('click', locatePrayerTimes);
-  zoneSelect.addEventListener('change', () => {
-    if (zoneSelect.value) {
-      locationRequestId += 1;
-      locateButton.disabled = false;
-      loadPrayerTimes(zoneSelect.value, '', 'Menggunakan zon pilihan anda.');
-    }
-  });
 
-  const initializePrayerTimes = async () => {
-    if (zones.length) populateZoneSelect();
-    const savedZone = getSavedZone();
-    if (savedZone) {
-      await loadPrayerTimes(savedZone, '', 'Menggunakan zon pilihan terakhir sementara lokasi dikesan.');
-    }
-    await locatePrayerTimes();
+  const initializePrayerTimes = () => {
+    void loadPrayerTimes(
+      defaultZone,
+      'Kuala Lumpur dan Putrajaya',
+      'Waktu default Kuala Lumpur/Putrajaya digunakan sementara lokasi dikesan.',
+      'Default · Kuala Lumpur, Putrajaya'
+    );
+    void locatePrayerTimes();
   };
 
   initializePrayerTimes();

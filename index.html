@@ -9,7 +9,7 @@
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest?v=20260809-6" />
-  <link rel="stylesheet" href="styles.css?v=20260809-6" />
+  <link rel="stylesheet" href="styles.css?v=20260810-3" />
 </head>
 <body class="directory-body">
   <header class="directory-header">
@@ -65,12 +65,6 @@
               <path d="m19.07 4.93-1.41 1.41"></path>
             </svg>
           </button>
-          <div class="prayer-zone-field">
-            <label for="prayer-zone-select">Pilih zon waktu solat</label>
-            <select id="prayer-zone-select" disabled title="Pilih zon waktu solat">
-              <option value="">Memuatkan zon...</option>
-            </select>
-          </div>
           <button id="open-reminder" class="prayer-reminder-button" type="button" aria-label="Tetapan peringatan Subuh" title="Peringatan Subuh">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path>
@@ -85,7 +79,7 @@
         <p id="prayer-status" class="prayer-status" role="status" aria-live="polite">Lokasi digunakan untuk menentukan zon waktu solat.</p>
         <div class="prayer-next" hidden>
           <strong id="prayer-next-label">Menunggu lokasi</strong>
-          <p id="prayer-countdown">Benarkan lokasi atau pilih zon.</p>
+          <p id="prayer-countdown">Mengesan lokasi semasa...</p>
         </div>
       </div>
     </section>
@@ -414,9 +408,9 @@
 
   <script src="prayer-zones.js?v=20260809-2"></script>
   <script src="qr-data.js"></script>
-  <script src="script.js?v=20260810-2"></script>
+  <script src="script.js?v=20260810-3"></script>
   <script src="push-config.js?v=20260809-6"></script>
-  <script src="notification.js?v=20260810-1"></script>
+  <script src="notification.js?v=20260810-2"></script>
   <script src="analytics.js?v=20260810-2"></script>
 </body>
 </html>
