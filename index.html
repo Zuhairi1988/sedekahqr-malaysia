@@ -453,11 +453,39 @@
     </section>
   </div>
 
+  <div id="install-modal" class="reminder-modal install-modal" hidden>
+    <div class="reminder-backdrop" data-close-install></div>
+    <section class="reminder-dialog install-dialog" role="dialog" aria-modal="true" aria-labelledby="install-title">
+      <button class="reminder-close" type="button" data-close-install aria-label="Tutup pemasangan aplikasi" title="Tutup">&times;</button>
+      <div class="reminder-heading">
+        <span class="reminder-heading-icon" aria-hidden="true">
+          <img src="assets/sedekahqr-icon-192.png" alt="" />
+        </span>
+        <div>
+          <p class="directory-eyebrow">SedekahQR di telefon anda</p>
+          <h2 id="install-title">Tambah ke Skrin Utama</h2>
+        </div>
+      </div>
+
+      <p class="reminder-intro">Akses SedekahQR seperti aplikasi, lebih pantas dan mudah dibuka apabila ingin bersedekah.</p>
+
+      <div id="install-ios-steps" class="install-ios-steps" hidden>
+        <p>Dalam Safari, tekan ikon <strong>Kongsi</strong>, kemudian pilih <strong>Add to Home Screen</strong>.</p>
+      </div>
+
+      <div class="reminder-modal-actions">
+        <button id="install-app" class="reminder-primary" type="button">Tambah ke Skrin Utama</button>
+        <button id="install-later" class="reminder-secondary" type="button">Nanti</button>
+      </div>
+    </section>
+  </div>
+
   <script src="prayer-zones.js?v=20260809-2"></script>
   <script src="qr-data.js"></script>
   <script src="script.js?v=20260811-1"></script>
   <script src="push-config.js?v=20260809-6"></script>
   <script src="notification.js?v=20260810-2"></script>
+  <script src="install.js?v=20260811-1"></script>
   <script src="analytics.js?v=20260810-2"></script>
 </body>
 </html>

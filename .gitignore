@@ -21,6 +21,7 @@
 !blog-config.js
 !articles.json
 !notification.js
+!install.js
 !service-worker.js
 !manifest.webmanifest
 !push-config.js
