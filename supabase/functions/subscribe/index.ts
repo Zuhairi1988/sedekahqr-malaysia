@@ -20,6 +20,13 @@ const hashEndpoint = async (endpoint: string) => {
   return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
 };
 
+const getClientSubjectHash = async (request: Request) => {
+  const forwardedFor = request.headers.get('x-forwarded-for') || '';
+  const clientIp = forwardedFor.split(',')[0]?.trim() || request.headers.get('cf-connecting-ip') || 'unknown';
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`push-subscription:${clientIp}`));
+  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
+};
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(request) });
   if (request.method !== 'POST') return jsonResponse(request, { error: 'Kaedah tidak dibenarkan.' }, 405);
@@ -62,6 +69,13 @@ Deno.serve(async (request) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false }
   });
+  const { data: allowed, error: rateLimitError } = await supabase.rpc('consume_push_subscription_rate_limit', {
+    p_subject_hash: await getClientSubjectHash(request),
+    p_max_requests: 6
+  });
+  if (rateLimitError) return jsonResponse(request, { error: 'Peringatan tidak dapat diproses.' }, 500);
+  if (!allowed) return jsonResponse(request, { error: 'Terlalu banyak percubaan. Cuba semula dalam beberapa minit.' }, 429);
+
   const subscriptionId = await hashEndpoint(endpoint);
 
   if (action === 'unsubscribe') {

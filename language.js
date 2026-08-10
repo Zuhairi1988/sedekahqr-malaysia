@@ -5,6 +5,7 @@
     'Direktori': 'Directory',
     'Cara Sedekah': 'How to Donate',
     'Artikel': 'Articles',
+    'Notis Privasi': 'Privacy Notice',
     'Homepage': 'Homepage',
     'Tangan memberi sentiasa diberkati': 'The hand that gives is always blessed',
     'Sedekah untuk masjid dan surau': 'Sadaqah for Mosques & Surau',
@@ -122,6 +123,10 @@
 
     document.querySelectorAll('[data-language]').forEach((button) => {
       button.setAttribute('aria-pressed', String(button.dataset.language === language));
+    });
+
+    document.querySelectorAll('[data-language-content]').forEach((element) => {
+      element.hidden = element.dataset.languageContent !== language;
     });
 
     window.dispatchEvent(new CustomEvent('sedekahqr-language-change', { detail: { language } }));
