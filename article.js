@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!page || !loading || !notFound || !globalThis.SedekahQRBlogApi) return;
 
   const slug = new URLSearchParams(window.location.search).get('slug') || '';
+  const t = (text) => globalThis.SedekahQRLanguage?.t(text) || text;
 
   const renderBlock = (block) => {
     if (block.type === 'heading') {
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('article-author').textContent = article.author;
     document.getElementById('article-date').textContent = globalThis.SedekahQRBlogApi.formatDate(article.published_at);
     document.getElementById('article-date').dateTime = article.published_at;
-    document.getElementById('article-reading').textContent = `${article.reading_minutes} minit bacaan`;
+    document.getElementById('article-reading').textContent = `${article.reading_minutes} ${t('minit bacaan')}`;
 
     const cover = document.getElementById('article-cover');
     cover.src = article.cover_image;
@@ -106,13 +107,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         if (navigator.share) {
           await navigator.share({ title: article.title, text: article.excerpt, url: window.location.href });
-          shareStatus.textContent = 'Artikel dikongsi.';
+          shareStatus.textContent = t('Artikel dikongsi.');
         } else {
           await navigator.clipboard.writeText(window.location.href);
-          shareStatus.textContent = 'Pautan disalin.';
+          shareStatus.textContent = t('Pautan disalin.');
         }
       } catch (error) {
-        if (error.name !== 'AbortError') shareStatus.textContent = 'Pautan tidak dapat dikongsi.';
+        if (error.name !== 'AbortError') shareStatus.textContent = t('Pautan tidak dapat dikongsi.');
       }
     });
   } catch {

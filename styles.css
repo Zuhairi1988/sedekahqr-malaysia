@@ -143,6 +143,44 @@
   gap: 8px;
 }
 
+.header-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.language-switch {
+  display: inline-flex;
+  height: 28px;
+  overflow: hidden;
+  border: 1px solid var(--directory-line);
+  border-radius: 5px;
+  background: #fff;
+}
+
+.language-switch button {
+  min-width: 31px;
+  padding: 0 7px;
+  border: 0;
+  border-right: 1px solid var(--directory-line);
+  background: transparent;
+  color: #587067;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.language-switch button:last-child {
+  border-right: 0;
+}
+
+.language-switch button[aria-pressed="true"] {
+  background: var(--directory-green);
+  color: #fff;
+}
+
 .header-actions .prayer-locate-button,
 .header-actions .prayer-reminder-button {
   width: 32px;
@@ -1989,6 +2027,14 @@
 
   .header-actions {
     gap: 5px;
+  }
+
+  .header-page-actions {
+    gap: 8px;
+  }
+
+  .language-switch {
+    height: 30px;
   }
 
   .header-actions .prayer-locate-button,

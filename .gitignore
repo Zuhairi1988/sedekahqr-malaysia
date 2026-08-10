@@ -22,6 +22,7 @@
 !articles.json
 !notification.js
 !install.js
+!language.js
 !service-worker.js
 !manifest.webmanifest
 !push-config.js

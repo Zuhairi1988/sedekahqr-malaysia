@@ -62,7 +62,7 @@
     return articlePromise;
   };
 
-  const formatDate = (value) => new Intl.DateTimeFormat('ms-MY', {
+  const formatDate = (value) => new Intl.DateTimeFormat(globalThis.SedekahQRLanguage?.getLanguage() === 'en' ? 'en-MY' : 'ms-MY', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'

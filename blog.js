@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let articles = [];
   let selectedCategory = 'Semua';
+  const t = (text) => globalThis.SedekahQRLanguage?.t(text) || text;
 
   const createArticleCard = (article) => {
     const card = document.createElement('article');
@@ -47,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     date.dateTime = article.published_at;
     date.textContent = globalThis.SedekahQRBlogApi.formatDate(article.published_at);
     const reading = document.createElement('span');
-    reading.textContent = `${article.reading_minutes} minit bacaan`;
+    reading.textContent = `${article.reading_minutes} ${t('minit bacaan')}`;
     meta.append(date, reading);
 
     body.append(category, title, excerpt, meta);
@@ -65,8 +66,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     grid.replaceChildren(...filtered.map(createArticleCard));
     resultText.textContent = filtered.length
-      ? `${filtered.length} artikel ditemui`
-      : 'Tiada artikel sepadan dengan carian anda.';
+      ? globalThis.SedekahQRLanguage?.getLanguage() === 'en'
+        ? `${filtered.length} articles found`
+        : `${filtered.length} artikel ditemui`
+      : t('Tiada artikel sepadan dengan carian anda.');
     grid.classList.toggle('is-empty', filtered.length === 0);
   };
 
@@ -96,8 +99,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch {
     grid.replaceChildren();
     grid.classList.add('is-empty');
-    resultText.textContent = 'Artikel tidak dapat dimuatkan. Cuba muat semula halaman.';
+    resultText.textContent = t('Artikel tidak dapat dimuatkan. Cuba muat semula halaman.');
   }
 
   searchInput.addEventListener('input', renderArticles);
+  window.addEventListener('sedekahqr-language-change', renderArticles);
 });
