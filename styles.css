@@ -720,7 +720,6 @@
   cursor: pointer;
 }
 
-.clear-filter-button,
 .catalog-empty button,
 .secondary-action {
   min-height: 44px;
@@ -733,7 +732,6 @@
   cursor: pointer;
 }
 
-.clear-filter-button:hover,
 .catalog-empty button:hover,
 .secondary-action:hover {
   background: var(--directory-green-soft);
@@ -1977,10 +1975,6 @@
   .filter-field select {
     width: 100%;
     min-width: 0;
-  }
-
-  .clear-filter-button {
-    grid-column: 1 / -1;
   }
 
   .catalog-grid {

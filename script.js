@@ -512,7 +512,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('search-input');
   const stateFilter = document.getElementById('state-filter');
   const typeFilter = document.getElementById('type-filter');
-  const clearFilters = document.getElementById('clear-filters');
   const emptyClear = document.getElementById('empty-clear');
   const emptyState = document.getElementById('empty-state');
   const pagination = document.getElementById('pagination');
@@ -1003,7 +1002,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCatalog();
   });
 
-  clearFilters.addEventListener('click', resetFilters);
   emptyClear.addEventListener('click', resetFilters);
   modal.querySelectorAll('[data-close-modal]').forEach((element) => element.addEventListener('click', closeModal));
   qrTab.addEventListener('click', () => {
