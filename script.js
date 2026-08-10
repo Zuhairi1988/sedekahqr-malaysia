@@ -266,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const zoneName = document.getElementById('prayer-zone-name');
   const prayerDate = document.getElementById('prayer-date');
   const prayerStatus = document.getElementById('prayer-status');
+  const currentClock = document.querySelector('#prayer-current-time span');
   const locateButton = document.getElementById('locate-prayer');
   const nextLabel = document.getElementById('prayer-next-label');
   const countdown = document.getElementById('prayer-countdown');
@@ -292,6 +293,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let countdownTimer = null;
   let locationRequestId = 0;
   let prayerRequestId = 0;
+
+  const updateCurrentClock = () => {
+    const value = new Intl.DateTimeFormat('en-GB', {
+      timeZone: malaysiaTimeZone,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(new Date());
+    currentClock.textContent = value;
+    currentClock.parentElement.dateTime = new Date().toISOString();
+    currentClock.parentElement.setAttribute('aria-label', `Waktu semasa Malaysia ${value}`);
+  };
 
   const saveZone = (zone) => {
     try {
@@ -475,6 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
   locateButton.addEventListener('click', locatePrayerTimes);
 
   const initializePrayerTimes = () => {
+    updateCurrentClock();
+    window.setInterval(updateCurrentClock, 1000);
     void loadPrayerTimes(
       defaultZone,
       'Kuala Lumpur dan Putrajaya',

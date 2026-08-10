@@ -450,13 +450,25 @@
   white-space: nowrap;
 }
 
-.prayer-source {
-  flex: 0 0 auto;
-  color: #b9ddcf;
-  font-size: 8px;
+.prayer-current-time {
+  min-width: 78px;
+  height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 7px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 4px;
+  color: #d8eee5;
+  font-size: 10px;
   font-weight: 900;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.prayer-current-time svg {
+  width: 11px;
+  height: 11px;
 }
 
 .prayer-times {
@@ -1869,8 +1881,10 @@
     gap: 4px;
   }
 
-  .prayer-source {
-    display: none;
+  .prayer-current-time {
+    min-width: 73px;
+    padding: 0 5px;
+    font-size: 9px;
   }
 
   .prayer-times {
