@@ -25,6 +25,7 @@
 !install.js
 !language.js
 !service-worker.js
+!sw-register.js
 !manifest.webmanifest
 !push-config.js
 !package.json

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sedekahqr-shell-v25';
+const CACHE_NAME = 'sedekahqr-shell-v26';
 const APP_SHELL = [
   './',
   './index.html',
@@ -20,6 +20,7 @@ const APP_SHELL = [
   './language.js',
   './install.js',
   './analytics.js',
+  './sw-register.js',
   './push-config.js',
   './prayer-zones.js',
   './qr-data.js?v=20260811-1',
@@ -76,13 +77,15 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-      }
-      return response;
-    }))
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
 
