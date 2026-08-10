@@ -268,6 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const prayerStatus = document.getElementById('prayer-status');
   const currentClock = document.querySelector('#prayer-current-time span');
   const locateButton = document.getElementById('locate-prayer');
+  const locationPopover = document.getElementById('prayer-location-popover');
+  const useCurrentLocationButton = document.getElementById('use-current-prayer-location');
+  const zoneSelect = document.getElementById('prayer-zone-select');
   const nextLabel = document.getElementById('prayer-next-label');
   const countdown = document.getElementById('prayer-countdown');
   const timeElements = [...document.querySelectorAll('.prayer-time')];
@@ -337,6 +340,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const formatPrayerTime = (value) => String(value || '--:--').slice(0, 5);
 
   const getZoneDetails = (zone) => zones.find((item) => item.jakimCode === zone);
+
+  const closeLocationPopover = () => {
+    locationPopover.hidden = true;
+    locateButton.setAttribute('aria-expanded', 'false');
+    zoneName.setAttribute('aria-expanded', 'false');
+  };
+
+  const toggleLocationPopover = () => {
+    const isOpen = !locationPopover.hidden;
+    if (isOpen) {
+      closeLocationPopover();
+      return;
+    }
+    zoneSelect.value = currentZone || defaultZone;
+    locationPopover.hidden = false;
+    locateButton.setAttribute('aria-expanded', 'true');
+    zoneName.setAttribute('aria-expanded', 'true');
+  };
+
+  const populateZoneSelect = () => {
+    const fragment = document.createDocumentFragment();
+    [...new Set(zones.map((item) => item.negeri))].forEach((state) => {
+      const group = document.createElement('optgroup');
+      group.label = state;
+      zones.filter((item) => item.negeri === state).forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.jakimCode;
+        option.textContent = `${item.jakimCode} - ${item.daerah}`;
+        group.appendChild(option);
+      });
+      fragment.appendChild(group);
+    });
+    zoneSelect.appendChild(fragment);
+  };
 
   const setStatus = (message, isError = false) => {
     prayerStatus.textContent = message;
@@ -452,8 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const locatePrayerTimes = async () => {
     const requestId = ++locationRequestId;
-    locateButton.disabled = true;
-    zoneName.disabled = true;
+    useCurrentLocationButton.disabled = true;
     setStatus('Menunggu kebenaran lokasi...');
 
     try {
@@ -484,16 +520,32 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } finally {
       if (requestId === locationRequestId) {
-        locateButton.disabled = false;
-        zoneName.disabled = false;
+        useCurrentLocationButton.disabled = false;
       }
     }
   };
 
-  locateButton.addEventListener('click', locatePrayerTimes);
-  zoneName.addEventListener('click', locatePrayerTimes);
+  locateButton.addEventListener('click', toggleLocationPopover);
+  zoneName.addEventListener('click', toggleLocationPopover);
+  useCurrentLocationButton.addEventListener('click', async () => {
+    await locatePrayerTimes();
+    closeLocationPopover();
+  });
+  zoneSelect.addEventListener('change', () => {
+    if (!zoneSelect.value) return;
+    void loadPrayerTimes(zoneSelect.value, '', 'Zon waktu solat telah dikemas kini.');
+    closeLocationPopover();
+  });
+  document.addEventListener('click', (event) => {
+    if (locationPopover.hidden || locationPopover.contains(event.target) || locateButton.contains(event.target) || zoneName.contains(event.target)) return;
+    closeLocationPopover();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !locationPopover.hidden) closeLocationPopover();
+  });
 
   const initializePrayerTimes = () => {
+    populateZoneSelect();
     updateCurrentClock();
     window.setInterval(updateCurrentClock, 1000);
     void loadPrayerTimes(
