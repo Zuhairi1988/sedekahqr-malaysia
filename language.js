@@ -48,7 +48,7 @@
     'Cari masjid atau surau': 'Find a mosque or surau',
     'Gunakan carian atau penapis negeri untuk memilih penerima.': 'Use search or the state filter to choose a recipient.',
     'Buka dan imbas QR': 'Open and scan the QR',
-    'Paparkan QR pada skrin lain atau simpan imej untuk diimbas.': 'Display the QR on another screen or save the image to scan.',
+    'Paparkan QR pada skrin lain atau simpan imej. Jika guna telefon yang sama, imbas dari galeri melalui aplikasi bank atau e-wallet anda.': 'Display the QR on another screen or save the image. When using the same phone, scan it from your gallery through your banking or e-wallet app.',
     'Semak sebelum bayar': 'Check before paying',
     'Pastikan nama penerima dan jumlah tepat sebelum mengesahkan.': 'Ensure the recipient name and amount are correct before confirming.',
     'Jelajah': 'Explore',
