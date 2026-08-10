@@ -1,6 +1,7 @@
 *
 !.gitignore
 !.nojekyll
+!CNAME
 !index.html
 !blog.html
 !article.html
