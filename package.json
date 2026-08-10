@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check script.js && node --check notification.js && node --check service-worker.js && node --check blog-api.js && node --check blog.js && node --check article.js && node --check admin.js"
+    "check": "node --check script.js && node --check analytics.js && node --check notification.js && node --check service-worker.js && node --check blog-api.js && node --check blog.js && node --check article.js && node --check admin.js"
   },
   "devDependencies": {
     "supabase": "^2.113.0"

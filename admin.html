@@ -8,7 +8,7 @@
   <title>Pengurusan - SedekahQR Malaysia</title>
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css?v=20260809-7" />
-  <link rel="stylesheet" href="admin.css?v=20260809-1" />
+  <link rel="stylesheet" href="admin.css?v=20260810-1" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
@@ -51,8 +51,8 @@
     <section id="dashboard-view" class="admin-dashboard" hidden>
       <div class="admin-dashboard-heading">
         <div>
-          <p class="admin-kicker">Blog Islamik</p>
-          <h1>Pengurusan artikel</h1>
+          <p class="admin-kicker">SedekahQR Malaysia</p>
+          <h1>Dashboard admin</h1>
           <p id="admin-identity" class="admin-identity"></p>
         </div>
         <div class="admin-heading-actions">
@@ -62,6 +62,71 @@
       </div>
 
       <p id="dashboard-message" class="admin-message admin-dashboard-message" role="status" aria-live="polite" hidden></p>
+
+      <section class="analytics-section" aria-labelledby="analytics-title">
+        <div class="analytics-heading">
+          <div>
+            <p class="admin-kicker">Statistik laman</p>
+            <h2 id="analytics-title">Pelawat dan paparan halaman</h2>
+          </div>
+          <div class="analytics-controls">
+            <label for="analytics-period">Tempoh</label>
+            <select id="analytics-period">
+              <option value="7">7 hari</option>
+              <option value="30" selected>30 hari</option>
+              <option value="90">90 hari</option>
+            </select>
+            <button id="analytics-refresh" class="admin-icon-button analytics-refresh" type="button" aria-label="Muat semula statistik" title="Muat semula statistik">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5"></path>
+                <path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p id="analytics-status" class="analytics-status" role="status" aria-live="polite">Memuatkan statistik...</p>
+
+        <div class="analytics-kpis" aria-label="Ringkasan pelawat">
+          <div><span>Lawatan hari ini</span><strong id="today-views">-</strong></div>
+          <div><span>Pelawat hari ini</span><strong id="today-visitors">-</strong></div>
+          <div><span id="period-views-label">Lawatan 30 hari</span><strong id="period-views">-</strong></div>
+          <div><span id="period-visitors-label">Pelawat 30 hari</span><strong id="period-visitors">-</strong></div>
+        </div>
+
+        <div class="analytics-layout">
+          <section class="analytics-chart-panel" aria-labelledby="traffic-chart-title">
+            <div class="analytics-panel-heading">
+              <h3 id="traffic-chart-title">Trend harian</h3>
+              <span class="analytics-legend"><i></i> Lawatan</span>
+            </div>
+            <div id="analytics-chart" class="analytics-chart" role="img" aria-label="Carta lawatan harian"></div>
+          </section>
+
+          <section class="analytics-table-panel" aria-labelledby="top-pages-title">
+            <div class="analytics-panel-heading">
+              <h3 id="top-pages-title">Halaman popular</h3>
+            </div>
+            <div class="analytics-table-wrap">
+              <table class="analytics-table">
+                <thead><tr><th>Halaman</th><th>Lawatan</th><th>Pelawat</th></tr></thead>
+                <tbody id="analytics-pages"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="analytics-list-panel" aria-labelledby="referrers-title">
+            <div class="analytics-panel-heading"><h3 id="referrers-title">Sumber trafik</h3></div>
+            <div id="analytics-referrers" class="analytics-ranked-list"></div>
+          </section>
+
+          <section class="analytics-list-panel" aria-labelledby="devices-title">
+            <div class="analytics-panel-heading"><h3 id="devices-title">Jenis peranti</h3></div>
+            <div id="analytics-devices" class="analytics-ranked-list"></div>
+          </section>
+        </div>
+        <p class="analytics-privacy">Statistik anonim sahaja. Tiada nama, e-mel, nombor telefon atau alamat IP disimpan.</p>
+      </section>
 
       <div class="admin-summary" aria-label="Ringkasan artikel">
         <div><strong id="total-count">0</strong><span>Semua artikel</span></div>
@@ -182,6 +247,6 @@
   </main>
 
   <script src="blog-config.js?v=20260809-1"></script>
-  <script src="admin.js?v=20260809-1"></script>
+  <script src="admin.js?v=20260810-1"></script>
 </body>
 </html>

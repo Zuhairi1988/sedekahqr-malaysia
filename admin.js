@@ -20,6 +20,19 @@
     dashboardView: document.querySelector('#dashboard-view'),
     dashboardMessage: document.querySelector('#dashboard-message'),
     adminIdentity: document.querySelector('#admin-identity'),
+    analyticsPeriod: document.querySelector('#analytics-period'),
+    analyticsRefresh: document.querySelector('#analytics-refresh'),
+    analyticsStatus: document.querySelector('#analytics-status'),
+    todayViews: document.querySelector('#today-views'),
+    todayVisitors: document.querySelector('#today-visitors'),
+    periodViews: document.querySelector('#period-views'),
+    periodVisitors: document.querySelector('#period-visitors'),
+    periodViewsLabel: document.querySelector('#period-views-label'),
+    periodVisitorsLabel: document.querySelector('#period-visitors-label'),
+    analyticsChart: document.querySelector('#analytics-chart'),
+    analyticsPages: document.querySelector('#analytics-pages'),
+    analyticsReferrers: document.querySelector('#analytics-referrers'),
+    analyticsDevices: document.querySelector('#analytics-devices'),
     totalCount: document.querySelector('#total-count'),
     publishedCount: document.querySelector('#published-count'),
     draftCount: document.querySelector('#draft-count'),
@@ -208,6 +221,146 @@
     elements.totalCount.textContent = String(articles.length);
     elements.publishedCount.textContent = String(published);
     elements.draftCount.textContent = String(articles.length - published);
+  };
+
+  const formatNumber = (value) => new Intl.NumberFormat('ms-MY').format(Number(value) || 0);
+
+  const setAnalyticsStatus = (message, isError = false) => {
+    elements.analyticsStatus.textContent = message;
+    elements.analyticsStatus.classList.toggle('is-error', isError);
+    elements.analyticsStatus.hidden = !message;
+  };
+
+  const emptyAnalyticsElement = (message = 'Belum ada data untuk tempoh ini.') => {
+    const empty = document.createElement('p');
+    empty.className = 'analytics-empty';
+    empty.textContent = message;
+    return empty;
+  };
+
+  const renderAnalyticsChart = (daily) => {
+    elements.analyticsChart.replaceChildren();
+    if (!daily.length || !daily.some((item) => Number(item.views))) {
+      elements.analyticsChart.append(emptyAnalyticsElement());
+      return;
+    }
+
+    const maximum = Math.max(...daily.map((item) => Number(item.views) || 0), 1);
+    const labelInterval = daily.length <= 7 ? 1 : daily.length <= 30 ? 5 : 15;
+    daily.forEach((item, index) => {
+      const views = Number(item.views) || 0;
+      const visitors = Number(item.visitors) || 0;
+      const date = new Date(`${item.day}T00:00:00`);
+      const fullDate = new Intl.DateTimeFormat('ms-MY', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      }).format(date);
+      const slot = document.createElement('div');
+      slot.className = 'analytics-bar-slot';
+      slot.title = `${fullDate}: ${formatNumber(views)} lawatan, ${formatNumber(visitors)} pelawat`;
+
+      const bar = document.createElement('i');
+      bar.className = 'analytics-bar';
+      bar.style.height = `${Math.max((views / maximum) * 100, views ? 3 : 1)}%`;
+      slot.append(bar);
+
+      if (index % labelInterval === 0 || index === daily.length - 1) {
+        const label = document.createElement('span');
+        label.textContent = new Intl.DateTimeFormat('ms-MY', { day: 'numeric', month: 'short' }).format(date);
+        slot.append(label);
+      }
+      elements.analyticsChart.append(slot);
+    });
+
+    elements.analyticsChart.setAttribute(
+      'aria-label',
+      `Carta ${formatNumber(daily.reduce((sum, item) => sum + (Number(item.views) || 0), 0))} lawatan sepanjang tempoh dipilih.`
+    );
+  };
+
+  const renderTopPages = (pages) => {
+    elements.analyticsPages.replaceChildren();
+    if (!pages.length) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 3;
+      cell.append(emptyAnalyticsElement());
+      row.append(cell);
+      elements.analyticsPages.append(row);
+      return;
+    }
+
+    pages.forEach((page) => {
+      const row = document.createElement('tr');
+      const title = document.createElement('td');
+      const views = document.createElement('td');
+      const visitors = document.createElement('td');
+      title.textContent = page.title || page.path;
+      title.title = page.path;
+      views.textContent = formatNumber(page.views);
+      visitors.textContent = formatNumber(page.visitors);
+      row.append(title, views, visitors);
+      elements.analyticsPages.append(row);
+    });
+  };
+
+  const renderRankedList = (container, rows, labelKey) => {
+    container.replaceChildren();
+    if (!rows.length) {
+      container.append(emptyAnalyticsElement());
+      return;
+    }
+    rows.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'analytics-ranked-row';
+      const label = document.createElement('span');
+      const value = document.createElement('strong');
+      label.textContent = item[labelKey];
+      value.textContent = formatNumber(item.views);
+      row.append(label, value);
+      container.append(row);
+    });
+  };
+
+  const renderAnalytics = (data) => {
+    const days = Number(data.period_days) || Number(elements.analyticsPeriod.value);
+    const totals = data.totals || {};
+    elements.todayViews.textContent = formatNumber(totals.today_views);
+    elements.todayVisitors.textContent = formatNumber(totals.today_visitors);
+    elements.periodViews.textContent = formatNumber(totals.views);
+    elements.periodVisitors.textContent = formatNumber(totals.visitors);
+    elements.periodViewsLabel.textContent = `Lawatan ${days} hari`;
+    elements.periodVisitorsLabel.textContent = `Pelawat ${days} hari`;
+    renderAnalyticsChart(Array.isArray(data.daily) ? data.daily : []);
+    renderTopPages(Array.isArray(data.top_pages) ? data.top_pages : []);
+    renderRankedList(elements.analyticsReferrers, Array.isArray(data.referrers) ? data.referrers : [], 'source');
+
+    const deviceLabels = { desktop: 'Komputer', mobile: 'Telefon', tablet: 'Tablet' };
+    const devices = (Array.isArray(data.devices) ? data.devices : []).map((item) => ({
+      ...item,
+      device: deviceLabels[item.device] || item.device
+    }));
+    renderRankedList(elements.analyticsDevices, devices, 'device');
+  };
+
+  const loadAnalytics = async () => {
+    const days = Number(elements.analyticsPeriod.value) || 30;
+    elements.analyticsRefresh.disabled = true;
+    elements.analyticsRefresh.classList.add('is-loading');
+    setAnalyticsStatus('Memuatkan statistik...');
+    try {
+      const response = await restRequest('rpc/get_site_analytics', {
+        method: 'POST',
+        body: JSON.stringify({ period_days: days })
+      });
+      if (!response.ok) throw new Error(await parseResponseError(response, 'Statistik tidak dapat dimuatkan.'));
+      renderAnalytics(await response.json());
+      setAnalyticsStatus('');
+    } catch (error) {
+      setAnalyticsStatus(error.message || 'Statistik tidak dapat dimuatkan.', true);
+    } finally {
+      elements.analyticsRefresh.disabled = false;
+      elements.analyticsRefresh.classList.remove('is-loading');
+    }
   };
 
   const createIconButton = (label, symbol, className, handler) => {
@@ -490,7 +643,7 @@
     try {
       await login(elements.loginEmail.value.trim(), elements.loginPassword.value);
       setAuthenticatedView(true);
-      await loadArticles();
+      await Promise.all([loadArticles(), loadAnalytics()]);
     } catch (error) {
       persistSession(null);
       showMessage(elements.loginMessage, error.message || 'Log masuk gagal.');
@@ -508,6 +661,8 @@
   });
 
   elements.logoutButton.addEventListener('click', logout);
+  elements.analyticsPeriod.addEventListener('change', loadAnalytics);
+  elements.analyticsRefresh.addEventListener('click', loadAnalytics);
   elements.newArticleButton.addEventListener('click', () => openEditor());
   elements.closeEditor.addEventListener('click', closeEditor);
   elements.cancelEditor.addEventListener('click', closeEditor);
@@ -562,7 +717,7 @@
       await getAccessToken();
       if (!await verifyAdmin()) throw new Error('Akaun ini belum diberi akses admin.');
       setAuthenticatedView(true);
-      await loadArticles();
+      await Promise.all([loadArticles(), loadAnalytics()]);
     } catch (error) {
       persistSession(null);
       setAuthenticatedView(false);

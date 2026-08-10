@@ -1,5 +1,9 @@
 const allowedOrigins = new Set([
   'https://zuhairi1988.github.io',
+  'https://sedekahqr.com',
+  'https://www.sedekahqr.com',
+  'http://sedekahqr.com',
+  'http://www.sedekahqr.com',
   'http://127.0.0.1:8010',
   'http://localhost:8010'
 ]);
