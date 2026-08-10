@@ -6,14 +6,17 @@
 !blog.html
 !article.html
 !admin.html
+!admin-pricing.html
 !styles.css
 !blog.css
 !admin.css
+!admin-pricing.css
 !script.js
 !analytics.js
 !blog.js
 !article.js
 !admin.js
+!admin-pricing.js
 !blog-api.js
 !blog-config.js
 !articles.json
@@ -25,6 +28,7 @@
 !package-lock.json
 !supabase/
 !supabase/**
+supabase/.pricing-preview-seed.sql
 !prayer-zones.js
 !qr-data.js
 !assets/
