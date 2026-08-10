@@ -453,6 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const locatePrayerTimes = async () => {
     const requestId = ++locationRequestId;
     locateButton.disabled = true;
+    zoneName.disabled = true;
     setStatus('Menunggu kebenaran lokasi...');
 
     try {
@@ -482,11 +483,15 @@ document.addEventListener('DOMContentLoaded', () => {
         void loadPrayerTimes(defaultZone, 'Kuala Lumpur dan Putrajaya', message, 'Default · Kuala Lumpur, Putrajaya');
       }
     } finally {
-      if (requestId === locationRequestId) locateButton.disabled = false;
+      if (requestId === locationRequestId) {
+        locateButton.disabled = false;
+        zoneName.disabled = false;
+      }
     }
   };
 
   locateButton.addEventListener('click', locatePrayerTimes);
+  zoneName.addEventListener('click', locatePrayerTimes);
 
   const initializePrayerTimes = () => {
     updateCurrentClock();
