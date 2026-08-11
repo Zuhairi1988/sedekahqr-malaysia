@@ -22,7 +22,7 @@
     'Cari QR masjid dan surau': 'Find mosque and surau QR codes',
     'Cari masjid atau surau, buka kod QR dan buat sumbangan terus melalui aplikasi bank anda.': 'Find a mosque or surau, open its QR code and donate directly through your banking app.',
     'Cari masjid, surau, kawasan atau negeri': 'Search mosque, surau, area or state',
-    'Contoh: Masjid As-Siddiqin, Rawang, Selangor': 'Example: Masjid As-Siddiqin, Rawang, Selangor',
+    'Masjid As-Siddiqin/Rawang/Selangor': 'Masjid As-Siddiqin/Rawang/Selangor',
     'Cari QR': 'Find QR',
     'Kod QR': 'QR Codes',
     'Negeri & wilayah': 'States & Territories',
