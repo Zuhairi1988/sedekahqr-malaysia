@@ -35,7 +35,7 @@
     if (new URLSearchParams(window.location.search).has('qr')) return;
     try {
       const now = new Date().toISOString();
-      const response = await fetch(`${config.supabaseUrl}/rest/v1/emergency_campaign?select=title,message,qr_id,delay_seconds,is_active,starts_at,ends_at&is_active=eq.true&starts_at=lte.${encodeURIComponent(now)}&ends_at=gt.${encodeURIComponent(now)}&limit=1`, {
+      const response = await fetch(`${config.supabaseUrl}/rest/v1/emergency_campaign?select=title,message,qr_id,image_path,delay_seconds,is_active,starts_at,ends_at&is_active=eq.true&starts_at=lte.${encodeURIComponent(now)}&ends_at=gt.${encodeURIComponent(now)}&limit=1`, {
         headers: { apikey: config.publishableKey }
       });
       if (!response.ok) return;
