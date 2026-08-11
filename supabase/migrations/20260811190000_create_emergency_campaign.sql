@@ -1,7 +1,7 @@
 create table if not exists public.emergency_campaign (
   id boolean primary key default true check (id),
   title text not null check (char_length(title) between 8 and 120),
-  message text not null check (char_length(message) between 20 and 360),
+  message text not null check (char_length(message) between 3 and 360),
   qr_id text not null check (char_length(qr_id) between 3 and 180),
   starts_at timestamptz not null default now(),
   ends_at timestamptz not null,
