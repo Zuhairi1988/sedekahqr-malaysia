@@ -616,7 +616,7 @@
   const loadCampaign = async () => {
     setCampaignStatus('Memuatkan kempen...');
     const response = await restRequest('emergency_campaign?select=*&id=eq.true&limit=1');
-    if (!response.ok) throw new Error(await parseResponseError(response, 'Kempen kecemasan tidak dapat dimuatkan.'));
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Kempen tidak dapat dimuatkan.'));
     const campaign = (await response.json())[0];
     if (!campaign) {
       setCampaignDefaults();
@@ -662,7 +662,7 @@
       headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
       body: JSON.stringify(payload)
     });
-    if (!response.ok) throw new Error(await parseResponseError(response, 'Kempen kecemasan tidak dapat disimpan.'));
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Kempen tidak dapat disimpan.'));
     campaignImagePath = uploadedImagePath || '';
     campaignImageFile = null;
     setCampaignStatus(payload.is_active ? 'Kempen aktif telah disimpan.' : 'Kempen telah disimpan sebagai tidak aktif.', 'success');
@@ -1053,7 +1053,7 @@
     try {
       await saveCampaign();
     } catch (error) {
-      setCampaignStatus(error.message || 'Kempen kecemasan tidak dapat disimpan.', 'error');
+      setCampaignStatus(error.message || 'Kempen tidak dapat disimpan.', 'error');
     } finally {
       elements.campaignSave.disabled = false;
       elements.campaignSave.textContent = 'Simpan kempen';
