@@ -31,6 +31,11 @@
     periodVisitorsLabel: document.querySelector('#period-visitors-label'),
     averagePageTime: document.querySelector('#average-page-time'),
     bounceRate: document.querySelector('#bounce-rate'),
+    performanceLcp: document.querySelector('#performance-lcp'),
+    performanceInp: document.querySelector('#performance-inp'),
+    performanceCls: document.querySelector('#performance-cls'),
+    performanceTtfb: document.querySelector('#performance-ttfb'),
+    performanceSamples: document.querySelector('#performance-samples'),
     analyticsChart: document.querySelector('#analytics-chart'),
     analyticsPages: document.querySelector('#analytics-pages'),
     analyticsReferrers: document.querySelector('#analytics-referrers'),
@@ -391,6 +396,25 @@
     });
   };
 
+  const performanceLabel = (value, suffix) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? `${numeric.toLocaleString('ms-MY', { maximumFractionDigits: 0 })}${suffix}` : '-';
+  };
+
+  const renderPerformanceAnalytics = (data) => {
+    const metrics = data || {};
+    elements.performanceLcp.textContent = performanceLabel(metrics.p75_lcp_ms, ' ms');
+    elements.performanceInp.textContent = performanceLabel(metrics.p75_inp_ms, ' ms');
+    elements.performanceCls.textContent = Number.isFinite(Number(metrics.p75_cls_milli))
+      ? (Number(metrics.p75_cls_milli) / 1000).toLocaleString('ms-MY', { maximumFractionDigits: 3 })
+      : '-';
+    elements.performanceTtfb.textContent = performanceLabel(metrics.p75_ttfb_ms, ' ms');
+    const samples = Number(metrics.samples) || 0;
+    elements.performanceSamples.textContent = samples
+      ? `Berdasarkan ${formatNumber(samples)} lawatan yang menyokong pengukuran prestasi.`
+      : 'Belum ada sampel prestasi daripada lawatan baharu.';
+  };
+
   const loadAnalytics = async () => {
     const days = Number(elements.analyticsPeriod.value) || 30;
     elements.analyticsRefresh.disabled = true;
@@ -398,15 +422,18 @@
     setAnalyticsStatus('Memuatkan statistik...');
     try {
       const options = { method: 'POST', body: JSON.stringify({ period_days: days }) };
-      const [response, qrResponse] = await Promise.all([
+      const [response, qrResponse, performanceResponse] = await Promise.all([
         restRequest('rpc/get_site_analytics', options),
-        restRequest('rpc/get_qr_analytics', options)
+        restRequest('rpc/get_qr_analytics', options),
+        restRequest('rpc/get_web_performance_analytics', options)
       ]);
       if (!response.ok) throw new Error(await parseResponseError(response, 'Statistik laman tidak dapat dimuatkan.'));
       if (!qrResponse.ok) throw new Error(await parseResponseError(qrResponse, 'Statistik QR tidak dapat dimuatkan.'));
-      const [analytics, qrAnalytics] = await Promise.all([response.json(), qrResponse.json()]);
+      if (!performanceResponse.ok) throw new Error(await parseResponseError(performanceResponse, 'Statistik prestasi tidak dapat dimuatkan.'));
+      const [analytics, qrAnalytics, performanceAnalytics] = await Promise.all([response.json(), qrResponse.json(), performanceResponse.json()]);
       renderAnalytics(analytics);
       renderQrAnalytics(qrAnalytics);
+      renderPerformanceAnalytics(performanceAnalytics);
       setAnalyticsStatus('');
     } catch (error) {
       setAnalyticsStatus(error.message || 'Statistik tidak dapat dimuatkan.', true);

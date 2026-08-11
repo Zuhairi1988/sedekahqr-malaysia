@@ -30,6 +30,37 @@
     return '/';
   };
 
+  const webVitals = { lcpMs: null, inpMs: null, clsMilli: 0, ttfbMs: null };
+
+  const observeWebVitals = () => {
+    const navigation = performance.getEntriesByType?.('navigation')[0];
+    if (navigation) webVitals.ttfbMs = Math.round(navigation.responseStart - navigation.startTime);
+
+    try {
+      new PerformanceObserver((entries) => {
+        entries.getEntries().forEach((entry) => {
+          webVitals.lcpMs = Math.round(entry.startTime);
+        });
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+      new PerformanceObserver((entries) => {
+        entries.getEntries().forEach((entry) => {
+          if (!entry.hadRecentInput) webVitals.clsMilli += Math.round(entry.value * 1000);
+        });
+      }).observe({ type: 'layout-shift', buffered: true });
+
+      new PerformanceObserver((entries) => {
+        entries.getEntries().forEach((entry) => {
+          webVitals.inpMs = Math.max(webVitals.inpMs || 0, Math.round(entry.duration));
+        });
+      }).observe({ type: 'event', buffered: true, durationThreshold: 16 });
+    } catch {
+      // Some browsers do not expose every Web Vitals observer.
+    }
+  };
+
+  observeWebVitals();
+
   const waitForArticleTitle = async (path) => {
     if (!path.startsWith('/artikel/')) return;
     for (let attempt = 0; attempt < 32; attempt += 1) {
@@ -73,7 +104,15 @@
       if (engagementSent) return;
       engagementSent = true;
       const engagementSeconds = Math.min(14_400, Math.max(0, Math.round((Date.now() - enteredAt) / 1000)));
-      void send({ eventType: 'page_engagement', path, engagementSeconds });
+      void send({
+        eventType: 'page_engagement',
+        path,
+        engagementSeconds,
+        lcpMs: webVitals.lcpMs,
+        inpMs: webVitals.inpMs,
+        clsMilli: webVitals.clsMilli,
+        ttfbMs: webVitals.ttfbMs
+      });
     };
     window.addEventListener('pagehide', trackEngagement, { once: true });
     document.addEventListener('visibilitychange', () => {

@@ -10,11 +10,21 @@ type VisitPayload = {
   itemName?: string;
   itemState?: string;
   engagementSeconds?: number;
+  lcpMs?: number | null;
+  inpMs?: number | null;
+  clsMilli?: number | null;
+  ttfbMs?: number | null;
 };
 
 const visitorPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const pathPattern = /^\/[a-z0-9/_-]*$/;
 const botPattern = /bot|crawler|spider|headless|lighthouse|pagespeed|preview|facebookexternalhit|whatsapp/i;
+
+const metricValue = (value: unknown, maximum: number) => {
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = Number(value);
+  return Number.isInteger(numeric) && numeric >= 0 && numeric <= maximum ? numeric : null;
+};
 
 const hashVisitor = async (visitorId: string, pepper: string) => {
   const input = new TextEncoder().encode(`${visitorId}:${pepper}`);
@@ -125,7 +135,13 @@ Deno.serve(async (request) => {
 
     const { error } = await supabase
       .from('site_page_views')
-      .update({ engagement_seconds: Math.max(Number(recentView.engagement_seconds) || 0, engagementSeconds) })
+      .update({
+        engagement_seconds: Math.max(Number(recentView.engagement_seconds) || 0, engagementSeconds),
+        lcp_ms: metricValue(payload.lcpMs, 60_000),
+        inp_ms: metricValue(payload.inpMs, 60_000),
+        cls_milli: metricValue(payload.clsMilli, 10_000),
+        ttfb_ms: metricValue(payload.ttfbMs, 60_000)
+      })
       .eq('id', recentView.id);
     if (error) return jsonResponse(request, { error: 'Tempoh lawatan tidak dapat direkodkan.' }, 500);
     return jsonResponse(request, { ok: true });
