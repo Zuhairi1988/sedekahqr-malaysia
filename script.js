@@ -813,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const details = getItemDetails(item);
     const article = document.createElement('article');
     article.className = 'catalog-card';
+    article.dataset.qrId = item.id;
 
     const imageButton = document.createElement('button');
     imageButton.className = 'card-image-button';

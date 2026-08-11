@@ -1343,6 +1343,60 @@
   padding: 24px;
 }
 
+.emergency-campaign-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.emergency-campaign-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 20, 16, 0.76);
+}
+
+.emergency-campaign-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(660px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(210px, 0.75fr);
+  overflow: hidden;
+  border-top: 5px solid var(--directory-yellow);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+
+.emergency-campaign-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--directory-line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--directory-ink);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.emergency-campaign-copy { padding: 38px 34px 34px; }
+.emergency-campaign-copy h2 { margin-top: 8px; font-size: 28px; line-height: 1.18; overflow-wrap: anywhere; }
+.emergency-campaign-copy > p:not(.directory-eyebrow) { margin-top: 14px; color: var(--directory-muted); line-height: 1.65; }
+.emergency-campaign-receiver { font-size: 12px; }
+.emergency-campaign-receiver strong { color: var(--directory-ink); }
+.emergency-campaign-action { min-height: 44px; margin-top: 22px; padding: 0 20px; border: 0; border-radius: 5px; background: var(--directory-green); color: #fff; font: inherit; font-weight: 900; cursor: pointer; }
+.emergency-campaign-action:hover { background: var(--directory-green-dark); }
+.emergency-campaign-qr { display: grid; place-items: center; margin: 0; padding: 30px 24px; background: #edf5f1; }
+.emergency-campaign-qr img { display: block; width: min(100%, 240px); max-height: 320px; object-fit: contain; background: #fff; }
+
 .modal-backdrop {
   position: absolute;
   inset: 0;
@@ -2295,6 +2349,13 @@
     align-items: end;
     padding: 0;
   }
+
+  .emergency-campaign-modal { align-items: end; padding: 0; }
+  .emergency-campaign-dialog { width: 100%; grid-template-columns: 1fr; max-height: 92vh; overflow: auto; border-radius: 8px 8px 0 0; }
+  .emergency-campaign-copy { padding: 32px 28px 24px; }
+  .emergency-campaign-copy h2 { font-size: 25px; }
+  .emergency-campaign-qr { padding: 18px 28px 28px; }
+  .emergency-campaign-qr img { width: min(190px, 100%); max-height: 235px; }
 
   .qr-dialog {
     width: 100%;

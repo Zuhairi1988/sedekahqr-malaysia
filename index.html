@@ -15,7 +15,7 @@
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest?v=20260809-6" />
-  <link rel="stylesheet" href="styles.css?v=20260810-6" />
+  <link rel="stylesheet" href="styles.css?v=20260811-1" />
 </head>
 <body class="directory-body">
   <header class="directory-header">
@@ -415,6 +415,21 @@
 
   <div id="site-toast" class="directory-toast" role="status" aria-live="polite"></div>
 
+  <div id="emergency-campaign-modal" class="emergency-campaign-modal" hidden>
+    <div class="emergency-campaign-backdrop" data-close-emergency-campaign></div>
+    <section class="emergency-campaign-dialog" role="dialog" aria-modal="true" aria-labelledby="emergency-campaign-title">
+      <button class="emergency-campaign-close" type="button" data-close-emergency-campaign aria-label="Tutup kempen kecemasan" title="Tutup">&times;</button>
+      <div class="emergency-campaign-copy">
+        <p class="directory-eyebrow">Kempen kecemasan</p>
+        <h2 id="emergency-campaign-title"></h2>
+        <p id="emergency-campaign-message"></p>
+        <p class="emergency-campaign-receiver"><span>QR untuk</span> <strong id="emergency-campaign-qr-name"></strong></p>
+        <button id="emergency-campaign-view-qr" class="emergency-campaign-action" type="button">Lihat QR</button>
+      </div>
+      <figure class="emergency-campaign-qr"><img id="emergency-campaign-image" src="" alt="" /></figure>
+    </section>
+  </div>
+
   <div id="reminder-modal" class="reminder-modal" hidden>
     <div class="reminder-backdrop" data-close-reminder></div>
     <section class="reminder-dialog" role="dialog" aria-modal="true" aria-labelledby="reminder-title">
@@ -500,12 +515,14 @@
 
   <script src="prayer-zones.js?v=20260809-2"></script>
   <script src="qr-data.js?v=20260811-2"></script>
-  <script src="language.js?v=20260811-6"></script>
-  <script src="script.js?v=20260811-3"></script>
+  <script src="blog-config.js?v=20260811-1"></script>
+  <script src="language.js?v=20260811-7"></script>
+  <script src="script.js?v=20260811-4"></script>
   <script src="push-config.js?v=20260809-6"></script>
   <script src="notification.js?v=20260810-2"></script>
   <script src="install.js?v=20260811-1"></script>
   <script src="analytics.js?v=20260811-5"></script>
+  <script src="campaign.js?v=20260811-1"></script>
   <script src="sw-register.js?v=20260811-1"></script>
 </body>
 </html>

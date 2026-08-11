@@ -55,6 +55,16 @@
     qrDownloaders: document.querySelector('#qr-downloaders'),
     qrTodayDownloads: document.querySelector('#qr-today-downloads'),
     qrAnalyticsList: document.querySelector('#qr-analytics-list'),
+    campaignForm: document.querySelector('#campaign-form'),
+    campaignName: document.querySelector('#campaign-name'),
+    campaignMessage: document.querySelector('#campaign-message'),
+    campaignQrId: document.querySelector('#campaign-qr-id'),
+    campaignStartsAt: document.querySelector('#campaign-starts-at'),
+    campaignEndsAt: document.querySelector('#campaign-ends-at'),
+    campaignDelaySeconds: document.querySelector('#campaign-delay-seconds'),
+    campaignIsActive: document.querySelector('#campaign-is-active'),
+    campaignSave: document.querySelector('#save-campaign'),
+    campaignStatus: document.querySelector('#campaign-status'),
     totalCount: document.querySelector('#total-count'),
     publishedCount: document.querySelector('#published-count'),
     draftCount: document.querySelector('#draft-count'),
@@ -504,6 +514,73 @@
     }
   };
 
+  const campaignCatalog = Array.isArray(globalThis.QR_CATALOG) ? globalThis.QR_CATALOG : [];
+  const setCampaignStatus = (message, type = '') => {
+    elements.campaignStatus.textContent = message;
+    elements.campaignStatus.className = `admin-inline-status${type ? ` is-${type}` : ''}`;
+  };
+
+  const populateCampaignQrOptions = () => {
+    campaignCatalog.slice().sort((a, b) => a.name.localeCompare(b.name, 'ms')).forEach((item) => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = `${item.name} - ${item.state}`;
+      elements.campaignQrId.append(option);
+    });
+  };
+
+  const setCampaignDefaults = () => {
+    if (elements.campaignStartsAt.value) return;
+    const now = new Date();
+    elements.campaignStartsAt.value = toDatetimeLocal(now.toISOString());
+    elements.campaignEndsAt.value = toDatetimeLocal(new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString());
+  };
+
+  const loadCampaign = async () => {
+    setCampaignStatus('Memuatkan kempen...');
+    const response = await restRequest('emergency_campaign?select=*&id=eq.true&limit=1');
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Kempen kecemasan tidak dapat dimuatkan.'));
+    const campaign = (await response.json())[0];
+    if (!campaign) {
+      setCampaignDefaults();
+      setCampaignStatus('Belum ada kempen. Ia tidak dipaparkan kepada pengguna sehingga diaktifkan.');
+      return;
+    }
+    elements.campaignName.value = campaign.title;
+    elements.campaignMessage.value = campaign.message;
+    elements.campaignQrId.value = campaign.qr_id;
+    elements.campaignStartsAt.value = toDatetimeLocal(campaign.starts_at);
+    elements.campaignEndsAt.value = toDatetimeLocal(campaign.ends_at);
+    elements.campaignDelaySeconds.value = String(campaign.delay_seconds);
+    elements.campaignIsActive.checked = campaign.is_active;
+    setCampaignStatus(campaign.is_active ? 'Kempen aktif. Popup akan muncul pada setiap pembukaan homepage dalam tempoh ini.' : 'Kempen disimpan tetapi tidak aktif.');
+  };
+
+  const saveCampaign = async () => {
+    const qrId = elements.campaignQrId.value;
+    if (!campaignCatalog.some((item) => item.id === qrId)) throw new Error('Sila pilih QR masjid atau surau yang sah.');
+    const startsAt = new Date(elements.campaignStartsAt.value);
+    const endsAt = new Date(elements.campaignEndsAt.value);
+    if (!Number.isFinite(startsAt.getTime()) || !Number.isFinite(endsAt.getTime()) || endsAt <= startsAt) throw new Error('Tarikh tamat perlu selepas tarikh mula.');
+    const payload = {
+      id: true,
+      title: elements.campaignName.value.trim(),
+      message: elements.campaignMessage.value.trim(),
+      qr_id: qrId,
+      starts_at: startsAt.toISOString(),
+      ends_at: endsAt.toISOString(),
+      delay_seconds: Number(elements.campaignDelaySeconds.value),
+      is_active: elements.campaignIsActive.checked
+    };
+    const response = await restRequest('emergency_campaign?on_conflict=id', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Kempen kecemasan tidak dapat disimpan.'));
+    setCampaignStatus(payload.is_active ? 'Kempen aktif telah disimpan.' : 'Kempen telah disimpan sebagai tidak aktif.', 'success');
+  };
+
   const createIconButton = (label, symbol, className, handler) => {
     const button = document.createElement('button');
     button.type = 'button';
@@ -784,7 +861,8 @@
     try {
       await login(elements.loginEmail.value.trim(), elements.loginPassword.value);
       setAuthenticatedView(true);
-      await Promise.all([loadArticles(), loadAnalytics()]);
+      populateCampaignQrOptions();
+      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign()]);
     } catch (error) {
       persistSession(null);
       showMessage(elements.loginMessage, error.message || 'Log masuk gagal.');
@@ -866,6 +944,20 @@
     loadAnalytics();
   });
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
+  elements.campaignForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    setCampaignStatus('');
+    elements.campaignSave.disabled = true;
+    elements.campaignSave.textContent = 'Menyimpan...';
+    try {
+      await saveCampaign();
+    } catch (error) {
+      setCampaignStatus(error.message || 'Kempen kecemasan tidak dapat disimpan.', 'error');
+    } finally {
+      elements.campaignSave.disabled = false;
+      elements.campaignSave.textContent = 'Simpan kempen';
+    }
+  });
   elements.newArticleButton.addEventListener('click', () => openEditor());
   elements.closeEditor.addEventListener('click', closeEditor);
   elements.cancelEditor.addEventListener('click', closeEditor);
@@ -920,7 +1012,8 @@
       await getAccessToken();
       if (!await verifyAdmin()) throw new Error('Akaun ini belum diberi akses admin.');
       setAuthenticatedView(true);
-      await Promise.all([loadArticles(), loadAnalytics()]);
+      populateCampaignQrOptions();
+      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign()]);
     } catch (error) {
       persistSession(null);
       setAuthenticatedView(false);

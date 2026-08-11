@@ -636,6 +636,42 @@
   background: var(--directory-line);
 }
 
+.admin-campaign {
+  margin-top: 30px;
+  padding: 24px;
+  border: 1px solid var(--directory-line);
+  border-top: 4px solid var(--directory-yellow);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.admin-campaign .admin-panel-heading > p {
+  max-width: 420px;
+  color: var(--directory-muted);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.admin-campaign-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.admin-campaign-form .admin-field-wide { grid-column: 1 / -1; }
+.admin-inline-status { color: var(--directory-muted); font-size: 12px; }
+.admin-inline-status.is-error { color: #9d332b; }
+.admin-inline-status.is-success { color: var(--directory-green-dark); }
+
+@media (max-width: 760px) {
+  .admin-campaign { padding: 18px; }
+  .admin-campaign .admin-panel-heading { align-items: flex-start; flex-direction: column; }
+  .admin-campaign .admin-panel-heading > p { text-align: left; }
+  .admin-campaign-form { grid-template-columns: 1fr; }
+}
+
 .admin-summary > div {
   min-height: 90px;
   display: flex;
