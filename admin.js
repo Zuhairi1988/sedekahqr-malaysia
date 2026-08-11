@@ -29,6 +29,8 @@
     periodVisitors: document.querySelector('#period-visitors'),
     periodViewsLabel: document.querySelector('#period-views-label'),
     periodVisitorsLabel: document.querySelector('#period-visitors-label'),
+    averagePageTime: document.querySelector('#average-page-time'),
+    bounceRate: document.querySelector('#bounce-rate'),
     analyticsChart: document.querySelector('#analytics-chart'),
     analyticsPages: document.querySelector('#analytics-pages'),
     analyticsReferrers: document.querySelector('#analytics-referrers'),
@@ -230,6 +232,14 @@
 
   const formatNumber = (value) => new Intl.NumberFormat('ms-MY').format(Number(value) || 0);
 
+  const formatDuration = (seconds) => {
+    const value = Number(seconds);
+    if (!Number.isFinite(value) || value < 0) return '-';
+    const minutes = Math.floor(value / 60);
+    const remainder = Math.round(value % 60);
+    return minutes ? `${minutes} min ${remainder} saat` : `${remainder} saat`;
+  };
+
   const setAnalyticsStatus = (message, isError = false) => {
     elements.analyticsStatus.textContent = message;
     elements.analyticsStatus.classList.toggle('is-error', isError);
@@ -333,6 +343,10 @@
     elements.todayVisitors.textContent = formatNumber(totals.today_visitors);
     elements.periodViews.textContent = formatNumber(totals.views);
     elements.periodVisitors.textContent = formatNumber(totals.visitors);
+    elements.averagePageTime.textContent = formatDuration(totals.average_page_seconds);
+    elements.bounceRate.textContent = totals.bounce_rate === null || totals.bounce_rate === undefined
+      ? '-'
+      : `${Number(totals.bounce_rate).toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%`;
     elements.periodViewsLabel.textContent = `Lawatan ${days} hari`;
     elements.periodVisitorsLabel.textContent = `Pelawat ${days} hari`;
     renderAnalyticsChart(Array.isArray(data.daily) ? data.daily : []);

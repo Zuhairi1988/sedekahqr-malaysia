@@ -9,6 +9,7 @@ type VisitPayload = {
   eventType?: string;
   itemName?: string;
   itemState?: string;
+  engagementSeconds?: number;
 };
 
 const visitorPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -102,6 +103,34 @@ Deno.serve(async (request) => {
   }
 
   const path = String(payload.path || '').toLowerCase().slice(0, 240);
+  if (eventType === 'page_engagement') {
+    const engagementSeconds = Number(payload.engagementSeconds);
+    if (!pathPattern.test(path) || !Number.isInteger(engagementSeconds) || engagementSeconds < 0 || engagementSeconds > 14_400) {
+      return jsonResponse(request, { error: 'Tempoh lawatan tidak sah.' }, 400);
+    }
+
+    const recentThreshold = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+    const { data: recentView, error: recentViewError } = await supabase
+      .from('site_page_views')
+      .select('id, engagement_seconds')
+      .eq('visitor_hash', visitorHash)
+      .eq('path', path)
+      .gte('viewed_at', recentThreshold)
+      .order('viewed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (recentViewError) return jsonResponse(request, { error: 'Tempoh lawatan tidak dapat disemak.' }, 500);
+    if (!recentView) return jsonResponse(request, { ok: true, skipped: true });
+
+    const { error } = await supabase
+      .from('site_page_views')
+      .update({ engagement_seconds: Math.max(Number(recentView.engagement_seconds) || 0, engagementSeconds) })
+      .eq('id', recentView.id);
+    if (error) return jsonResponse(request, { error: 'Tempoh lawatan tidak dapat direkodkan.' }, 500);
+    return jsonResponse(request, { ok: true });
+  }
+
   const pageTitle = String(payload.pageTitle || '').replace(/\s+/g, ' ').trim().slice(0, 180);
   if (!pathPattern.test(path) || !pageTitle) {
     return jsonResponse(request, { error: 'Butiran lawatan tidak sah.' }, 400);

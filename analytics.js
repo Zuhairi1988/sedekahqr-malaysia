@@ -66,6 +66,19 @@
     await waitForArticleTitle(path);
     const pageTitle = document.title.replace(/\s+-\s+SedekahQR Malaysia$/, '').trim() || 'SedekahQR Malaysia';
     await send({ path, pageTitle, referrer: document.referrer });
+
+    const enteredAt = Date.now();
+    let engagementSent = false;
+    const trackEngagement = () => {
+      if (engagementSent) return;
+      engagementSent = true;
+      const engagementSeconds = Math.min(14_400, Math.max(0, Math.round((Date.now() - enteredAt) / 1000)));
+      void send({ eventType: 'page_engagement', path, engagementSeconds });
+    };
+    window.addEventListener('pagehide', trackEngagement, { once: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') trackEngagement();
+    }, { once: true });
   };
 
   const schedule = () => window.setTimeout(track, 900);
