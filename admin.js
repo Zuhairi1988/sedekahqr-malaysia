@@ -459,7 +459,7 @@
     elements.analyticsRefresh.classList.add('is-loading');
     setAnalyticsStatus('Memuatkan statistik...');
     try {
-      const options = { method: 'POST', body: JSON.stringify({ period_days: days, end_date: endDate }) };
+      const options = { method: 'POST', body: JSON.stringify({ p_period_days: days, p_end_date: endDate }) };
       const [response, qrResponse, performanceResponse, locationResponse] = await Promise.all([
         restRequest('rpc/get_site_analytics_range', options),
         restRequest('rpc/get_qr_analytics_range', options),

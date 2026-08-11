@@ -313,6 +313,10 @@
   font-weight: 800;
 }
 
+.analytics-controls input[type="date"] {
+  min-width: 154px;
+}
+
 .analytics-date-label {
   margin-left: 4px;
 }
