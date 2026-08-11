@@ -63,6 +63,9 @@
     campaignQrState: document.querySelector('#campaign-qr-state'),
     campaignQrSelection: document.querySelector('#campaign-qr-selection'),
     campaignQrResults: document.querySelector('#campaign-qr-results'),
+    campaignImage: document.querySelector('#campaign-image'),
+    campaignImagePreviewWrap: document.querySelector('#campaign-image-preview-wrap'),
+    campaignImagePreview: document.querySelector('#campaign-image-preview'),
     campaignStartsAt: document.querySelector('#campaign-starts-at'),
     campaignEndsAt: document.querySelector('#campaign-ends-at'),
     campaignDelaySeconds: document.querySelector('#campaign-delay-seconds'),
@@ -105,6 +108,8 @@
   let editorBlocks = [];
   let editorSources = [];
   let slugTouched = false;
+  let campaignImagePath = '';
+  let campaignImageFile = null;
 
   const showMessage = (element, message, success = false) => {
     element.textContent = message;
@@ -588,6 +593,26 @@
     elements.campaignEndsAt.value = toDatetimeLocal(new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString());
   };
 
+  const campaignImageUrl = (path) => path ? `${config.supabaseUrl}/storage/v1/object/public/campaign-images/${encodeURIComponent(path)}` : '';
+  const showCampaignImagePreview = (url) => {
+    elements.campaignImagePreviewWrap.hidden = !url;
+    elements.campaignImagePreview.src = url || '';
+  };
+
+  const uploadCampaignImage = async (file) => {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) throw new Error('Gunakan fail JPG, PNG atau WebP tidak melebihi 5 MB.');
+    const extension = file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+    const path = `campaign-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${extension}`;
+    const token = await getAccessToken();
+    const response = await fetch(`${config.supabaseUrl}/storage/v1/object/campaign-images/${encodeURIComponent(path)}`, {
+      method: 'POST',
+      headers: { apikey: config.publishableKey, Authorization: `Bearer ${token}`, 'Content-Type': file.type },
+      body: file
+    });
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Poster kempen tidak dapat dimuat naik.'));
+    return path;
+  };
+
   const loadCampaign = async () => {
     setCampaignStatus('Memuatkan kempen...');
     const response = await restRequest('emergency_campaign?select=*&id=eq.true&limit=1');
@@ -601,6 +626,8 @@
     elements.campaignName.value = campaign.title;
     elements.campaignMessage.value = campaign.message;
     elements.campaignQrId.value = campaign.qr_id;
+    campaignImagePath = campaign.image_path || '';
+    showCampaignImagePreview(campaignImageUrl(campaignImagePath));
     const selectedItem = campaignCatalog.find((item) => item.id === campaign.qr_id);
     elements.campaignQrSelection.textContent = selectedItem ? `Dipilih: ${selectedItem.name} (${selectedItem.type}, ${selectedItem.state})` : 'QR penerima yang disimpan tidak ditemui dalam direktori.';
     if (selectedItem) elements.campaignQrState.value = selectedItem.state;
@@ -618,6 +645,7 @@
     const startsAt = new Date(elements.campaignStartsAt.value);
     const endsAt = new Date(elements.campaignEndsAt.value);
     if (!Number.isFinite(startsAt.getTime()) || !Number.isFinite(endsAt.getTime()) || endsAt <= startsAt) throw new Error('Tarikh tamat perlu selepas tarikh mula.');
+    const uploadedImagePath = campaignImageFile ? await uploadCampaignImage(campaignImageFile) : campaignImagePath || null;
     const payload = {
       id: true,
       title: elements.campaignName.value.trim(),
@@ -626,7 +654,8 @@
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
       delay_seconds: Number(elements.campaignDelaySeconds.value),
-      is_active: elements.campaignIsActive.checked
+      is_active: elements.campaignIsActive.checked,
+      image_path: uploadedImagePath
     };
     const response = await restRequest('emergency_campaign?on_conflict=id', {
       method: 'POST',
@@ -634,6 +663,8 @@
       body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error(await parseResponseError(response, 'Kempen kecemasan tidak dapat disimpan.'));
+    campaignImagePath = uploadedImagePath || '';
+    campaignImageFile = null;
     setCampaignStatus(payload.is_active ? 'Kempen aktif telah disimpan.' : 'Kempen telah disimpan sebagai tidak aktif.', 'success');
   };
 
@@ -1002,6 +1033,18 @@
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
   elements.campaignQrSearch.addEventListener('input', renderCampaignQrResults);
   elements.campaignQrState.addEventListener('change', renderCampaignQrResults);
+  elements.campaignImage.addEventListener('change', () => {
+    const file = elements.campaignImage.files?.[0] || null;
+    campaignImageFile = file;
+    if (!file) { showCampaignImagePreview(campaignImageUrl(campaignImagePath)); return; }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      campaignImageFile = null;
+      elements.campaignImage.value = '';
+      setCampaignStatus('Gunakan fail JPG, PNG atau WebP tidak melebihi 5 MB.', 'error');
+      return;
+    }
+    showCampaignImagePreview(URL.createObjectURL(file));
+  });
   elements.campaignForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     setCampaignStatus('');

@@ -676,6 +676,9 @@
 .campaign-qr-result span { color: var(--directory-muted); font-size: 11px; font-weight: 700; }
 .campaign-qr-result em { color: var(--directory-green-dark); font-size: 10px; font-style: normal; font-weight: 900; }
 .campaign-qr-hint { padding: 10px 0; color: var(--directory-muted); font-size: 12px; }
+.admin-campaign .admin-field small { margin-top: 6px; color: var(--directory-muted); font-size: 11px; line-height: 1.45; }
+.campaign-image-preview { padding: 12px; border: 1px solid var(--directory-line); border-radius: 5px; background: #f8fbf9; }
+.campaign-image-preview img { display: block; width: min(280px, 100%); max-height: 340px; object-fit: contain; }
 
 @media (max-width: 760px) {
   .admin-campaign { padding: 18px; }

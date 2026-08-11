@@ -214,6 +214,8 @@
             <p id="campaign-qr-selection" class="campaign-qr-selection">Belum memilih QR penerima.</p>
             <div id="campaign-qr-results" class="campaign-qr-results" aria-live="polite"></div>
           </div>
+          <label class="admin-field admin-field-wide"><span>Poster kempen (pilihan)</span><input id="campaign-image" type="file" accept="image/jpeg,image/png,image/webp" /><small>JPG, PNG atau WebP, maksimum 5 MB. Jika tidak dimuat naik, popup menggunakan imej QR biasa.</small></label>
+          <div id="campaign-image-preview-wrap" class="campaign-image-preview admin-field-wide" hidden><img id="campaign-image-preview" alt="Pratonton poster kempen" /></div>
           <label class="admin-field"><span>Mula</span><input id="campaign-starts-at" type="datetime-local" required /></label>
           <label class="admin-field"><span>Tamat</span><input id="campaign-ends-at" type="datetime-local" required /></label>
           <label class="admin-field"><span>Papar selepas</span><select id="campaign-delay-seconds"><option value="3">3 saat</option><option value="5" selected>5 saat</option><option value="7">7 saat</option><option value="10">10 saat</option></select></label>
@@ -342,6 +344,6 @@
 
   <script src="blog-config.js?v=20260809-1"></script>
   <script src="qr-data.js?v=20260811-2"></script>
-  <script src="admin.js?v=20260811-10"></script>
+  <script src="admin.js?v=20260811-11"></script>
 </body>
 </html>

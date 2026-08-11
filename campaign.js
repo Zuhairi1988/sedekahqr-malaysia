@@ -22,7 +22,9 @@
     title.textContent = campaign.title;
     message.textContent = campaign.message;
     qrName.textContent = activeItem.name;
-    qrImage.src = activeItem.image;
+    qrImage.src = campaign.image_path
+      ? `${config.supabaseUrl}/storage/v1/object/public/campaign-images/${encodeURIComponent(campaign.image_path)}`
+      : activeItem.image;
     qrImage.alt = `Kod QR sumbangan ${activeItem.name}`;
     modal.hidden = false;
     document.body.classList.add('modal-open');
