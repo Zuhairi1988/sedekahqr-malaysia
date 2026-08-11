@@ -14,6 +14,8 @@ type VisitPayload = {
   inpMs?: number | null;
   clsMilli?: number | null;
   ttfbMs?: number | null;
+  locationState?: string;
+  locationDistrict?: string;
 };
 
 const visitorPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -25,6 +27,11 @@ const metricValue = (value: unknown, maximum: number) => {
   const numeric = Number(value);
   return Number.isInteger(numeric) && numeric >= 0 && numeric <= maximum ? numeric : null;
 };
+
+const locationLabel = (value: unknown, maximum: number) => String(value || '')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, maximum);
 
 const hashVisitor = async (visitorId: string, pepper: string) => {
   const input = new TextEncoder().encode(`${visitorId}:${pepper}`);
@@ -113,6 +120,33 @@ Deno.serve(async (request) => {
   }
 
   const path = String(payload.path || '').toLowerCase().slice(0, 240);
+  if (eventType === 'page_location') {
+    const locationState = locationLabel(payload.locationState, 80);
+    const locationDistrict = locationLabel(payload.locationDistrict, 240);
+    if (!pathPattern.test(path) || !locationState || !locationDistrict) {
+      return jsonResponse(request, { error: 'Butiran lokasi tidak sah.' }, 400);
+    }
+
+    const recentThreshold = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+    const { data: recentView, error: recentViewError } = await supabase
+      .from('site_page_views')
+      .select('id')
+      .eq('visitor_hash', visitorHash)
+      .eq('path', path)
+      .gte('viewed_at', recentThreshold)
+      .order('viewed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (recentViewError) return jsonResponse(request, { error: 'Lokasi tidak dapat disemak.' }, 500);
+    if (!recentView) return jsonResponse(request, { ok: true, skipped: true });
+
+    const { error } = await supabase.from('site_page_views')
+      .update({ location_state: locationState, location_district: locationDistrict })
+      .eq('id', recentView.id);
+    if (error) return jsonResponse(request, { error: 'Lokasi tidak dapat direkodkan.' }, 500);
+    return jsonResponse(request, { ok: true });
+  }
+
   if (eventType === 'page_engagement') {
     const engagementSeconds = Number(payload.engagementSeconds);
     if (!pathPattern.test(path) || !Number.isInteger(engagementSeconds) || engagementSeconds < 0 || engagementSeconds > 14_400) {
@@ -165,12 +199,16 @@ Deno.serve(async (request) => {
   if (duplicate) return jsonResponse(request, { ok: true, deduplicated: true });
 
   const origin = request.headers.get('origin') || '';
+  const locationState = locationLabel(payload.locationState, 80);
+  const locationDistrict = locationLabel(payload.locationDistrict, 240);
   const { error } = await supabase.from('site_page_views').insert({
     visitor_hash: visitorHash,
     path,
     page_title: pageTitle,
     referrer_host: externalReferrerHost(String(payload.referrer || ''), origin),
-    device_type: classifyDevice(userAgent)
+    device_type: classifyDevice(userAgent),
+    location_state: locationState || null,
+    location_district: locationDistrict || null
   });
 
   if (error) return jsonResponse(request, { error: 'Lawatan tidak dapat direkodkan.' }, 500);

@@ -1,6 +1,7 @@
 (() => {
   const endpoint = 'https://wfujqvmqlwqmqmzdkepi.supabase.co/functions/v1/track-visit';
   const storageKey = 'sedekahqr-anonymous-visitor';
+  const locationKey = 'sedekahqr-analytics-location';
   const lifetime = 90 * 24 * 60 * 60 * 1000;
 
   if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
@@ -28,6 +29,19 @@
       return `/artikel/${safeSlug || 'tidak-diketahui'}`;
     }
     return '/';
+  };
+
+  const getDetectedLocation = () => {
+    try {
+      const location = JSON.parse(localStorage.getItem(locationKey));
+      if (!location?.state || !location?.district || Number(location.expiresAt) <= Date.now()) {
+        localStorage.removeItem(locationKey);
+        return {};
+      }
+      return { locationState: String(location.state), locationDistrict: String(location.district) };
+    } catch {
+      return {};
+    }
   };
 
   const webVitals = { lcpMs: null, inpMs: null, clsMilli: 0, ttfbMs: null };
@@ -96,7 +110,7 @@
     if (!path) return;
     await waitForArticleTitle(path);
     const pageTitle = document.title.replace(/\s+-\s+SedekahQR Malaysia$/, '').trim() || 'SedekahQR Malaysia';
-    await send({ path, pageTitle, referrer: document.referrer });
+    await send({ path, pageTitle, referrer: document.referrer, ...getDetectedLocation() });
 
     const enteredAt = Date.now();
     let engagementSent = false;
@@ -117,6 +131,12 @@
     window.addEventListener('pagehide', trackEngagement, { once: true });
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') trackEngagement();
+    }, { once: true });
+
+    window.addEventListener('sedekahqr-location-detected', (event) => {
+      const location = event.detail || {};
+      if (!location.state || !location.district) return;
+      void send({ eventType: 'page_location', path, locationState: location.state, locationDistrict: location.district });
     }, { once: true });
   };
 

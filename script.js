@@ -275,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const countdown = document.getElementById('prayer-countdown');
   const timeElements = [...document.querySelectorAll('.prayer-time')];
   const storageKey = 'sedekahqr-prayer-zone';
+  const analyticsLocationKey = 'sedekahqr-analytics-location';
   const defaultZone = 'WLY01';
   const malaysiaTimeZone = 'Asia/Kuala_Lumpur';
   const hijriMonths = [
@@ -506,6 +507,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const detected = await response.json();
       if (!detected.zone) throw new Error('Zon tidak ditemui');
       if (requestId !== locationRequestId) return;
+
+      const zoneDetails = getZoneDetails(detected.zone);
+      if (zoneDetails?.negeri && zoneDetails?.daerah) {
+        const location = {
+          state: zoneDetails.negeri,
+          district: zoneDetails.daerah,
+          expiresAt: Date.now() + 90 * 24 * 60 * 60 * 1000
+        };
+        try {
+          window.localStorage.setItem(analyticsLocationKey, JSON.stringify(location));
+        } catch {}
+        window.dispatchEvent(new CustomEvent('sedekahqr-location-detected', { detail: location }));
+      }
 
       await loadPrayerTimes(detected.zone, detected.district, 'Lokasi dan zon dikesan secara automatik.');
     } catch (error) {

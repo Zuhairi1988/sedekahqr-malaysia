@@ -40,6 +40,8 @@
     analyticsPages: document.querySelector('#analytics-pages'),
     analyticsReferrers: document.querySelector('#analytics-referrers'),
     analyticsDevices: document.querySelector('#analytics-devices'),
+    analyticsStates: document.querySelector('#analytics-states'),
+    analyticsDistricts: document.querySelector('#analytics-districts'),
     qrViews: document.querySelector('#qr-views'),
     qrDownloads: document.querySelector('#qr-downloads'),
     qrDownloaders: document.querySelector('#qr-downloaders'),
@@ -341,6 +343,24 @@
     });
   };
 
+  const renderLocationList = (container, rows, labelKey) => {
+    container.replaceChildren();
+    if (!rows.length) {
+      container.append(emptyAnalyticsElement('Belum ada data lokasi yang dibenarkan pengguna.'));
+      return;
+    }
+    rows.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'analytics-ranked-row';
+      const label = document.createElement('span');
+      const value = document.createElement('strong');
+      label.textContent = item[labelKey];
+      value.textContent = formatNumber(item.visitors);
+      row.append(label, value);
+      container.append(row);
+    });
+  };
+
   const renderAnalytics = (data) => {
     const days = Number(data.period_days) || Number(elements.analyticsPeriod.value);
     const totals = data.totals || {};
@@ -415,6 +435,11 @@
       : 'Belum ada sampel prestasi daripada lawatan baharu.';
   };
 
+  const renderLocationAnalytics = (data) => {
+    renderLocationList(elements.analyticsStates, Array.isArray(data.states) ? data.states : [], 'state');
+    renderLocationList(elements.analyticsDistricts, Array.isArray(data.districts) ? data.districts : [], 'district');
+  };
+
   const loadAnalytics = async () => {
     const days = Number(elements.analyticsPeriod.value) || 30;
     elements.analyticsRefresh.disabled = true;
@@ -422,18 +447,21 @@
     setAnalyticsStatus('Memuatkan statistik...');
     try {
       const options = { method: 'POST', body: JSON.stringify({ period_days: days }) };
-      const [response, qrResponse, performanceResponse] = await Promise.all([
+      const [response, qrResponse, performanceResponse, locationResponse] = await Promise.all([
         restRequest('rpc/get_site_analytics', options),
         restRequest('rpc/get_qr_analytics', options),
-        restRequest('rpc/get_web_performance_analytics', options)
+        restRequest('rpc/get_web_performance_analytics', options),
+        restRequest('rpc/get_visitor_location_analytics', options)
       ]);
       if (!response.ok) throw new Error(await parseResponseError(response, 'Statistik laman tidak dapat dimuatkan.'));
       if (!qrResponse.ok) throw new Error(await parseResponseError(qrResponse, 'Statistik QR tidak dapat dimuatkan.'));
       if (!performanceResponse.ok) throw new Error(await parseResponseError(performanceResponse, 'Statistik prestasi tidak dapat dimuatkan.'));
-      const [analytics, qrAnalytics, performanceAnalytics] = await Promise.all([response.json(), qrResponse.json(), performanceResponse.json()]);
+      if (!locationResponse.ok) throw new Error(await parseResponseError(locationResponse, 'Statistik lokasi tidak dapat dimuatkan.'));
+      const [analytics, qrAnalytics, performanceAnalytics, locationAnalytics] = await Promise.all([response.json(), qrResponse.json(), performanceResponse.json(), locationResponse.json()]);
       renderAnalytics(analytics);
       renderQrAnalytics(qrAnalytics);
       renderPerformanceAnalytics(performanceAnalytics);
+      renderLocationAnalytics(locationAnalytics);
       setAnalyticsStatus('');
     } catch (error) {
       setAnalyticsStatus(error.message || 'Statistik tidak dapat dimuatkan.', true);
