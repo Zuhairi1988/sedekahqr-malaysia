@@ -59,6 +59,10 @@
     campaignName: document.querySelector('#campaign-name'),
     campaignMessage: document.querySelector('#campaign-message'),
     campaignQrId: document.querySelector('#campaign-qr-id'),
+    campaignQrSearch: document.querySelector('#campaign-qr-search'),
+    campaignQrState: document.querySelector('#campaign-qr-state'),
+    campaignQrSelection: document.querySelector('#campaign-qr-selection'),
+    campaignQrResults: document.querySelector('#campaign-qr-results'),
     campaignStartsAt: document.querySelector('#campaign-starts-at'),
     campaignEndsAt: document.querySelector('#campaign-ends-at'),
     campaignDelaySeconds: document.querySelector('#campaign-delay-seconds'),
@@ -520,13 +524,61 @@
     elements.campaignStatus.className = `admin-inline-status${type ? ` is-${type}` : ''}`;
   };
 
-  const populateCampaignQrOptions = () => {
-    campaignCatalog.slice().sort((a, b) => a.name.localeCompare(b.name, 'ms')).forEach((item) => {
-      const option = document.createElement('option');
-      option.value = item.id;
-      option.textContent = `${item.name} - ${item.state}`;
-      elements.campaignQrId.append(option);
+  const normalizeCampaignSearch = (value) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('ms');
+
+  const renderCampaignQrResults = () => {
+    const query = normalizeCampaignSearch(elements.campaignQrSearch.value.trim());
+    const state = elements.campaignQrState.value;
+    elements.campaignQrResults.replaceChildren();
+    if (query.length < 2 && !state) {
+      const hint = document.createElement('p');
+      hint.className = 'campaign-qr-hint';
+      hint.textContent = 'Taip sekurang-kurangnya dua huruf atau pilih negeri untuk melihat senarai QR.';
+      elements.campaignQrResults.append(hint);
+      return;
+    }
+    const matches = campaignCatalog.filter((item) => {
+      const searchable = normalizeCampaignSearch(`${item.name} ${item.state} ${item.type} ${item.address || ''}`);
+      return (!state || item.state === state) && (!query || searchable.includes(query));
+    }).slice(0, 20);
+    if (!matches.length) {
+      const hint = document.createElement('p');
+      hint.className = 'campaign-qr-hint';
+      hint.textContent = 'Tiada QR sepadan. Cuba nama, kawasan atau negeri lain.';
+      elements.campaignQrResults.append(hint);
+      return;
+    }
+    matches.forEach((item) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'campaign-qr-result';
+      button.classList.toggle('is-selected', item.id === elements.campaignQrId.value);
+      const details = document.createElement('span');
+      const name = document.createElement('strong');
+      name.textContent = item.name;
+      const meta = document.createElement('span');
+      meta.textContent = `${item.type} - ${item.state}`;
+      details.append(name, meta);
+      const action = document.createElement('em');
+      action.textContent = item.id === elements.campaignQrId.value ? 'Dipilih' : 'Pilih';
+      button.append(details, action);
+      button.addEventListener('click', () => {
+        elements.campaignQrId.value = item.id;
+        elements.campaignQrSelection.textContent = `Dipilih: ${item.name} (${item.type}, ${item.state})`;
+        renderCampaignQrResults();
+      });
+      elements.campaignQrResults.append(button);
     });
+  };
+
+  const populateCampaignQrOptions = () => {
+    [...new Set(campaignCatalog.map((item) => item.state))].sort((a, b) => a.localeCompare(b, 'ms')).forEach((state) => {
+      const option = document.createElement('option');
+      option.value = state;
+      option.textContent = state;
+      elements.campaignQrState.append(option);
+    });
+    renderCampaignQrResults();
   };
 
   const setCampaignDefaults = () => {
@@ -549,6 +601,10 @@
     elements.campaignName.value = campaign.title;
     elements.campaignMessage.value = campaign.message;
     elements.campaignQrId.value = campaign.qr_id;
+    const selectedItem = campaignCatalog.find((item) => item.id === campaign.qr_id);
+    elements.campaignQrSelection.textContent = selectedItem ? `Dipilih: ${selectedItem.name} (${selectedItem.type}, ${selectedItem.state})` : 'QR penerima yang disimpan tidak ditemui dalam direktori.';
+    if (selectedItem) elements.campaignQrState.value = selectedItem.state;
+    renderCampaignQrResults();
     elements.campaignStartsAt.value = toDatetimeLocal(campaign.starts_at);
     elements.campaignEndsAt.value = toDatetimeLocal(campaign.ends_at);
     elements.campaignDelaySeconds.value = String(campaign.delay_seconds);
@@ -944,6 +1000,8 @@
     loadAnalytics();
   });
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
+  elements.campaignQrSearch.addEventListener('input', renderCampaignQrResults);
+  elements.campaignQrState.addEventListener('change', renderCampaignQrResults);
   elements.campaignForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     setCampaignStatus('');
