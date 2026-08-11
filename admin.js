@@ -21,10 +21,13 @@
     dashboardMessage: document.querySelector('#dashboard-message'),
     adminIdentity: document.querySelector('#admin-identity'),
     analyticsPeriod: document.querySelector('#analytics-period'),
+    analyticsEndDate: document.querySelector('#analytics-end-date'),
     analyticsRefresh: document.querySelector('#analytics-refresh'),
     analyticsStatus: document.querySelector('#analytics-status'),
     todayViews: document.querySelector('#today-views'),
     todayVisitors: document.querySelector('#today-visitors'),
+    todayViewsLabel: document.querySelector('#today-views-label'),
+    todayVisitorsLabel: document.querySelector('#today-visitors-label'),
     periodViews: document.querySelector('#period-views'),
     periodVisitors: document.querySelector('#period-visitors'),
     periodViewsLabel: document.querySelector('#period-views-label'),
@@ -239,6 +242,10 @@
 
   const formatNumber = (value) => new Intl.NumberFormat('ms-MY').format(Number(value) || 0);
 
+  const formatAnalyticsDate = (value) => new Intl.DateTimeFormat('ms-MY', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  }).format(new Date(`${value}T00:00:00`));
+
   const formatDuration = (seconds) => {
     const value = Number(seconds);
     if (!Number.isFinite(value) || value < 0) return '-';
@@ -362,7 +369,8 @@
   };
 
   const renderAnalytics = (data) => {
-    const days = Number(data.period_days) || Number(elements.analyticsPeriod.value);
+    const days = Number(data.period_days);
+    const periodLabel = days ? `${days} hari` : 'Semua masa';
     const totals = data.totals || {};
     elements.todayViews.textContent = formatNumber(totals.today_views);
     elements.todayVisitors.textContent = formatNumber(totals.today_visitors);
@@ -372,8 +380,12 @@
     elements.bounceRate.textContent = totals.bounce_rate === null || totals.bounce_rate === undefined
       ? '-'
       : `${Number(totals.bounce_rate).toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%`;
-    elements.periodViewsLabel.textContent = `Lawatan ${days} hari`;
-    elements.periodVisitorsLabel.textContent = `Pelawat ${days} hari`;
+    const endDate = data.end_date || elements.analyticsEndDate.value;
+    const isToday = endDate === new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+    elements.todayViewsLabel.textContent = isToday ? 'Lawatan hari ini' : `Lawatan ${formatAnalyticsDate(endDate)}`;
+    elements.todayVisitorsLabel.textContent = isToday ? 'Pelawat hari ini' : `Pelawat ${formatAnalyticsDate(endDate)}`;
+    elements.periodViewsLabel.textContent = `Lawatan ${periodLabel}`;
+    elements.periodVisitorsLabel.textContent = `Pelawat ${periodLabel}`;
     renderAnalyticsChart(Array.isArray(data.daily) ? data.daily : []);
     renderTopPages(Array.isArray(data.top_pages) ? data.top_pages : []);
     renderRankedList(elements.analyticsReferrers, Array.isArray(data.referrers) ? data.referrers : [], 'source');
@@ -441,17 +453,18 @@
   };
 
   const loadAnalytics = async () => {
-    const days = Number(elements.analyticsPeriod.value) || 30;
+    const days = Number(elements.analyticsPeriod.value);
+    const endDate = elements.analyticsEndDate.value;
     elements.analyticsRefresh.disabled = true;
     elements.analyticsRefresh.classList.add('is-loading');
     setAnalyticsStatus('Memuatkan statistik...');
     try {
-      const options = { method: 'POST', body: JSON.stringify({ period_days: days }) };
+      const options = { method: 'POST', body: JSON.stringify({ period_days: days, end_date: endDate }) };
       const [response, qrResponse, performanceResponse, locationResponse] = await Promise.all([
-        restRequest('rpc/get_site_analytics', options),
-        restRequest('rpc/get_qr_analytics', options),
-        restRequest('rpc/get_web_performance_analytics', options),
-        restRequest('rpc/get_visitor_location_analytics', options)
+        restRequest('rpc/get_site_analytics_range', options),
+        restRequest('rpc/get_qr_analytics_range', options),
+        restRequest('rpc/get_web_performance_analytics_range', options),
+        restRequest('rpc/get_visitor_location_analytics_range', options)
       ]);
       if (!response.ok) throw new Error(await parseResponseError(response, 'Statistik laman tidak dapat dimuatkan.'));
       if (!qrResponse.ok) throw new Error(await parseResponseError(qrResponse, 'Statistik QR tidak dapat dimuatkan.'));
@@ -769,7 +782,11 @@
   });
 
   elements.logoutButton.addEventListener('click', logout);
+  const malaysiaToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+  elements.analyticsEndDate.max = malaysiaToday();
+  elements.analyticsEndDate.value = malaysiaToday();
   elements.analyticsPeriod.addEventListener('change', loadAnalytics);
+  elements.analyticsEndDate.addEventListener('change', loadAnalytics);
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
   elements.newArticleButton.addEventListener('click', () => openEditor());
   elements.closeEditor.addEventListener('click', closeEditor);

@@ -74,9 +74,12 @@
             <label for="analytics-period">Tempoh</label>
             <select id="analytics-period">
               <option value="7">7 hari</option>
+              <option value="14">14 hari</option>
               <option value="30" selected>30 hari</option>
-              <option value="90">90 hari</option>
+              <option value="0">Semua masa</option>
             </select>
+            <label class="analytics-date-label" for="analytics-end-date">Hingga</label>
+            <input id="analytics-end-date" type="date" aria-label="Tarikh akhir analitik" />
             <button id="analytics-refresh" class="admin-icon-button analytics-refresh" type="button" aria-label="Muat semula statistik" title="Muat semula statistik">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5"></path>
@@ -89,8 +92,8 @@
         <p id="analytics-status" class="analytics-status" role="status" aria-live="polite">Memuatkan statistik...</p>
 
         <div class="analytics-kpis" aria-label="Ringkasan pelawat">
-          <div><span>Lawatan hari ini</span><strong id="today-views">-</strong></div>
-          <div><span>Pelawat hari ini</span><strong id="today-visitors">-</strong></div>
+          <div><span id="today-views-label">Lawatan hari ini</span><strong id="today-views">-</strong></div>
+          <div><span id="today-visitors-label">Pelawat hari ini</span><strong id="today-visitors">-</strong></div>
           <div><span id="period-views-label">Lawatan 30 hari</span><strong id="period-views">-</strong></div>
           <div><span id="period-visitors-label">Pelawat 30 hari</span><strong id="period-visitors">-</strong></div>
           <div title="Purata masa aktif pada setiap halaman bagi data yang direkodkan."><span>Purata masa halaman</span><strong id="average-page-time">-</strong></div>
@@ -299,6 +302,6 @@
   </main>
 
   <script src="blog-config.js?v=20260809-1"></script>
-  <script src="admin.js?v=20260811-5"></script>
+  <script src="admin.js?v=20260811-6"></script>
 </body>
 </html>
