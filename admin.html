@@ -77,9 +77,19 @@
               <option value="14">14 hari</option>
               <option value="30" selected>30 hari</option>
               <option value="0">Semua masa</option>
+              <option value="custom" hidden>Julat tersuai</option>
             </select>
-            <label class="analytics-date-label" for="analytics-end-date">Hingga</label>
-            <input id="analytics-end-date" type="date" aria-label="Tarikh akhir analitik" />
+            <label class="analytics-date-label" for="analytics-date-range">Tarikh</label>
+            <button id="analytics-date-range" class="analytics-date-range" type="button" aria-haspopup="dialog" aria-expanded="false"></button>
+            <div id="analytics-calendar" class="analytics-calendar" role="dialog" aria-label="Pilih julat tarikh analitik" hidden>
+              <div class="analytics-calendar-header">
+                <button id="analytics-calendar-prev" type="button" aria-label="Bulan sebelumnya">&#8249;</button>
+                <strong id="analytics-calendar-month"></strong>
+                <button id="analytics-calendar-next" type="button" aria-label="Bulan seterusnya">&#8250;</button>
+              </div>
+              <div class="analytics-calendar-weekdays" aria-hidden="true"><span>I</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span><span>A</span></div>
+              <div id="analytics-calendar-days" class="analytics-calendar-days"></div>
+            </div>
             <button id="analytics-refresh" class="admin-icon-button analytics-refresh" type="button" aria-label="Muat semula statistik" title="Muat semula statistik">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5"></path>
@@ -302,6 +312,6 @@
   </main>
 
   <script src="blog-config.js?v=20260809-1"></script>
-  <script src="admin.js?v=20260811-7"></script>
+  <script src="admin.js?v=20260811-8"></script>
 </body>
 </html>

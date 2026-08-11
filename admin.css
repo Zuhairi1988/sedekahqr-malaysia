@@ -321,6 +321,43 @@
   margin-left: 4px;
 }
 
+.analytics-date-range {
+  min-width: 218px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--admin-ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+
+.analytics-calendar {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  right: 42px;
+  width: 290px;
+  padding: 14px;
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(8, 42, 33, 0.16);
+}
+
+.analytics-controls { position: relative; }
+.analytics-calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.analytics-calendar-header button { width: 32px; height: 32px; border: 1px solid var(--admin-line); border-radius: 4px; background: #fff; color: var(--admin-ink); font-size: 22px; line-height: 1; }
+.analytics-calendar-weekdays, .analytics-calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; }
+.analytics-calendar-weekdays { margin-bottom: 5px; color: var(--admin-muted); font-size: 12px; font-weight: 700; }
+.analytics-calendar-days button { aspect-ratio: 1; border: 0; border-radius: 4px; background: transparent; color: var(--admin-ink); font: inherit; }
+.analytics-calendar-days button:hover:not(:disabled) { background: #e6f2ed; }
+.analytics-calendar-days button.is-between { background: #e6f2ed; }
+.analytics-calendar-days button.is-start, .analytics-calendar-days button.is-end { background: var(--admin-green); color: #fff; font-weight: 700; }
+.analytics-calendar-days button:disabled { color: #b5c1bc; }
+
 .analytics-refresh {
   width: 40px;
   height: 40px;

@@ -21,7 +21,12 @@
     dashboardMessage: document.querySelector('#dashboard-message'),
     adminIdentity: document.querySelector('#admin-identity'),
     analyticsPeriod: document.querySelector('#analytics-period'),
-    analyticsEndDate: document.querySelector('#analytics-end-date'),
+    analyticsDateRange: document.querySelector('#analytics-date-range'),
+    analyticsCalendar: document.querySelector('#analytics-calendar'),
+    analyticsCalendarMonth: document.querySelector('#analytics-calendar-month'),
+    analyticsCalendarDays: document.querySelector('#analytics-calendar-days'),
+    analyticsCalendarPrev: document.querySelector('#analytics-calendar-prev'),
+    analyticsCalendarNext: document.querySelector('#analytics-calendar-next'),
     analyticsRefresh: document.querySelector('#analytics-refresh'),
     analyticsStatus: document.querySelector('#analytics-status'),
     todayViews: document.querySelector('#today-views'),
@@ -246,6 +251,20 @@
     day: 'numeric', month: 'short', year: 'numeric'
   }).format(new Date(`${value}T00:00:00`));
 
+  const malaysiaToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
+  const dateFromKey = (value) => new Date(`${value}T00:00:00`);
+  const dateKey = (value) => value.toISOString().slice(0, 10);
+  const shiftDays = (value, days) => {
+    const date = dateFromKey(value);
+    date.setDate(date.getDate() + days);
+    return dateKey(date);
+  };
+  const differenceInDays = (start, end) => Math.floor((dateFromKey(end) - dateFromKey(start)) / 86_400_000) + 1;
+  let analyticsRangeStart = shiftDays(malaysiaToday(), -29);
+  let analyticsRangeEnd = malaysiaToday();
+  let calendarCursor = new Date(`${analyticsRangeEnd}T00:00:00`);
+  let selectingRangeEnd = false;
+
   const formatDuration = (seconds) => {
     const value = Number(seconds);
     if (!Number.isFinite(value) || value < 0) return '-';
@@ -380,7 +399,7 @@
     elements.bounceRate.textContent = totals.bounce_rate === null || totals.bounce_rate === undefined
       ? '-'
       : `${Number(totals.bounce_rate).toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%`;
-    const endDate = data.end_date || elements.analyticsEndDate.value;
+    const endDate = data.end_date || analyticsRangeEnd || malaysiaToday();
     const isToday = endDate === new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
     elements.todayViewsLabel.textContent = isToday ? 'Lawatan hari ini' : `Lawatan ${formatAnalyticsDate(endDate)}`;
     elements.todayVisitorsLabel.textContent = isToday ? 'Pelawat hari ini' : `Pelawat ${formatAnalyticsDate(endDate)}`;
@@ -453,8 +472,9 @@
   };
 
   const loadAnalytics = async () => {
-    const days = Number(elements.analyticsPeriod.value);
-    const endDate = elements.analyticsEndDate.value;
+    const selectedPeriod = elements.analyticsPeriod.value;
+    const days = selectedPeriod === '0' ? 0 : differenceInDays(analyticsRangeStart, analyticsRangeEnd);
+    const endDate = analyticsRangeEnd;
     elements.analyticsRefresh.disabled = true;
     elements.analyticsRefresh.classList.add('is-loading');
     setAnalyticsStatus('Memuatkan statistik...');
@@ -782,11 +802,69 @@
   });
 
   elements.logoutButton.addEventListener('click', logout);
-  const malaysiaToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-  elements.analyticsEndDate.max = malaysiaToday();
-  elements.analyticsEndDate.value = malaysiaToday();
-  elements.analyticsPeriod.addEventListener('change', loadAnalytics);
-  elements.analyticsEndDate.addEventListener('change', loadAnalytics);
+  const updateRangeButton = () => {
+    elements.analyticsDateRange.textContent = analyticsRangeStart
+      ? `${formatAnalyticsDate(analyticsRangeStart)} - ${formatAnalyticsDate(analyticsRangeEnd)}`
+      : `Semua masa hingga ${formatAnalyticsDate(analyticsRangeEnd)}`;
+  };
+
+  const renderCalendar = () => {
+    const year = calendarCursor.getFullYear();
+    const month = calendarCursor.getMonth();
+    elements.analyticsCalendarMonth.textContent = new Intl.DateTimeFormat('ms-MY', { month: 'long', year: 'numeric' }).format(calendarCursor);
+    elements.analyticsCalendarDays.replaceChildren();
+    const firstDay = new Date(year, month, 1).getDay();
+    const dayCount = new Date(year, month + 1, 0).getDate();
+    const today = malaysiaToday();
+    for (let blank = 0; blank < firstDay; blank += 1) elements.analyticsCalendarDays.append(document.createElement('span'));
+    for (let day = 1; day <= dayCount; day += 1) {
+      const key = dateKey(new Date(year, month, day));
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = String(day);
+      button.disabled = key > today;
+      button.classList.toggle('is-start', key === analyticsRangeStart);
+      button.classList.toggle('is-end', key === analyticsRangeEnd);
+      button.classList.toggle('is-between', Boolean(analyticsRangeStart && key > analyticsRangeStart && key < analyticsRangeEnd));
+      button.addEventListener('click', () => {
+        if (!analyticsRangeStart || !selectingRangeEnd) {
+          analyticsRangeStart = key;
+          analyticsRangeEnd = key;
+          selectingRangeEnd = true;
+        } else {
+          analyticsRangeEnd = key;
+          if (analyticsRangeEnd < analyticsRangeStart) [analyticsRangeStart, analyticsRangeEnd] = [analyticsRangeEnd, analyticsRangeStart];
+          selectingRangeEnd = false;
+        }
+        elements.analyticsPeriod.value = differenceInDays(analyticsRangeStart, analyticsRangeEnd) === 7 ? '7'
+          : differenceInDays(analyticsRangeStart, analyticsRangeEnd) === 14 ? '14'
+            : differenceInDays(analyticsRangeStart, analyticsRangeEnd) === 30 ? '30' : 'custom';
+        updateRangeButton();
+        renderCalendar();
+        if (analyticsRangeStart && analyticsRangeEnd) loadAnalytics();
+      });
+      elements.analyticsCalendarDays.append(button);
+    }
+  };
+
+  updateRangeButton();
+  elements.analyticsDateRange.addEventListener('click', () => {
+    const opening = elements.analyticsCalendar.hidden;
+    elements.analyticsCalendar.hidden = !opening;
+    elements.analyticsDateRange.setAttribute('aria-expanded', String(opening));
+    if (opening) renderCalendar();
+  });
+  elements.analyticsCalendarPrev.addEventListener('click', () => { calendarCursor.setMonth(calendarCursor.getMonth() - 1); renderCalendar(); });
+  elements.analyticsCalendarNext.addEventListener('click', () => { calendarCursor.setMonth(calendarCursor.getMonth() + 1); renderCalendar(); });
+  elements.analyticsPeriod.addEventListener('change', () => {
+    const period = elements.analyticsPeriod.value;
+    analyticsRangeEnd = malaysiaToday();
+    analyticsRangeStart = period === '0' ? '' : shiftDays(analyticsRangeEnd, -(Number(period) - 1));
+    selectingRangeEnd = false;
+    calendarCursor = new Date(`${analyticsRangeEnd}T00:00:00`);
+    updateRangeButton();
+    loadAnalytics();
+  });
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
   elements.newArticleButton.addEventListener('click', () => openEditor());
   elements.closeEditor.addEventListener('click', closeEditor);
