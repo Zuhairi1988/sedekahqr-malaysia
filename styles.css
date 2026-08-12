@@ -2084,12 +2084,6 @@
   }
 
   .directory-nav {
-    display: flex;
-    justify-content: flex-end;
-    font-size: 11px;
-  }
-
-  .directory-nav a {
     display: none;
   }
 
@@ -2104,6 +2098,8 @@
     color: var(--directory-green-dark);
     cursor: pointer;
     gap: 4px;
+    grid-column: 2;
+    justify-self: end;
   }
 
   .mobile-menu-toggle span {
