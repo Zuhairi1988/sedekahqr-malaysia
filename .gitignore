@@ -28,6 +28,7 @@
 !notification.js
 !install.js
 !language.js
+!nav-menu.js
 !service-worker.js
 !sw-register.js
 !manifest.webmanifest

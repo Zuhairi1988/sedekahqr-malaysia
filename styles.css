@@ -129,6 +129,11 @@
   color: var(--directory-green);
 }
 
+.mobile-menu-toggle,
+.mobile-page-menu {
+  display: none;
+}
+
 .directory-badge {
   color: var(--directory-green-dark);
   font-size: 13px;
@@ -2084,12 +2089,57 @@
     font-size: 11px;
   }
 
-  .directory-nav a:not(:last-child) {
+  .directory-nav a {
     display: none;
   }
 
-  .directory-nav a.quran-menu-link {
-    display: inline;
+  .mobile-menu-toggle {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    padding: 8px;
+    border: 1px solid var(--directory-line);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--directory-green-dark);
+    cursor: pointer;
+    gap: 4px;
+  }
+
+  .mobile-menu-toggle span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+
+  .mobile-page-menu:not([hidden]) {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% - 8px);
+    right: 14px;
+    display: grid;
+    min-width: 150px;
+    padding: 6px;
+    border: 1px solid var(--directory-line);
+    border-radius: 7px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgb(14 57 42 / 16%);
+  }
+
+  .mobile-page-menu a {
+    padding: 11px 12px;
+    border-radius: 5px;
+    color: var(--directory-ink);
+    font-size: .9rem;
+    font-weight: 750;
+  }
+
+  .mobile-page-menu a:hover,
+  .mobile-page-menu a:focus-visible {
+    background: #edf7f1;
+    color: var(--directory-green-dark);
   }
 
   .catalog-grid {

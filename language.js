@@ -6,6 +6,7 @@
     'Cara Sedekah': 'How to Donate',
     'Artikel': 'Articles',
     'Al-Quran': 'The Quran',
+    'Buka menu': 'Open menu',
     'BACAAN HARIAN': 'DAILY READING',
     'Teks Arab dan terjemahan Bahasa Melayu untuk bacaan harian anda.': 'Arabic text and Malay translation for your daily reading.',
     'Teruskan bacaan': 'Continue reading',
