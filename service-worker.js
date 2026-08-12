@@ -1,20 +1,23 @@
-const CACHE_NAME = 'sedekahqr-shell-v34';
+const CACHE_NAME = 'sedekahqr-shell-v35';
 const APP_SHELL = [
   './',
   './index.html',
   './blog.html',
   './article.html',
   './quran.html',
+  './hadis.html',
   './privacy.html',
   './admin.html',
   './styles.css',
   './blog.css',
   './quran.css',
+  './hadis.css',
   './admin.css',
   './script.js',
   './blog.js',
   './article.js',
   './quran.js',
+  './hadis.js',
   './admin.js',
   './blog-api.js',
   './blog-config.js',
@@ -66,6 +69,8 @@ self.addEventListener('fetch', (event) => {
         ? './article.html'
         : url.pathname.endsWith('/quran.html')
           ? './quran.html'
+        : url.pathname.endsWith('/hadis.html')
+          ? './hadis.html'
         : url.pathname.endsWith('/privacy.html')
           ? './privacy.html'
         : url.pathname.endsWith('/admin.html')

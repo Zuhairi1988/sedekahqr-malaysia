@@ -7,11 +7,13 @@
 !article.html
 !privacy.html
 !quran.html
+!hadis.html
 !admin.html
 !admin-pricing.html
 !styles.css
 !blog.css
 !quran.css
+!hadis.css
 !admin.css
 !admin-pricing.css
 !script.js
@@ -20,6 +22,7 @@
 !blog.js
 !article.js
 !quran.js
+!hadis.js
 !admin.js
 !admin-pricing.js
 !blog-api.js
