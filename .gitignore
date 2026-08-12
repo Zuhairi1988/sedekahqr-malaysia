@@ -6,10 +6,12 @@
 !blog.html
 !article.html
 !privacy.html
+!quran.html
 !admin.html
 !admin-pricing.html
 !styles.css
 !blog.css
+!quran.css
 !admin.css
 !admin-pricing.css
 !script.js
@@ -17,6 +19,7 @@
 !campaign.js
 !blog.js
 !article.js
+!quran.js
 !admin.js
 !admin-pricing.js
 !blog-api.js

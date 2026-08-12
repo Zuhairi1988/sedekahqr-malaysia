@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d513f" />
+  <meta name="description" content="Baca Al-Quran dengan teks Arab dan terjemahan Bahasa Melayu di SedekahQR." />
+  <title>Al-Quran - SedekahQR</title>
+  <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260812-1" />
+  <link rel="stylesheet" href="styles.css?v=20260812-1" />
+  <link rel="stylesheet" href="quran.css?v=20260812-1" />
+</head>
+<body class="directory-body quran-body">
+  <header class="directory-header">
+    <div class="directory-container header-inner">
+      <a class="directory-brand" href="/" aria-label="SedekahQR - halaman utama">
+        <span class="brand-mark" aria-hidden="true"><img src="assets/sedekahqr-logo.svg" alt="" /></span>
+        <span class="brand-wordmark"><strong><span>Sedekah</span><b>QR</b></strong></span>
+      </a>
+      <nav class="directory-nav" aria-label="Navigasi utama">
+        <a href="/">Homepage</a>
+        <a href="/#direktori">Direktori</a>
+        <a href="/#panduan">Cara Sedekah</a>
+        <a href="quran.html" aria-current="page">Al-Quran</a>
+        <a href="blog.html">Artikel</a>
+      </nav>
+      <div class="header-page-actions">
+        <div class="language-switch" role="group" aria-label="Pilih bahasa">
+          <button type="button" data-language="ms" aria-pressed="true">BM</button>
+          <button type="button" data-language="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="quran-main directory-container">
+    <section class="quran-intro" aria-labelledby="quran-title">
+      <div>
+        <p class="quran-eyebrow">BACAAN HARIAN</p>
+        <h1 id="quran-title">Al-Quran</h1>
+        <p>Teks Arab dan terjemahan Bahasa Melayu untuk bacaan harian anda.</p>
+      </div>
+      <div class="quran-intro-actions">
+        <button id="continue-reading" class="quran-secondary-button" type="button" hidden>Teruskan bacaan</button>
+        <div class="quran-font-controls" role="group" aria-label="Saiz teks Arab">
+          <button id="decrease-font" type="button" title="Kecilkan teks Arab" aria-label="Kecilkan teks Arab">A-</button>
+          <button id="increase-font" type="button" title="Besarkan teks Arab" aria-label="Besarkan teks Arab">A+</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="quran-reader" aria-label="Pembaca Al-Quran">
+      <aside class="quran-surah-panel">
+        <label for="surah-search">Cari surah</label>
+        <input id="surah-search" type="search" placeholder="Contoh: Al-Baqarah atau 2" autocomplete="off" />
+        <p id="surah-status" class="quran-status" aria-live="polite">Memuatkan senarai surah...</p>
+        <ol id="surah-list" class="surah-list" aria-label="Senarai surah"></ol>
+      </aside>
+
+      <section class="quran-content" aria-live="polite">
+        <div id="quran-empty" class="quran-empty">
+          <p class="quran-eyebrow">MULAKAN BACAAN</p>
+          <h2>Pilih satu surah</h2>
+          <p>Gunakan carian atau pilih surah daripada senarai di sebelah.</p>
+        </div>
+        <article id="surah-reader" hidden>
+          <header class="surah-heading">
+            <div>
+              <p id="surah-meta" class="quran-eyebrow"></p>
+              <h2 id="surah-title"></h2>
+              <p id="surah-translation"></p>
+            </div>
+            <p id="surah-arabic-name" class="surah-arabic-name" lang="ar" dir="rtl"></p>
+          </header>
+          <p id="translation-credit" class="translation-credit"></p>
+          <div id="ayah-list" class="ayah-list"></div>
+        </article>
+        <div id="quran-error" class="quran-error" hidden>
+          <h2>Tidak dapat memuatkan Al-Quran</h2>
+          <p>Semak sambungan internet anda dan cuba semula.</p>
+          <button id="retry-quran" class="quran-primary-button" type="button">Cuba semula</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="directory-footer">
+    <div class="directory-container">
+      <div class="footer-main">
+        <div class="footer-brand-block">
+          <a class="footer-brand" href="/" aria-label="SedekahQR - halaman utama"><img src="assets/sedekahqr-logo.svg" alt="" width="48" height="48" /><strong>SedekahQR</strong></a>
+          <p>Direktori kod QR masjid, surau dan institusi komuniti untuk memudahkan sumbangan secara terus melalui aplikasi bank atau e-wallet.</p>
+        </div>
+        <nav class="footer-links" aria-label="Jelajah"><h2>Jelajah</h2><a href="/">Homepage</a><a href="/#direktori">Direktori</a><a href="/#panduan">Cara Sedekah</a><a href="quran.html">Al-Quran</a><a href="blog.html">Artikel</a></nav>
+        <div class="footer-info"><h2>Hubungi</h2><a href="mailto:sedekahqr@gmail.com">sedekahqr@gmail.com</a><a href="privacy.html">Notis Privasi</a><p>Pastikan nama penerima dalam aplikasi bank adalah betul sebelum mengesahkan transaksi.</p></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 SedekahQR. Direktori komuniti bebas.</p><p>Tidak berafiliasi dengan mana-mana bank atau penyedia e-wallet.</p></div>
+    </div>
+  </footer>
+
+  <script src="language.js?v=20260812-1"></script>
+  <script src="analytics.js?v=20260811-2"></script>
+  <script src="sw-register.js?v=20260811-1"></script>
+  <script src="quran.js?v=20260812-1"></script>
+</body>
+</html>
