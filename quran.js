@@ -9,6 +9,7 @@
   const reader = document.querySelector('#surah-reader');
   const error = document.querySelector('#quran-error');
   const ayahList = document.querySelector('#ayah-list');
+  const audio = document.querySelector('#surah-audio');
   const continueButton = document.querySelector('#continue-reading');
   let surahs = [];
   let selectedId = null;
@@ -43,6 +44,9 @@
     selectedId = id;
     renderSurahs();
     empty.hidden = true; error.hidden = true; reader.hidden = false;
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
     ayahList.replaceChildren();
     const loading = document.createElement('p'); loading.className = 'quran-status'; loading.textContent = 'Memuatkan ayat...'; ayahList.append(loading);
     try {
@@ -55,6 +59,8 @@
       document.querySelector('#surah-translation').textContent = detail.englishNameTranslation;
       document.querySelector('#surah-arabic-name').textContent = detail.name;
       document.querySelector('#translation-credit').textContent = 'Terjemahan Bahasa Melayu: Abdullah Muhammad Basmeih.';
+      audio.src = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${id}.mp3`;
+      audio.load();
       ayahList.replaceChildren();
       detail.ayahs.forEach((ayah, index) => {
         const block = document.createElement('section'); block.className = 'ayah';
