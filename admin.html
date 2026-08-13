@@ -233,6 +233,12 @@
         <div id="qr-reports-list" class="campaign-qr-results" aria-live="polite"></div>
       </section>
 
+      <section class="admin-campaign" aria-labelledby="verification-title">
+        <div class="admin-panel-heading"><div><p class="admin-kicker">Semakan direktori</p><h2 id="verification-title">Pengesahan QR</h2></div><p>Tandakan hanya QR yang telah disemak dengan pihak masjid atau surau.</p></div>
+        <div class="campaign-qr-filters"><label class="admin-field admin-field-wide"><span>QR penerima</span><select id="verification-qr-id"></select></label><label class="admin-field"><span>Status</span><select id="verification-status"><option value="pending">Belum disahkan</option><option value="verified">Disahkan</option><option value="suspended">Digantung</option></select></label><label class="admin-field admin-field-wide"><span>Catatan admin</span><input id="verification-note" maxlength="360" placeholder="Contoh: Nama penerima disahkan oleh pihak surau pada 13 Ogos 2026" /></label><button id="save-verification" class="admin-primary-button" type="button">Simpan status</button></div>
+        <p id="verification-message" class="admin-inline-status" role="status" aria-live="polite"></p>
+      </section>
+
       <div class="admin-summary" aria-label="Ringkasan artikel">
         <div><strong id="total-count">0</strong><span>Semua artikel</span></div>
         <div><strong id="published-count">0</strong><span>Diterbitkan</span></div>

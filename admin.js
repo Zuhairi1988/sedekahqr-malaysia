@@ -74,6 +74,11 @@
     campaignStatus: document.querySelector('#campaign-status'),
     qrReportsStatus: document.querySelector('#qr-reports-status'),
     qrReportsList: document.querySelector('#qr-reports-list'),
+    verificationQrId: document.querySelector('#verification-qr-id'),
+    verificationStatus: document.querySelector('#verification-status'),
+    verificationNote: document.querySelector('#verification-note'),
+    verificationSave: document.querySelector('#save-verification'),
+    verificationMessage: document.querySelector('#verification-message'),
     totalCount: document.querySelector('#total-count'),
     publishedCount: document.querySelector('#published-count'),
     draftCount: document.querySelector('#draft-count'),
@@ -693,6 +698,38 @@
     });
   };
 
+  const setVerificationMessage = (message, success = false) => {
+    elements.verificationMessage.textContent = message;
+    elements.verificationMessage.classList.toggle('is-success', success);
+  };
+
+  const populateVerificationOptions = () => {
+    elements.verificationQrId.replaceChildren();
+    campaignCatalog.forEach((item) => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = `${item.name} (${item.state})`;
+      elements.verificationQrId.append(option);
+    });
+  };
+
+  const loadVerification = async () => {
+    const qrId = elements.verificationQrId.value;
+    if (!qrId) return;
+    const response = await restRequest(`qr_verifications?select=status,note&qr_id=eq.${encodeURIComponent(qrId)}&limit=1`);
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Status pengesahan tidak dapat dimuatkan.'));
+    const record = (await response.json())[0];
+    elements.verificationStatus.value = record?.status || 'pending';
+    elements.verificationNote.value = record?.note || '';
+  };
+
+  const saveVerification = async () => {
+    const payload = { qr_id: elements.verificationQrId.value, status: elements.verificationStatus.value, note: elements.verificationNote.value.trim() || null, reviewed_at: new Date().toISOString(), reviewed_by: session.user.id };
+    const response = await restRequest('qr_verifications?on_conflict=qr_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(payload) });
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Status pengesahan tidak dapat disimpan.'));
+    setVerificationMessage('Status pengesahan telah disimpan.', true);
+  };
+
   const createIconButton = (label, symbol, className, handler) => {
     const button = document.createElement('button');
     button.type = 'button';
@@ -974,7 +1011,8 @@
       await login(elements.loginEmail.value.trim(), elements.loginPassword.value);
       setAuthenticatedView(true);
       populateCampaignQrOptions();
-      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign(), loadQrReports()]);
+      populateVerificationOptions();
+      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign(), loadQrReports(), loadVerification()]);
     } catch (error) {
       persistSession(null);
       showMessage(elements.loginMessage, error.message || 'Log masuk gagal.');
@@ -1057,6 +1095,8 @@
   });
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
   elements.campaignQrSearch.addEventListener('input', renderCampaignQrResults);
+  elements.verificationQrId.addEventListener('change', () => loadVerification().catch((error) => setVerificationMessage(error.message || 'Status pengesahan tidak dapat dimuatkan.')));
+  elements.verificationSave.addEventListener('click', async () => { elements.verificationSave.disabled = true; setVerificationMessage('Menyimpan...'); try { await saveVerification(); } catch (error) { setVerificationMessage(error.message || 'Status pengesahan tidak dapat disimpan.'); } finally { elements.verificationSave.disabled = false; } });
   elements.campaignQrState.addEventListener('change', renderCampaignQrResults);
   elements.campaignImage.addEventListener('change', () => {
     const file = elements.campaignImage.files?.[0] || null;
