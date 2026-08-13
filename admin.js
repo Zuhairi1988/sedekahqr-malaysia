@@ -283,7 +283,11 @@
 
   const malaysiaToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
   const dateFromKey = (value) => new Date(`${value}T00:00:00`);
-  const dateKey = (value) => value.toISOString().slice(0, 10);
+  const dateKey = (value) => [
+    value.getFullYear(),
+    String(value.getMonth() + 1).padStart(2, '0'),
+    String(value.getDate()).padStart(2, '0')
+  ].join('-');
   const shiftDays = (value, days) => {
     const date = dateFromKey(value);
     date.setDate(date.getDate() + days);
