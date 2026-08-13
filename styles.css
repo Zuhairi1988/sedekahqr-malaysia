@@ -1531,6 +1531,12 @@
   text-underline-offset: 3px;
 }
 
+.modal-profile-actions { display: flex; gap: 16px; margin-top: 12px; }
+.modal-profile-actions a, .modal-profile-actions button { padding: 0; border: 0; background: none; color: var(--directory-green-dark); font: inherit; font-size: 12px; font-weight: 850; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.qr-report-modal { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 24px; }
+.qr-report-dialog { position: relative; z-index: 1; width: min(480px, 100%); padding: 42px 34px 34px; border-top: 4px solid var(--directory-yellow); border-radius: 8px; background: #fff; box-shadow: 0 24px 70px rgba(0, 0, 0, .3); }
+.qr-report-dialog h2 { margin-top: 8px; font-size: 26px; }.qr-report-dialog form { display: grid; gap: 16px; margin-top: 20px; }.qr-report-dialog label { display: grid; gap: 7px; color: var(--directory-ink); font-size: 12px; font-weight: 850; }.qr-report-dialog select, .qr-report-dialog textarea { width: 100%; border: 1px solid #b8cfc5; border-radius: 6px; padding: 10px 12px; background: #fff; color: var(--directory-ink); font: inherit; }.qr-report-dialog textarea { resize: vertical; }.qr-report-dialog #qr-report-status { min-height: 20px; color: var(--directory-muted); font-size: 12px; }
+
 .modal-quote-slider {
   min-height: 190px;
   margin-top: 26px;
@@ -2406,6 +2412,9 @@
     align-items: end;
     padding: 0;
   }
+
+  .qr-report-modal { align-items: end; padding: 0; }
+  .qr-report-dialog { width: 100%; border-radius: 8px 8px 0 0; }
 
   .emergency-campaign-modal { align-items: end; padding: 0; }
   .emergency-campaign-dialog { width: 100%; grid-template-columns: 1fr; max-height: 92vh; overflow: auto; border-radius: 8px 8px 0 0; }

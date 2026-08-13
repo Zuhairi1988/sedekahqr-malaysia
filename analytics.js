@@ -25,6 +25,10 @@
     if (/\/blog\.html$/.test(pathname)) return '/blog';
     if (/\/quran\.html$/.test(pathname)) return '/al-quran';
     if (/\/hadis\.html$/.test(pathname)) return '/hadis';
+    if (/\/profile\.html$/.test(pathname)) {
+      const id = new URLSearchParams(location.search).get('id') || 'tidak-diketahui';
+      return `/profil/${id.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 120) || 'tidak-diketahui'}`;
+    }
     if (/\/article\.html$/.test(pathname)) {
       const slug = new URLSearchParams(location.search).get('slug') || 'tidak-diketahui';
       const safeSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 160);
@@ -87,7 +91,7 @@
 
   const send = async (payload) => {
     try {
-      await fetch(endpoint, {
+      return await fetch(endpoint, {
         method: 'POST',
         mode: 'cors',
         credentials: 'omit',
@@ -97,6 +101,7 @@
       });
     } catch {
       // Analytics must never interrupt the public experience.
+      return null;
     }
   };
 
@@ -104,6 +109,13 @@
     trackQrEvent(eventType, item) {
       if (!['qr_view', 'qr_download'].includes(eventType) || !item?.name || !item?.state) return;
       void send({ eventType, itemName: item.name, itemState: item.state });
+    },
+    reportQr(item, reportType, reportDetails) {
+      if (!item?.id || !item?.name || !reportType || !reportDetails) return Promise.resolve();
+      return send({ eventType: 'qr_report', itemName: item.id, itemState: item.name, reportType, reportDetails })
+        .then((response) => {
+          if (!response?.ok) throw new Error('Laporan tidak dapat dihantar.');
+        });
     }
   });
 

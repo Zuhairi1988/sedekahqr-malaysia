@@ -72,6 +72,8 @@
     campaignIsActive: document.querySelector('#campaign-is-active'),
     campaignSave: document.querySelector('#save-campaign'),
     campaignStatus: document.querySelector('#campaign-status'),
+    qrReportsStatus: document.querySelector('#qr-reports-status'),
+    qrReportsList: document.querySelector('#qr-reports-list'),
     totalCount: document.querySelector('#total-count'),
     publishedCount: document.querySelector('#published-count'),
     draftCount: document.querySelector('#draft-count'),
@@ -668,6 +670,29 @@
     setCampaignStatus(payload.is_active ? 'Kempen aktif telah disimpan.' : 'Kempen telah disimpan sebagai tidak aktif.', 'success');
   };
 
+  const loadQrReports = async () => {
+    elements.qrReportsList.replaceChildren();
+    elements.qrReportsStatus.textContent = 'Memuatkan laporan...';
+    const response = await restRequest('qr_reports?select=id,qr_id,qr_name,report_type,details,status,admin_note,created_at&order=created_at.desc&limit=80');
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Laporan QR tidak dapat dimuatkan.'));
+    const reports = await response.json();
+    elements.qrReportsStatus.textContent = reports.length ? `${reports.length} laporan direkodkan.` : 'Belum ada laporan QR.';
+    reports.forEach((report) => {
+      const card = document.createElement('article');
+      card.className = 'campaign-qr-result';
+      const created = new Intl.DateTimeFormat('ms-MY', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(report.created_at));
+      const type = { recipient_name: 'Nama penerima', qr_invalid: 'QR tidak boleh digunakan', location: 'Lokasi', other: 'Isu lain' }[report.report_type] || report.report_type;
+      card.innerHTML = `<div><strong>${report.qr_name}</strong><small>${type} · ${created}</small><p>${report.details}</p></div>`;
+      const controls = document.createElement('div');
+      controls.className = 'campaign-qr-filters';
+      const select = document.createElement('select');
+      [['new', 'Baharu'], ['reviewing', 'Dalam semakan'], ['resolved', 'Selesai'], ['dismissed', 'Ditutup']].forEach(([value, label]) => { const option = document.createElement('option'); option.value = value; option.textContent = label; option.selected = report.status === value; select.append(option); });
+      const save = document.createElement('button'); save.type = 'button'; save.className = 'admin-secondary-button'; save.textContent = 'Kemas kini';
+      save.addEventListener('click', async () => { save.disabled = true; try { const update = await restRequest(`qr_reports?id=eq.${report.id}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ status: select.value, reviewed_at: new Date().toISOString(), reviewed_by: session.user.id }) }); if (!update.ok) throw new Error(await parseResponseError(update, 'Status tidak dapat dikemas kini.')); await loadQrReports(); } catch (error) { elements.qrReportsStatus.textContent = error.message || 'Status tidak dapat dikemas kini.'; } finally { save.disabled = false; } });
+      controls.append(select, save); card.append(controls); elements.qrReportsList.append(card);
+    });
+  };
+
   const createIconButton = (label, symbol, className, handler) => {
     const button = document.createElement('button');
     button.type = 'button';
@@ -949,7 +974,7 @@
       await login(elements.loginEmail.value.trim(), elements.loginPassword.value);
       setAuthenticatedView(true);
       populateCampaignQrOptions();
-      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign()]);
+      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign(), loadQrReports()]);
     } catch (error) {
       persistSession(null);
       showMessage(elements.loginMessage, error.message || 'Log masuk gagal.');

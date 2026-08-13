@@ -16,6 +16,8 @@ type VisitPayload = {
   ttfbMs?: number | null;
   locationState?: string;
   locationDistrict?: string;
+  reportType?: string;
+  reportDetails?: string;
 };
 
 const visitorPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -91,6 +93,37 @@ Deno.serve(async (request) => {
 
   const duplicateThreshold = new Date(Date.now() - 30_000).toISOString();
   const eventType = String(payload.eventType || '');
+  if (eventType === 'qr_report') {
+    const qrId = String(payload.itemName || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 120);
+    const qrName = String(payload.itemState || '').replace(/\s+/g, ' ').trim().slice(0, 180);
+    const reportType = String(payload.reportType || '');
+    const details = String(payload.reportDetails || '').replace(/\s+/g, ' ').trim().slice(0, 600);
+    if (!qrId || !qrName || !['recipient_name', 'qr_invalid', 'location', 'other'].includes(reportType) || details.length < 8) {
+      return jsonResponse(request, { error: 'Butiran laporan tidak sah.' }, 400);
+    }
+    const reportThreshold = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: duplicate, error: duplicateError } = await supabase
+      .from('qr_reports')
+      .select('id')
+      .eq('reporter_hash', visitorHash)
+      .eq('qr_id', qrId)
+      .eq('report_type', reportType)
+      .gte('created_at', reportThreshold)
+      .limit(1)
+      .maybeSingle();
+    if (duplicateError) return jsonResponse(request, { error: 'Laporan tidak dapat disemak.' }, 500);
+    if (duplicate) return jsonResponse(request, { ok: true, deduplicated: true });
+    const { error } = await supabase.from('qr_reports').insert({
+      qr_id: qrId,
+      qr_name: qrName,
+      report_type: reportType,
+      details,
+      reporter_hash: visitorHash
+    });
+    if (error) return jsonResponse(request, { error: 'Laporan tidak dapat direkodkan.' }, 500);
+    return jsonResponse(request, { ok: true }, 201);
+  }
+
   if (['qr_view', 'qr_download'].includes(eventType)) {
     const itemName = String(payload.itemName || '').replace(/\s+/g, ' ').trim().slice(0, 180);
     const itemState = String(payload.itemState || '').replace(/\s+/g, ' ').trim().slice(0, 80);

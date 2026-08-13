@@ -354,6 +354,10 @@
               <a id="modal-phone"></a>
             </div>
           </div>
+          <div class="modal-profile-actions">
+            <a id="modal-profile-link" href="profile.html">Profil penerima</a>
+            <button id="open-qr-report" type="button">Laporkan QR</button>
+          </div>
           <section id="modal-quote" class="modal-quote-slider" aria-label="Renungan sedekah">
             <p class="modal-quote-eyebrow">Renungan sedekah</p>
             <blockquote>
@@ -414,6 +418,22 @@
           </section>
         </div>
       </div>
+    </section>
+  </div>
+
+  <div id="qr-report-modal" class="qr-report-modal" hidden>
+    <div class="modal-backdrop" data-close-qr-report></div>
+    <section class="qr-report-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-report-title">
+      <button class="modal-close" type="button" data-close-qr-report aria-label="Tutup laporan">&times;</button>
+      <p class="directory-eyebrow">SEMAKAN DIREKTORI</p>
+      <h2 id="qr-report-title">Laporkan QR bermasalah</h2>
+      <p id="qr-report-name" class="modal-meta"></p>
+      <form id="qr-report-form">
+        <label><span>Jenis isu</span><select id="qr-report-type" required><option value="recipient_name">Nama penerima tidak sepadan</option><option value="qr_invalid">QR tidak boleh digunakan</option><option value="location">Maklumat lokasi tidak tepat</option><option value="other">Isu lain</option></select></label>
+        <label><span>Butiran ringkas</span><textarea id="qr-report-details" rows="4" minlength="8" maxlength="600" placeholder="Terangkan isu yang anda nampak." required></textarea></label>
+        <p id="qr-report-status" role="status" aria-live="polite"></p>
+        <button id="submit-qr-report" class="view-qr-button" type="submit">Hantar laporan</button>
+      </form>
     </section>
   </div>
 

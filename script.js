@@ -614,6 +614,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalQuoteText = document.getElementById('modal-quote-text');
   const modalQuoteSource = document.getElementById('modal-quote-source');
   const modalQuoteIndicators = [...document.querySelectorAll('.modal-quote-indicators span')];
+  const modalProfileLink = document.getElementById('modal-profile-link');
+  const reportModal = document.getElementById('qr-report-modal');
+  const reportOpen = document.getElementById('open-qr-report');
+  const reportForm = document.getElementById('qr-report-form');
+  const reportName = document.getElementById('qr-report-name');
+  const reportType = document.getElementById('qr-report-type');
+  const reportDetails = document.getElementById('qr-report-details');
+  const reportStatus = document.getElementById('qr-report-status');
+  const reportSubmit = document.getElementById('submit-qr-report');
   const toast = document.getElementById('site-toast');
   const pageSize = 12;
   let currentPage = 1;
@@ -1000,6 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
     activeItem = item;
     modalTrigger = trigger || document.activeElement;
     modalName.textContent = item.name;
+    modalProfileLink.href = `profile.html?id=${encodeURIComponent(item.id)}`;
     modalMeta.textContent = `${item.type} · ${item.state}`;
     modalAddress.textContent = details.address;
     modalMapLink.href = details.mapsUrl;
@@ -1052,6 +1062,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modalTrigger) modalTrigger.focus();
   };
 
+  const closeReportModal = () => {
+    reportModal.hidden = true;
+    reportStatus.textContent = '';
+    reportDetails.value = '';
+  };
+
   searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
     currentPage = 1;
@@ -1076,6 +1092,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   emptyClear.addEventListener('click', resetFilters);
   modal.querySelectorAll('[data-close-modal]').forEach((element) => element.addEventListener('click', closeModal));
+  reportModal.querySelectorAll('[data-close-qr-report]').forEach((element) => element.addEventListener('click', closeReportModal));
+  reportOpen.addEventListener('click', () => {
+    if (!activeItem) return;
+    reportName.textContent = activeItem.name;
+    reportModal.hidden = false;
+    reportType.focus();
+  });
+  reportForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!activeItem) return;
+    reportSubmit.disabled = true;
+    reportStatus.textContent = 'Menghantar laporan...';
+    try {
+      await globalThis.SEDEKAHQR_ANALYTICS?.reportQr(activeItem, reportType.value, reportDetails.value.trim());
+      reportStatus.textContent = 'Terima kasih. Laporan telah dihantar untuk semakan.';
+      window.setTimeout(closeReportModal, 1200);
+    } catch {
+      reportStatus.textContent = 'Laporan tidak dapat dihantar. Cuba lagi.';
+    } finally {
+      reportSubmit.disabled = false;
+    }
+  });
   qrTab.addEventListener('click', () => {
     selectMediaTab('qr');
     trackQrEvent('qr_view');
@@ -1094,7 +1132,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !modal.hidden) closeModal();
+    if (event.key === 'Escape' && !reportModal.hidden) closeReportModal();
+    else if (event.key === 'Escape' && !modal.hidden) closeModal();
   });
 
   shareQr.addEventListener('click', async () => {
@@ -1149,6 +1188,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (requestedId) {
     const requestedItem = catalog.find((item) => item.id === requestedId);
     const requestedView = new URL(window.location.href).searchParams.get('view');
-    if (requestedItem) openModal(requestedItem, null, requestedView === 'map' ? 'map' : 'qr');
+    if (requestedItem) {
+      openModal(requestedItem, null, requestedView === 'map' ? 'map' : 'qr');
+      if (new URL(window.location.href).searchParams.get('report') === '1') reportOpen.click();
+    }
   }
 });

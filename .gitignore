@@ -8,12 +8,14 @@
 !privacy.html
 !quran.html
 !hadis.html
+!profile.html
 !admin.html
 !admin-pricing.html
 !styles.css
 !blog.css
 !quran.css
 !hadis.css
+!profile.css
 !admin.css
 !admin-pricing.css
 !script.js
@@ -23,6 +25,7 @@
 !article.js
 !quran.js
 !hadis.js
+!profile.js
 !admin.js
 !admin-pricing.js
 !blog-api.js
