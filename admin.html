@@ -8,7 +8,7 @@
   <title>Pengurusan - SedekahQR</title>
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css?v=20260811-1" />
-  <link rel="stylesheet" href="admin.css?v=20260811-1" />
+  <link rel="stylesheet" href="admin.css?v=20260813-1" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
@@ -71,24 +71,32 @@
             <h2 id="analytics-title">Pelawat dan paparan halaman</h2>
           </div>
           <div class="analytics-controls">
-            <label for="analytics-period">Tempoh</label>
-            <select id="analytics-period">
-              <option value="7">7 hari</option>
-              <option value="14">14 hari</option>
-              <option value="30" selected>30 hari</option>
-              <option value="0">Semua masa</option>
-              <option value="custom" hidden>Julat tersuai</option>
-            </select>
-            <label class="analytics-date-label" for="analytics-date-range">Tarikh</label>
+            <label class="analytics-date-label" for="analytics-date-range">Tempoh</label>
+            <select id="analytics-period" hidden><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="month">Bulan ini</option><option value="0">Semua masa</option><option value="custom">Julat tersuai</option></select>
             <button id="analytics-date-range" class="analytics-date-range" type="button" aria-haspopup="dialog" aria-expanded="false"></button>
             <div id="analytics-calendar" class="analytics-calendar" role="dialog" aria-label="Pilih julat tarikh analitik" hidden>
-              <div class="analytics-calendar-header">
-                <button id="analytics-calendar-prev" type="button" aria-label="Bulan sebelumnya">&#8249;</button>
-                <strong id="analytics-calendar-month"></strong>
-                <button id="analytics-calendar-next" type="button" aria-label="Bulan seterusnya">&#8250;</button>
+              <div class="analytics-calendar-presets" role="list" aria-label="Tempoh pantas">
+                <button type="button" data-analytics-period="7">7 hari terakhir</button>
+                <button type="button" data-analytics-period="14">14 hari terakhir</button>
+                <button type="button" data-analytics-period="30">30 hari terakhir</button>
+                <button type="button" data-analytics-period="month">Bulan ini</button>
+                <button type="button" data-analytics-period="0">Semua masa</button>
               </div>
-              <div class="analytics-calendar-weekdays" aria-hidden="true"><span>I</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span><span>A</span></div>
-              <div id="analytics-calendar-days" class="analytics-calendar-days"></div>
+              <div class="analytics-calendar-picker">
+                <div class="analytics-calendar-inputs">
+                  <label>Tarikh mula<input id="analytics-start-date" type="date" /></label>
+                  <span aria-hidden="true">-</span>
+                  <label>Tarikh akhir<input id="analytics-end-date" type="date" /></label>
+                </div>
+                <div class="analytics-calendar-header">
+                  <button id="analytics-calendar-prev" type="button" aria-label="Bulan sebelumnya">&#8249;</button>
+                  <strong id="analytics-calendar-month"></strong>
+                  <button id="analytics-calendar-next" type="button" aria-label="Bulan seterusnya">&#8250;</button>
+                </div>
+                <div class="analytics-calendar-weekdays" aria-hidden="true"><span>I</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span><span>A</span></div>
+                <div id="analytics-calendar-days" class="analytics-calendar-days"></div>
+              </div>
+              <div class="analytics-calendar-actions"><button id="analytics-calendar-cancel" type="button">Batal</button><button id="analytics-calendar-apply" type="button">Terapkan</button></div>
             </div>
             <button id="analytics-refresh" class="admin-icon-button analytics-refresh" type="button" aria-label="Muat semula statistik" title="Muat semula statistik">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -359,6 +367,6 @@
 
   <script src="blog-config.js?v=20260809-1"></script>
   <script src="qr-data.js?v=20260811-2"></script>
-  <script src="admin.js?v=20260811-12"></script>
+  <script src="admin.js?v=20260813-1"></script>
 </body>
 </html>

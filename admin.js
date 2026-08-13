@@ -27,6 +27,10 @@
     analyticsCalendarDays: document.querySelector('#analytics-calendar-days'),
     analyticsCalendarPrev: document.querySelector('#analytics-calendar-prev'),
     analyticsCalendarNext: document.querySelector('#analytics-calendar-next'),
+    analyticsStartDate: document.querySelector('#analytics-start-date'),
+    analyticsEndDate: document.querySelector('#analytics-end-date'),
+    analyticsCalendarCancel: document.querySelector('#analytics-calendar-cancel'),
+    analyticsCalendarApply: document.querySelector('#analytics-calendar-apply'),
     analyticsRefresh: document.querySelector('#analytics-refresh'),
     analyticsStatus: document.querySelector('#analytics-status'),
     todayViews: document.querySelector('#today-views'),
@@ -290,6 +294,9 @@
   let analyticsRangeEnd = malaysiaToday();
   let calendarCursor = new Date(`${analyticsRangeEnd}T00:00:00`);
   let selectingRangeEnd = false;
+  let pendingAnalyticsRangeStart = analyticsRangeStart;
+  let pendingAnalyticsRangeEnd = analyticsRangeEnd;
+  let pendingAnalyticsPeriod = '30';
 
   const formatDuration = (seconds) => {
     const value = Number(seconds);
@@ -1036,7 +1043,27 @@
       : `Semua masa hingga ${formatAnalyticsDate(analyticsRangeEnd)}`;
   };
 
+  const syncCalendarInputs = () => {
+    elements.analyticsStartDate.value = pendingAnalyticsRangeStart || '';
+    elements.analyticsEndDate.value = pendingAnalyticsRangeEnd || malaysiaToday();
+  };
+
+  const setPendingAnalyticsPeriod = (period) => {
+    pendingAnalyticsPeriod = period;
+    const end = malaysiaToday();
+    pendingAnalyticsRangeEnd = end;
+    if (period === '0') pendingAnalyticsRangeStart = '';
+    else if (period === 'month') pendingAnalyticsRangeStart = `${end.slice(0, 7)}-01`;
+    else pendingAnalyticsRangeStart = shiftDays(end, -(Number(period) - 1));
+    selectingRangeEnd = false;
+    calendarCursor = new Date(`${end}T00:00:00`);
+    syncCalendarInputs();
+  };
+
   const renderCalendar = () => {
+    document.querySelectorAll('[data-analytics-period]').forEach((button) => {
+      button.classList.toggle('is-selected', button.dataset.analyticsPeriod === pendingAnalyticsPeriod);
+    });
     const year = calendarCursor.getFullYear();
     const month = calendarCursor.getMonth();
     elements.analyticsCalendarMonth.textContent = new Intl.DateTimeFormat('ms-MY', { month: 'long', year: 'numeric' }).format(calendarCursor);
@@ -1051,25 +1078,22 @@
       button.type = 'button';
       button.textContent = String(day);
       button.disabled = key > today;
-      button.classList.toggle('is-start', key === analyticsRangeStart);
-      button.classList.toggle('is-end', key === analyticsRangeEnd);
-      button.classList.toggle('is-between', Boolean(analyticsRangeStart && key > analyticsRangeStart && key < analyticsRangeEnd));
+      button.classList.toggle('is-start', key === pendingAnalyticsRangeStart);
+      button.classList.toggle('is-end', key === pendingAnalyticsRangeEnd);
+      button.classList.toggle('is-between', Boolean(pendingAnalyticsRangeStart && key > pendingAnalyticsRangeStart && key < pendingAnalyticsRangeEnd));
       button.addEventListener('click', () => {
-        if (!analyticsRangeStart || !selectingRangeEnd) {
-          analyticsRangeStart = key;
-          analyticsRangeEnd = key;
+        if (!pendingAnalyticsRangeStart || !selectingRangeEnd) {
+          pendingAnalyticsRangeStart = key;
+          pendingAnalyticsRangeEnd = key;
           selectingRangeEnd = true;
         } else {
-          analyticsRangeEnd = key;
-          if (analyticsRangeEnd < analyticsRangeStart) [analyticsRangeStart, analyticsRangeEnd] = [analyticsRangeEnd, analyticsRangeStart];
+          pendingAnalyticsRangeEnd = key;
+          if (pendingAnalyticsRangeEnd < pendingAnalyticsRangeStart) [pendingAnalyticsRangeStart, pendingAnalyticsRangeEnd] = [pendingAnalyticsRangeEnd, pendingAnalyticsRangeStart];
           selectingRangeEnd = false;
         }
-        elements.analyticsPeriod.value = differenceInDays(analyticsRangeStart, analyticsRangeEnd) === 7 ? '7'
-          : differenceInDays(analyticsRangeStart, analyticsRangeEnd) === 14 ? '14'
-            : differenceInDays(analyticsRangeStart, analyticsRangeEnd) === 30 ? '30' : 'custom';
-        updateRangeButton();
+        pendingAnalyticsPeriod = 'custom';
+        syncCalendarInputs();
         renderCalendar();
-        if (analyticsRangeStart && analyticsRangeEnd) loadAnalytics();
       });
       elements.analyticsCalendarDays.append(button);
     }
@@ -1080,19 +1104,22 @@
     const opening = elements.analyticsCalendar.hidden;
     elements.analyticsCalendar.hidden = !opening;
     elements.analyticsDateRange.setAttribute('aria-expanded', String(opening));
-    if (opening) renderCalendar();
+    if (opening) {
+      pendingAnalyticsRangeStart = analyticsRangeStart;
+      pendingAnalyticsRangeEnd = analyticsRangeEnd;
+      pendingAnalyticsPeriod = elements.analyticsPeriod.value;
+      selectingRangeEnd = false;
+      syncCalendarInputs();
+      renderCalendar();
+    }
   });
   elements.analyticsCalendarPrev.addEventListener('click', () => { calendarCursor.setMonth(calendarCursor.getMonth() - 1); renderCalendar(); });
   elements.analyticsCalendarNext.addEventListener('click', () => { calendarCursor.setMonth(calendarCursor.getMonth() + 1); renderCalendar(); });
-  elements.analyticsPeriod.addEventListener('change', () => {
-    const period = elements.analyticsPeriod.value;
-    analyticsRangeEnd = malaysiaToday();
-    analyticsRangeStart = period === '0' ? '' : shiftDays(analyticsRangeEnd, -(Number(period) - 1));
-    selectingRangeEnd = false;
-    calendarCursor = new Date(`${analyticsRangeEnd}T00:00:00`);
-    updateRangeButton();
-    loadAnalytics();
-  });
+  document.querySelectorAll('[data-analytics-period]').forEach((button) => button.addEventListener('click', () => { setPendingAnalyticsPeriod(button.dataset.analyticsPeriod); renderCalendar(); }));
+  elements.analyticsStartDate.addEventListener('change', () => { pendingAnalyticsRangeStart = elements.analyticsStartDate.value; pendingAnalyticsPeriod = 'custom'; if (pendingAnalyticsRangeStart && pendingAnalyticsRangeEnd && pendingAnalyticsRangeStart > pendingAnalyticsRangeEnd) pendingAnalyticsRangeEnd = pendingAnalyticsRangeStart; syncCalendarInputs(); calendarCursor = new Date(`${pendingAnalyticsRangeStart || pendingAnalyticsRangeEnd}T00:00:00`); renderCalendar(); });
+  elements.analyticsEndDate.addEventListener('change', () => { pendingAnalyticsRangeEnd = elements.analyticsEndDate.value || malaysiaToday(); pendingAnalyticsPeriod = 'custom'; if (pendingAnalyticsRangeStart && pendingAnalyticsRangeEnd < pendingAnalyticsRangeStart) pendingAnalyticsRangeStart = pendingAnalyticsRangeEnd; syncCalendarInputs(); calendarCursor = new Date(`${pendingAnalyticsRangeEnd}T00:00:00`); renderCalendar(); });
+  elements.analyticsCalendarCancel.addEventListener('click', () => { elements.analyticsCalendar.hidden = true; elements.analyticsDateRange.setAttribute('aria-expanded', 'false'); });
+  elements.analyticsCalendarApply.addEventListener('click', () => { analyticsRangeStart = pendingAnalyticsRangeStart; analyticsRangeEnd = pendingAnalyticsRangeEnd || malaysiaToday(); elements.analyticsPeriod.value = pendingAnalyticsPeriod; elements.analyticsCalendar.hidden = true; elements.analyticsDateRange.setAttribute('aria-expanded', 'false'); updateRangeButton(); loadAnalytics(); });
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
   elements.campaignQrSearch.addEventListener('input', renderCampaignQrResults);
   elements.verificationQrId.addEventListener('change', () => loadVerification().catch((error) => setVerificationMessage(error.message || 'Status pengesahan tidak dapat dimuatkan.')));
