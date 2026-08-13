@@ -23,6 +23,8 @@
     const pathname = location.pathname.replace(/^\/sedekahqr-malaysia(?=\/|$)/, '') || '/';
     if (/\/admin\.html$/.test(pathname)) return null;
     if (/\/blog\.html$/.test(pathname)) return '/blog';
+    if (/\/quran\.html$/.test(pathname)) return '/al-quran';
+    if (/\/hadis\.html$/.test(pathname)) return '/hadis';
     if (/\/article\.html$/.test(pathname)) {
       const slug = new URLSearchParams(location.search).get('slug') || 'tidak-diketahui';
       const safeSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 160);
