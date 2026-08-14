@@ -428,7 +428,10 @@
 
   const renderAnalytics = (data) => {
     const days = Number(data.period_days);
-    const periodLabel = days ? `${days} ${t('hari')}` : t('Semua masa');
+    const selectedPeriod = elements.analyticsPeriod.value;
+    const periodLabel = selectedPeriod === 'today' ? t('Hari ini')
+      : selectedPeriod === 'yesterday' ? t('Semalam')
+        : days ? `${days} ${t('hari')}` : t('Semua masa');
     const totals = data.totals || {};
     elements.todayViews.textContent = formatNumber(totals.today_views);
     elements.todayVisitors.textContent = formatNumber(totals.today_visitors);
@@ -1057,12 +1060,13 @@
   const setPendingAnalyticsPeriod = (period) => {
     pendingAnalyticsPeriod = period;
     const end = malaysiaToday();
-    pendingAnalyticsRangeEnd = end;
+    pendingAnalyticsRangeEnd = period === 'yesterday' ? shiftDays(end, -1) : end;
     if (period === '0') pendingAnalyticsRangeStart = '';
+    else if (period === 'today' || period === 'yesterday') pendingAnalyticsRangeStart = pendingAnalyticsRangeEnd;
     else if (period === 'month') pendingAnalyticsRangeStart = `${end.slice(0, 7)}-01`;
-    else pendingAnalyticsRangeStart = shiftDays(end, -(Number(period) - 1));
+    else pendingAnalyticsRangeStart = shiftDays(pendingAnalyticsRangeEnd, -(Number(period) - 1));
     selectingRangeEnd = false;
-    calendarCursor = new Date(`${end}T00:00:00`);
+    calendarCursor = new Date(`${pendingAnalyticsRangeEnd}T00:00:00`);
     syncCalendarInputs();
   };
 

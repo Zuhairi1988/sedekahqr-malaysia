@@ -5,7 +5,7 @@
     'Gunakan akaun yang telah diluluskan untuk mengurus kandungan SedekahQR.': 'Use an approved account to manage SedekahQR content.', 'Alamat e-mel': 'Email address', 'Kata laluan': 'Password', 'Lihat': 'Show', 'Log masuk': 'Sign in',
     'Dashboard admin': 'Admin dashboard', 'Pratonton pricing': 'Preview pricing', 'Artikel baharu': 'New article', 'Log keluar': 'Sign out',
     'Statistik laman': 'Website analytics', 'Pelawat dan paparan halaman': 'Visitors and page views', 'Tempoh': 'Period', '7 hari terakhir': 'Last 7 days', '14 hari terakhir': 'Last 14 days',
-    '30 hari terakhir': 'Last 30 days', 'Bulan ini': 'This month', 'Semua masa': 'All time', 'hari': 'days', 'hingga': 'through', 'min': 'min', 'saat': 'sec', 'Tarikh mula': 'Start date', 'Tarikh akhir': 'End date', 'Batal': 'Cancel', 'Terapkan': 'Apply',
+    '30 hari terakhir': 'Last 30 days', 'Bulan ini': 'This month', 'Hari ini': 'Today', 'Semalam': 'Yesterday', 'Semua masa': 'All time', 'hari': 'days', 'hingga': 'through', 'min': 'min', 'saat': 'sec', 'Tarikh mula': 'Start date', 'Tarikh akhir': 'End date', 'Batal': 'Cancel', 'Terapkan': 'Apply',
     'Memuatkan statistik...': 'Loading analytics...', 'Lawatan hari ini': 'Views today', 'Pelawat hari ini': 'Visitors today', 'Lawatan 30 hari': 'Views, last 30 days', 'Pelawat 30 hari': 'Visitors, last 30 days',
     'Purata masa halaman': 'Average page time', 'Bounce rate': 'Bounce rate', 'Trend harian': 'Daily trend', 'Lawatan': 'Views', 'Halaman popular': 'Top pages', 'Halaman': 'Page', 'Pelawat': 'Visitors',
     'Sumber trafik': 'Traffic sources', 'Jenis peranti': 'Device type', 'Negeri pelawat': 'Visitor states', 'Daerah pelawat': 'Visitor districts',

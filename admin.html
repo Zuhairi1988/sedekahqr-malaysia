@@ -72,10 +72,12 @@
           </div>
           <div class="analytics-controls">
             <label class="analytics-date-label" for="analytics-date-range">Tempoh</label>
-            <select id="analytics-period" hidden><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="month">Bulan ini</option><option value="0">Semua masa</option><option value="custom">Julat tersuai</option></select>
+            <select id="analytics-period" hidden><option value="today">Hari ini</option><option value="yesterday">Semalam</option><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="month">Bulan ini</option><option value="0">Semua masa</option><option value="custom">Julat tersuai</option></select>
             <button id="analytics-date-range" class="analytics-date-range" type="button" aria-haspopup="dialog" aria-expanded="false"></button>
             <div id="analytics-calendar" class="analytics-calendar" role="dialog" aria-label="Pilih julat tarikh analitik" hidden>
               <div class="analytics-calendar-presets" role="list" aria-label="Tempoh pantas">
+                <button type="button" data-analytics-period="today">Hari ini</button>
+                <button type="button" data-analytics-period="yesterday">Semalam</button>
                 <button type="button" data-analytics-period="7">7 hari terakhir</button>
                 <button type="button" data-analytics-period="14">14 hari terakhir</button>
                 <button type="button" data-analytics-period="30">30 hari terakhir</button>
@@ -93,7 +95,7 @@
                   <strong id="analytics-calendar-month"></strong>
                   <button id="analytics-calendar-next" type="button" aria-label="Bulan seterusnya">&#8250;</button>
                 </div>
-                <div class="analytics-calendar-weekdays" aria-hidden="true"><span>I</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span><span>A</span></div>
+                <div class="analytics-calendar-weekdays" aria-hidden="true"><span>A</span><span>I</span><span>S</span><span>R</span><span>K</span><span>J</span><span>S</span></div>
                 <div id="analytics-calendar-days" class="analytics-calendar-days"></div>
               </div>
               <div class="analytics-calendar-actions"><button id="analytics-calendar-cancel" type="button">Batal</button><button id="analytics-calendar-apply" type="button">Terapkan</button></div>
@@ -368,6 +370,6 @@
   <script src="blog-config.js?v=20260809-1"></script>
   <script src="qr-data.js?v=20260811-2"></script>
   <script src="admin-language.js?v=20260814-1"></script>
-  <script src="admin.js?v=20260814-1"></script>
+  <script src="admin.js?v=20260814-2"></script>
 </body>
 </html>
