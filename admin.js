@@ -1,6 +1,8 @@
 (() => {
   const config = globalThis.SEDEKAHQR_BLOG;
   const sessionKey = 'sedekahqr-admin-session';
+  const t = (text) => globalThis.SedekahQRAdminLanguage?.t?.(text) || text;
+  const adminLocale = () => globalThis.SedekahQRAdminLanguage?.getLanguage?.() === 'en' ? 'en-GB' : 'ms-MY';
   const categories = ['Al-Quran', 'Hadis', 'Doa', 'Sirah', 'Akhlak', 'Sedekah'];
   const blockLabels = {
     paragraph: 'Perenggan',
@@ -277,7 +279,7 @@
 
   const formatNumber = (value) => new Intl.NumberFormat('ms-MY').format(Number(value) || 0);
 
-  const formatAnalyticsDate = (value) => new Intl.DateTimeFormat('ms-MY', {
+  const formatAnalyticsDate = (value) => new Intl.DateTimeFormat(adminLocale(), {
     day: 'numeric', month: 'short', year: 'numeric'
   }).format(new Date(`${value}T00:00:00`));
 
@@ -307,7 +309,7 @@
     if (!Number.isFinite(value) || value < 0) return '-';
     const minutes = Math.floor(value / 60);
     const remainder = Math.round(value % 60);
-    return minutes ? `${minutes} min ${remainder} saat` : `${remainder} saat`;
+    return minutes ? `${minutes} ${t('min')} ${remainder} ${t('saat')}` : `${remainder} ${t('saat')}`;
   };
 
   const setAnalyticsStatus = (message, isError = false) => {
@@ -426,7 +428,7 @@
 
   const renderAnalytics = (data) => {
     const days = Number(data.period_days);
-    const periodLabel = days ? `${days} hari` : 'Semua masa';
+    const periodLabel = days ? `${days} ${t('hari')}` : t('Semua masa');
     const totals = data.totals || {};
     elements.todayViews.textContent = formatNumber(totals.today_views);
     elements.todayVisitors.textContent = formatNumber(totals.today_visitors);
@@ -438,10 +440,10 @@
       : `${Number(totals.bounce_rate).toLocaleString('ms-MY', { maximumFractionDigits: 1 })}%`;
     const endDate = data.end_date || analyticsRangeEnd || malaysiaToday();
     const isToday = endDate === new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuala_Lumpur' });
-    elements.todayViewsLabel.textContent = isToday ? 'Lawatan hari ini' : `Lawatan ${formatAnalyticsDate(endDate)}`;
-    elements.todayVisitorsLabel.textContent = isToday ? 'Pelawat hari ini' : `Pelawat ${formatAnalyticsDate(endDate)}`;
-    elements.periodViewsLabel.textContent = `Lawatan ${periodLabel}`;
-    elements.periodVisitorsLabel.textContent = `Pelawat ${periodLabel}`;
+    elements.todayViewsLabel.textContent = isToday ? t('Lawatan hari ini') : `${t('Lawatan')} ${formatAnalyticsDate(endDate)}`;
+    elements.todayVisitorsLabel.textContent = isToday ? t('Pelawat hari ini') : `${t('Pelawat')} ${formatAnalyticsDate(endDate)}`;
+    elements.periodViewsLabel.textContent = `${t('Lawatan')} ${periodLabel}`;
+    elements.periodVisitorsLabel.textContent = `${t('Pelawat')} ${periodLabel}`;
     renderAnalyticsChart(Array.isArray(data.daily) ? data.daily : []);
     renderTopPages(Array.isArray(data.top_pages) ? data.top_pages : []);
     renderRankedList(elements.analyticsReferrers, Array.isArray(data.referrers) ? data.referrers : [], 'source');
@@ -1044,7 +1046,7 @@
   const updateRangeButton = () => {
     elements.analyticsDateRange.textContent = analyticsRangeStart
       ? `${formatAnalyticsDate(analyticsRangeStart)} - ${formatAnalyticsDate(analyticsRangeEnd)}`
-      : `Semua masa hingga ${formatAnalyticsDate(analyticsRangeEnd)}`;
+      : `${t('Semua masa')} ${t('hingga')} ${formatAnalyticsDate(analyticsRangeEnd)}`;
   };
 
   const syncCalendarInputs = () => {
@@ -1070,7 +1072,7 @@
     });
     const year = calendarCursor.getFullYear();
     const month = calendarCursor.getMonth();
-    elements.analyticsCalendarMonth.textContent = new Intl.DateTimeFormat('ms-MY', { month: 'long', year: 'numeric' }).format(calendarCursor);
+    elements.analyticsCalendarMonth.textContent = new Intl.DateTimeFormat(adminLocale(), { month: 'long', year: 'numeric' }).format(calendarCursor);
     elements.analyticsCalendarDays.replaceChildren();
     const firstDay = new Date(year, month, 1).getDay();
     const dayCount = new Date(year, month + 1, 0).getDate();
@@ -1124,6 +1126,11 @@
   elements.analyticsEndDate.addEventListener('change', () => { pendingAnalyticsRangeEnd = elements.analyticsEndDate.value || malaysiaToday(); pendingAnalyticsPeriod = 'custom'; if (pendingAnalyticsRangeStart && pendingAnalyticsRangeEnd < pendingAnalyticsRangeStart) pendingAnalyticsRangeStart = pendingAnalyticsRangeEnd; syncCalendarInputs(); calendarCursor = new Date(`${pendingAnalyticsRangeEnd}T00:00:00`); renderCalendar(); });
   elements.analyticsCalendarCancel.addEventListener('click', () => { elements.analyticsCalendar.hidden = true; elements.analyticsDateRange.setAttribute('aria-expanded', 'false'); });
   elements.analyticsCalendarApply.addEventListener('click', () => { analyticsRangeStart = pendingAnalyticsRangeStart; analyticsRangeEnd = pendingAnalyticsRangeEnd || malaysiaToday(); elements.analyticsPeriod.value = pendingAnalyticsPeriod; elements.analyticsCalendar.hidden = true; elements.analyticsDateRange.setAttribute('aria-expanded', 'false'); updateRangeButton(); loadAnalytics(); });
+  window.addEventListener('sedekahqr-admin-language-change', () => {
+    updateRangeButton();
+    if (!elements.analyticsCalendar.hidden) renderCalendar();
+    if (!elements.dashboardView.hidden) loadAnalytics();
+  });
   elements.analyticsRefresh.addEventListener('click', loadAnalytics);
   elements.campaignQrSearch.addEventListener('input', renderCampaignQrResults);
   elements.verificationQrId.addEventListener('change', () => loadVerification().catch((error) => setVerificationMessage(error.message || 'Status pengesahan tidak dapat dimuatkan.')));

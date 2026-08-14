@@ -43,6 +43,12 @@
   font-weight: 800;
 }
 
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .admin-login {
   min-height: calc(100vh - 73px);
   display: grid;
@@ -1087,6 +1093,18 @@
 
   .admin-dashboard {
     padding-top: 28px;
+  }
+
+  .admin-header-inner {
+    gap: 12px;
+  }
+
+  .admin-header-actions {
+    gap: 8px;
+  }
+
+  .admin-public-link {
+    font-size: 12px;
   }
 
   .admin-dashboard-heading,
