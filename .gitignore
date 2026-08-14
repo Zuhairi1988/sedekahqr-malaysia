@@ -2,6 +2,8 @@
 !.gitignore
 !.nojekyll
 !CNAME
+!robots.txt
+!sitemap.xml
 !index.html
 !blog.html
 !article.html
