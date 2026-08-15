@@ -448,7 +448,7 @@
     "category": "Hadis",
     "author": "Editorial SedekahQR",
     "cover_image": "assets/banner-sedekah-subuh.jpg",
-    "reading_minutes": 2,
+    "reading_minutes": 5,
     "published_at": "2026-08-04T00:00:00+08:00",
     "content": [
       {
@@ -484,6 +484,56 @@
       {
         "type": "paragraph",
         "text": "Kemampuan, tanggungjawab dan tahap kehidupan setiap orang berbeza. Ibu bapa yang menjaga anak kecil, pelajar, pekerja syif dan orang yang sakit mungkin mempunyai ruang yang berbeza. Bina rutin yang jujur dengan keadaan sendiri sambil terus berusaha memperbaikinya."
+      },
+      {
+        "type": "heading",
+        "text": "Bina rutin yang realistik"
+      },
+      {
+        "type": "paragraph",
+        "text": "Rutin yang baik bermula dengan memahami hari sendiri. Seseorang yang bekerja syif mungkin tidak sesuai menetapkan sasaran pada waktu yang sama setiap hari, manakala pelajar mungkin lebih mudah melakukannya selepas kelas. Pilih masa yang paling stabil, kemudian jadikan amalan itu mudah untuk dimulakan. Jika membaca satu halaman terasa berat, mulakan dengan beberapa ayat. Jika sedekah bulanan belum mampu, mulakan dengan jumlah kecil yang tidak mengganggu keperluan asas."
+      },
+      {
+        "type": "heading",
+        "text": "Sambungkan amalan kepada kebiasaan sedia ada"
+      },
+      {
+        "type": "paragraph",
+        "text": "Tabiat lebih mudah dipelihara apabila ia disambungkan kepada perkara yang sudah berlaku setiap hari. Contohnya, membaca doa selepas solat, menyemak satu ayat Al-Quran selepas sarapan, atau menyumbang selepas menerima gaji. Isyarat yang tetap membantu kita mengingati amalan tanpa perlu bergantung sepenuhnya pada semangat."
+      },
+      {
+        "type": "paragraph",
+        "text": "Sediakan halangan yang rendah. Letakkan mushaf atau aplikasi Al-Quran di tempat mudah dicapai, tetapkan peringatan yang tidak mengganggu, dan pilih jumlah sedekah yang boleh dibuat dengan beberapa langkah sahaja. Amalan yang baik perlu diberi peluang untuk berlaku dalam kehidupan sebenar, bukan hanya dalam rancangan yang ideal."
+      },
+      {
+        "type": "heading",
+        "text": "Apabila rutin terlepas"
+      },
+      {
+        "type": "paragraph",
+        "text": "Terlepas satu hari tidak bermaksud semua usaha telah gagal. Kesilapan biasa ialah menunggu Isnin, awal bulan atau Ramadan berikutnya untuk bermula semula. Lebih baik sambung pada peluang terdekat. Perhatikan juga punca rutin terganggu: adakah sasaran terlalu besar, masa tidak sesuai, atau ada tanggungjawab baharu yang perlu diambil kira? Pembetulan kecil lebih berguna daripada rasa bersalah yang berpanjangan."
+      },
+      {
+        "type": "heading",
+        "text": "Menilai dengan jujur, bukan menghukum diri"
+      },
+      {
+        "type": "paragraph",
+        "text": "Penanda amalan boleh membantu, tetapi jangan jadikannya ukuran nilai diri. Tujuannya ialah melihat corak dan memudahkan kita kembali apabila tersasar. Semak sekali seminggu: amalan mana yang paling mudah dijaga, apa yang menghalang, dan satu perubahan kecil yang boleh dibuat. Sikap ini menjadikan perbaikan lebih tenang dan berterusan."
+      },
+      {
+        "type": "heading",
+        "text": "Contoh amalan kecil mingguan"
+      },
+      {
+        "type": "list",
+        "items": [
+          "Baca beberapa ayat Al-Quran selepas satu waktu solat yang paling mudah dijaga.",
+          "Simpan sedikit peruntukan sedekah mengikut kemampuan setiap minggu.",
+          "Hubungi seorang ahli keluarga dan tanyakan keadaan mereka dengan ikhlas.",
+          "Luangkan beberapa minit untuk doa dan muhasabah sebelum tidur.",
+          "Pilih satu perkataan atau perbuatan baik yang boleh dilakukan kepada orang sekeliling."
+        ]
       },
       {
         "type": "paragraph",
