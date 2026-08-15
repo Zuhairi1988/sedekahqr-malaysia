@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const imageLink = document.createElement('a');
     imageLink.className = 'blog-card-image';
-    imageLink.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
+    imageLink.href = `artikel/${encodeURIComponent(article.slug)}/`;
     imageLink.setAttribute('aria-label', `Baca ${article.title}`);
 
     const image = document.createElement('img');

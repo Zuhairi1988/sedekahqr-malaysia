@@ -64,6 +64,10 @@ supabase/.singapore-secrets.txt
 !assets/sedekahqr-icon-192.png
 !assets/sedekahqr-icon-512.png
 !assets/blog-hero-quran.jpg
+!artikel/
+!artikel/**
+!scripts/
+!scripts/generate_static_articles.ps1
 !scraper_qr/
 !scraper_qr/muamalat_ederma/
 !scraper_qr/muamalat_ederma/*/

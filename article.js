@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     category.textContent = article.category;
     const title = document.createElement('h3');
     const link = document.createElement('a');
-    link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
+    link.href = `artikel/${encodeURIComponent(article.slug)}/`;
     link.textContent = article.title;
     title.appendChild(link);
     content.append(category, title);
