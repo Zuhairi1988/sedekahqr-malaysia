@@ -6,6 +6,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const slug = new URLSearchParams(window.location.search).get('slug') || '';
   const t = (text) => globalThis.SedekahQRLanguage?.t(text) || text;
+  const articleSeo = {
+    'syukur-mengubah-cara-melihat-nikmat': {
+      description: 'Panduan syukur dalam Islam: cara mengenali nikmat, mengurus kesukaran dan menjadikan syukur amalan harian.',
+      link: { href: '/#direktori', label: 'Cari QR masjid dan surau untuk bersedekah' }
+    },
+    'sabar-dan-solat-ketika-berdepan-kesukaran': {
+      description: 'Panduan sabar dan solat ketika menghadapi kesukaran, dengan langkah ikhtiar yang tenang dan praktikal.',
+      link: { href: 'quran.html', label: 'Baca Al-Quran di SedekahQR' }
+    },
+    'berbuat-baik-kepada-ibu-bapa-dalam-kehidupan-harian': {
+      description: 'Cara berbuat baik kepada ibu bapa dalam Islam melalui adab, masa, bantuan harian dan doa yang berterusan.',
+      link: { href: 'hadis.html', label: 'Terokai koleksi Hadis' }
+    },
+    'menjaga-lisan-di-rumah-tempat-kerja-dan-media-sosial': {
+      description: 'Panduan menjaga lisan dalam Islam di rumah, tempat kerja dan media sosial agar komunikasi lebih benar dan beradab.',
+      link: { href: 'hadis.html', label: 'Baca Hadis dan renungan lain' }
+    },
+    'amalan-kecil-yang-konsisten': {
+      description: 'Cara membina amalan kecil yang konsisten dalam Islam dengan rutin realistik, mudah dan berterusan.',
+      link: { href: '/#waktu-solat', label: 'Lihat waktu solat hari ini' }
+    },
+    'adab-bersedekah-menjaga-niat-dan-maruah': {
+      description: 'Panduan adab bersedekah: menjaga niat, maruah penerima dan semakan QR sebelum membuat sumbangan.',
+      link: { href: '/#direktori', label: 'Cari QR sumbangan masjid dan surau' }
+    }
+  };
 
   const setMeta = (selector, attribute, value) => {
     let element = document.head.querySelector(selector);
@@ -19,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   const setArticleSeo = (article) => {
+    const seo = articleSeo[article.slug] || {};
     const canonicalUrl = new URL(window.location.href);
     canonicalUrl.search = `?slug=${encodeURIComponent(article.slug)}`;
     canonicalUrl.hash = '';
@@ -27,14 +54,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const title = `${article.title} - SedekahQR`;
 
     document.title = title;
-    setMeta('meta[name="description"]', 'content', article.excerpt);
+    setMeta('meta[name="description"]', 'content', seo.description || article.excerpt);
     setMeta('meta[property="og:title"]', 'content', title);
-    setMeta('meta[property="og:description"]', 'content', article.excerpt);
+    setMeta('meta[property="og:description"]', 'content', seo.description || article.excerpt);
     setMeta('meta[property="og:url"]', 'content', canonical);
     setMeta('meta[property="og:image"]', 'content', image);
     setMeta('meta[property="article:published_time"]', 'content', article.published_at);
     setMeta('meta[name="twitter:title"]', 'content', title);
-    setMeta('meta[name="twitter:description"]', 'content', article.excerpt);
+    setMeta('meta[name="twitter:description"]', 'content', seo.description || article.excerpt);
     setMeta('meta[name="twitter:image"]', 'content', image);
 
     let canonicalLink = document.head.querySelector('link[rel="canonical"]');
@@ -57,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       '@type': 'Article',
       mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
       headline: article.title,
-      description: article.excerpt,
+      description: seo.description || article.excerpt,
       image: [image],
       datePublished: article.published_at,
       dateModified: article.published_at,
@@ -100,6 +127,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     const paragraph = document.createElement('p');
     paragraph.textContent = block.text || '';
     return paragraph;
+  };
+
+  const headingId = (text, index) => `bahagian-${index + 1}-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
+
+  const renderOnPageStructure = (article, content) => {
+    const headings = [...content.querySelectorAll('h2')];
+    const toc = document.getElementById('article-toc');
+    const tocList = document.getElementById('article-toc-list');
+    tocList.replaceChildren();
+    headings.forEach((heading, index) => {
+      heading.id = headingId(heading.textContent, index);
+      const item = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = `#${heading.id}`;
+      link.textContent = heading.textContent;
+      item.appendChild(link);
+      tocList.appendChild(item);
+    });
+    toc.hidden = headings.length < 2;
+
+    const nextStep = document.getElementById('article-next-step');
+    const recommendation = articleSeo[article.slug]?.link;
+    nextStep.replaceChildren();
+    if (!recommendation) { nextStep.hidden = true; return; }
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'blog-eyebrow';
+    eyebrow.textContent = 'TERUSKAN AMALAN';
+    const title = document.createElement('h2');
+    title.textContent = 'Langkah seterusnya';
+    const description = document.createElement('p');
+    description.textContent = 'Terokai panduan dan kemudahan lain yang berkaitan di SedekahQR.';
+    const link = document.createElement('a');
+    link.href = recommendation.href;
+    link.textContent = recommendation.label;
+    nextStep.append(eyebrow, title, description, link);
+    nextStep.hidden = false;
   };
 
   const createRelatedCard = (article) => {
@@ -146,6 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const content = document.getElementById('article-content');
     content.replaceChildren(...article.content.map(renderBlock));
+    renderOnPageStructure(article, content);
 
     const sourceList = document.getElementById('article-sources');
     sourceList.replaceChildren(...article.sources.map((source) => {

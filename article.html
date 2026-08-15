@@ -22,7 +22,7 @@
   <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest?v=20260809-6" />
   <link rel="stylesheet" href="styles.css?v=20260809-6" />
-  <link rel="stylesheet" href="blog.css?v=20260809-1" />
+  <link rel="stylesheet" href="blog.css?v=20260815-1" />
 </head>
 <body class="directory-body blog-body">
   <header class="directory-header">
@@ -101,7 +101,14 @@
       </figure>
 
       <div class="article-reading-column">
+        <nav id="article-toc" class="article-toc" aria-labelledby="toc-title" hidden>
+          <p class="blog-eyebrow">DALAM ARTIKEL INI</p>
+          <h2 id="toc-title">Panduan ringkas</h2>
+          <ol id="article-toc-list"></ol>
+        </nav>
         <div id="article-content" class="article-content"></div>
+
+        <aside id="article-next-step" class="article-next-step" hidden></aside>
 
         <aside class="article-sources" aria-labelledby="source-title">
           <p class="blog-eyebrow">Semak rujukan</p>
@@ -165,7 +172,7 @@
   <script src="blog-api.js?v=20260809-1"></script>
   <script src="language.js?v=20260811-1"></script>
   <script src="nav-menu.js?v=20260812-1"></script>
-  <script src="article.js?v=20260815-1"></script>
+  <script src="article.js?v=20260815-2"></script>
   <script src="analytics.js?v=20260813-3"></script>
   <script src="sw-register.js?v=20260814-2"></script>
 </body>
