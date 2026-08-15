@@ -7,6 +7,72 @@ document.addEventListener('DOMContentLoaded', async () => {
   const slug = new URLSearchParams(window.location.search).get('slug') || '';
   const t = (text) => globalThis.SedekahQRLanguage?.t(text) || text;
 
+  const setMeta = (selector, attribute, value) => {
+    let element = document.head.querySelector(selector);
+    if (!element) {
+      element = document.createElement('meta');
+      const match = selector.match(/\[(name|property)="([^"]+)"\]/);
+      if (match) element.setAttribute(match[1], match[2]);
+      document.head.appendChild(element);
+    }
+    element.setAttribute(attribute, value);
+  };
+
+  const setArticleSeo = (article) => {
+    const canonicalUrl = new URL(window.location.href);
+    canonicalUrl.search = `?slug=${encodeURIComponent(article.slug)}`;
+    canonicalUrl.hash = '';
+    const canonical = canonicalUrl.href;
+    const image = new URL(article.cover_image, window.location.origin).href;
+    const title = `${article.title} - SedekahQR`;
+
+    document.title = title;
+    setMeta('meta[name="description"]', 'content', article.excerpt);
+    setMeta('meta[property="og:title"]', 'content', title);
+    setMeta('meta[property="og:description"]', 'content', article.excerpt);
+    setMeta('meta[property="og:url"]', 'content', canonical);
+    setMeta('meta[property="og:image"]', 'content', image);
+    setMeta('meta[property="article:published_time"]', 'content', article.published_at);
+    setMeta('meta[name="twitter:title"]', 'content', title);
+    setMeta('meta[name="twitter:description"]', 'content', article.excerpt);
+    setMeta('meta[name="twitter:image"]', 'content', image);
+
+    let canonicalLink = document.head.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.href = canonical;
+
+    let schema = document.getElementById('article-schema');
+    if (!schema) {
+      schema = document.createElement('script');
+      schema.type = 'application/ld+json';
+      schema.id = 'article-schema';
+      document.head.appendChild(schema);
+    }
+    schema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+      headline: article.title,
+      description: article.excerpt,
+      image: [image],
+      datePublished: article.published_at,
+      dateModified: article.published_at,
+      inLanguage: 'ms-MY',
+      author: { '@type': 'Organization', name: article.author || 'Editorial SedekahQR' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'SedekahQR',
+        logo: { '@type': 'ImageObject', url: `${window.location.origin}/assets/sedekahqr-icon-512.png` }
+      },
+      articleSection: article.category,
+      articleBody: article.content.map((block) => block.text || (block.items || []).join(' ')).join('\n')
+    });
+  };
+
   const renderBlock = (block) => {
     if (block.type === 'heading') {
       const heading = document.createElement('h2');
@@ -65,8 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    document.title = `${article.title} - SedekahQR Malaysia`;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', article.excerpt);
+    setArticleSeo(article);
     document.getElementById('article-category').textContent = article.category;
     document.getElementById('article-title').textContent = article.title;
     document.getElementById('article-excerpt').textContent = article.excerpt;
