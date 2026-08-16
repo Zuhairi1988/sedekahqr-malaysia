@@ -8,7 +8,7 @@
   <title>Pengurusan - SedekahQR</title>
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css?v=20260811-1" />
-  <link rel="stylesheet" href="admin.css?v=20260814-1" />
+  <link rel="stylesheet" href="admin.css?v=20260816-1" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
@@ -64,7 +64,19 @@
 
       <p id="dashboard-message" class="admin-message admin-dashboard-message" role="status" aria-live="polite" hidden></p>
 
-      <section class="analytics-section" aria-labelledby="analytics-title">
+      <div class="admin-dashboard-layout">
+        <nav class="admin-sidebar" aria-label="Menu pengurusan">
+          <p class="admin-sidebar-label">Pengurusan</p>
+          <button class="admin-sidebar-link is-active" type="button" data-admin-nav="overview" aria-current="page">Overview</button>
+          <button class="admin-sidebar-link" type="button" data-admin-nav="campaign">Campaign</button>
+          <button class="admin-sidebar-link" type="button" data-admin-nav="seo">SEO &amp; Artikel</button>
+          <button class="admin-sidebar-link" type="button" data-admin-nav="qr">Direktori QR</button>
+          <div class="admin-sidebar-divider"></div>
+          <a class="admin-sidebar-link" href="admin-pricing.html">Pricing</a>
+        </nav>
+
+        <div class="admin-dashboard-content">
+      <section class="analytics-section" data-admin-panel="overview" aria-labelledby="analytics-title">
         <div class="analytics-heading">
           <div>
             <p class="admin-kicker">Statistik laman</p>
@@ -203,7 +215,7 @@
         <p class="analytics-privacy">Pangkalan data statistik tidak menyimpan nama, e-mel, nombor telefon atau alamat IP.</p>
       </section>
 
-      <section class="admin-campaign" aria-labelledby="campaign-title">
+      <section class="admin-campaign" data-admin-panel="campaign" aria-labelledby="campaign-title">
         <div class="admin-panel-heading">
           <div>
             <p class="admin-kicker">Paparan awam</p>
@@ -234,7 +246,7 @@
         </form>
       </section>
 
-      <section class="admin-campaign" aria-labelledby="reports-title">
+      <section class="admin-campaign" data-admin-panel="qr" aria-labelledby="reports-title">
         <div class="admin-panel-heading">
           <div><p class="admin-kicker">Semakan direktori</p><h2 id="reports-title">Laporan QR</h2></div>
           <p>Semak isu yang dihantar pengguna sebelum membetulkan, menyahaktifkan atau mengemas kini QR.</p>
@@ -243,19 +255,19 @@
         <div id="qr-reports-list" class="campaign-qr-results" aria-live="polite"></div>
       </section>
 
-      <section class="admin-campaign" aria-labelledby="verification-title">
+      <section class="admin-campaign" data-admin-panel="qr" aria-labelledby="verification-title">
         <div class="admin-panel-heading"><div><p class="admin-kicker">Semakan direktori</p><h2 id="verification-title">Pengesahan QR</h2></div><p>Tandakan hanya QR yang telah disemak dengan pihak masjid atau surau.</p></div>
         <div class="campaign-qr-filters"><label class="admin-field admin-field-wide"><span>QR penerima</span><select id="verification-qr-id"></select></label><label class="admin-field"><span>Status</span><select id="verification-status"><option value="pending">Belum disahkan</option><option value="verified">Disahkan</option><option value="suspended">Digantung</option></select></label><label class="admin-field admin-field-wide"><span>Catatan admin</span><input id="verification-note" maxlength="360" placeholder="Contoh: Nama penerima disahkan oleh pihak surau pada 13 Ogos 2026" /></label><button id="save-verification" class="admin-primary-button" type="button">Simpan status</button></div>
         <p id="verification-message" class="admin-inline-status" role="status" aria-live="polite"></p>
       </section>
 
-      <div class="admin-summary" aria-label="Ringkasan artikel">
+      <div class="admin-summary" data-admin-panel="seo" aria-label="Ringkasan artikel">
         <div><strong id="total-count">0</strong><span>Semua artikel</span></div>
         <div><strong id="published-count">0</strong><span>Diterbitkan</span></div>
         <div><strong id="draft-count">0</strong><span>Draf</span></div>
       </div>
 
-      <div class="admin-workspace">
+      <div class="admin-workspace" data-admin-panel="seo">
         <section class="admin-list-panel" aria-labelledby="article-list-title">
           <div class="admin-panel-heading">
             <h2 id="article-list-title">Senarai artikel</h2>
@@ -364,12 +376,14 @@
           </form>
         </section>
       </div>
+        </div>
+      </div>
     </section>
   </main>
 
   <script src="blog-config.js?v=20260809-1"></script>
   <script src="qr-data.js?v=20260814-2"></script>
   <script src="admin-language.js?v=20260814-1"></script>
-  <script src="admin.js?v=20260814-2"></script>
+  <script src="admin.js?v=20260816-1"></script>
 </body>
 </html>

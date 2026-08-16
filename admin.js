@@ -20,6 +20,8 @@
     loginMessage: document.querySelector('#login-message'),
     togglePassword: document.querySelector('#toggle-password'),
     dashboardView: document.querySelector('#dashboard-view'),
+    adminNav: [...document.querySelectorAll('[data-admin-nav]')],
+    adminPanels: [...document.querySelectorAll('[data-admin-panel]')],
     dashboardMessage: document.querySelector('#dashboard-message'),
     adminIdentity: document.querySelector('#admin-identity'),
     analyticsPeriod: document.querySelector('#analytics-period'),
@@ -123,11 +125,23 @@
   let slugTouched = false;
   let campaignImagePath = '';
   let campaignImageFile = null;
+  let activeAdminPanel = 'overview';
 
   const showMessage = (element, message, success = false) => {
     element.textContent = message;
     element.classList.toggle('is-success', success);
     element.hidden = !message;
+  };
+
+  const setAdminPanel = (panel) => {
+    activeAdminPanel = panel;
+    elements.adminNav.forEach((button) => {
+      const active = button.dataset.adminNav === panel;
+      button.classList.toggle('is-active', active);
+      button.toggleAttribute('aria-current', active);
+    });
+    elements.adminPanels.forEach((section) => { section.hidden = section.dataset.adminPanel !== panel; });
+    if (panel !== 'seo') closeEditor();
   };
 
   const parseResponseError = async (response, fallback) => {
@@ -217,6 +231,7 @@
     if (authenticated) {
       elements.adminIdentity.textContent = session?.user?.email || '';
       elements.loginPassword.value = '';
+      setAdminPanel(activeAdminPanel);
     }
   };
 
@@ -1166,7 +1181,8 @@
       elements.campaignSave.textContent = 'Simpan kempen';
     }
   });
-  elements.newArticleButton.addEventListener('click', () => openEditor());
+  elements.adminNav.forEach((button) => button.addEventListener('click', () => setAdminPanel(button.dataset.adminNav)));
+  elements.newArticleButton.addEventListener('click', () => { setAdminPanel('seo'); openEditor(); });
   elements.closeEditor.addEventListener('click', closeEditor);
   elements.cancelEditor.addEventListener('click', closeEditor);
   elements.search.addEventListener('input', renderArticleList);
