@@ -25,34 +25,36 @@ public static class CredentialReader {
 '@
 }
 
+$root = Split-Path -Parent $PSScriptRoot
+$envPath = Join-Path $root '.env'
+if (-not (Test-Path -LiteralPath $envPath)) { throw '.env tidak ditemui.' }
+$values = @{}
+Get-Content -LiteralPath $envPath | ForEach-Object {
+  if ($_ -match '^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$') { $values[$Matches[1]] = $Matches[2].Trim('"', "'") }
+}
+$required = @('DEEPSEEK_API_KEY', 'DATAFORSEO_LOGIN', 'DATAFORSEO_PASSWORD')
+foreach ($name in $required) { if ([string]::IsNullOrWhiteSpace($values[$name])) { throw "$name tiada dalam .env." } }
+
 $blob = [CredentialReader]::ReadBlob('Supabase CLI:supabase')
 $token = [Text.Encoding]::Unicode.GetString($blob).Trim([char]0)
 if ($token -notmatch '^sbp_') { $token = [Text.Encoding]::UTF8.GetString($blob).Trim([char]0) }
 if ($token -notmatch '^sbp_[A-Za-z0-9_-]{20,}$') { throw 'Format kelayakan Supabase tidak sah.' }
 
 $projectRef = 'wfujqvmqlwqmqmzdkepi'
-$root = Split-Path -Parent $PSScriptRoot
-$sourcePath = Join-Path $root 'supabase\functions\generate-article-draft\index.ts'
+$secrets = @($required | ForEach-Object { @{ name = $_; value = $values[$_] } })
+$body = ConvertTo-Json -InputObject $secrets -Depth 3 -Compress
 $client = [Net.Http.HttpClient]::new()
 $client.DefaultRequestHeaders.Authorization = [Net.Http.Headers.AuthenticationHeaderValue]::new('Bearer', $token)
 
 try {
-  $multipart = [Net.Http.MultipartFormDataContent]::new()
-  $stream = [IO.File]::OpenRead($sourcePath)
-  try {
-    $metadata = @{ name = 'generate-article-draft'; entrypoint_path = 'index.ts'; verify_jwt = $false } | ConvertTo-Json -Compress
-    $multipart.Add([Net.Http.StringContent]::new($metadata, [Text.Encoding]::UTF8), 'metadata')
-    $content = [Net.Http.StreamContent]::new($stream)
-    $content.Headers.ContentType = [Net.Http.Headers.MediaTypeHeaderValue]::new('application/typescript')
-    $multipart.Add($content, 'file', 'index.ts')
-    $response = $client.PostAsync(
-      "https://api.supabase.com/v1/projects/$projectRef/functions/deploy?slug=generate-article-draft",
-      $multipart
-    ).GetAwaiter().GetResult()
-    $body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
-    if (-not $response.IsSuccessStatusCode) { throw "Supabase API HTTP $([int]$response.StatusCode): $body" }
-    Write-Output 'Fungsi draf artikel berjaya dideploy.'
-  }
-  finally { $stream.Dispose(); $multipart.Dispose() }
+  $response = $client.PostAsync(
+    "https://api.supabase.com/v1/projects/$projectRef/secrets",
+    [Net.Http.StringContent]::new($body, [Text.Encoding]::UTF8, 'application/json')
+  ).GetAwaiter().GetResult()
+  $responseBody = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+  if (-not $response.IsSuccessStatusCode) { throw "Supabase API HTTP $([int]$response.StatusCode): $responseBody" }
+  Write-Output 'DeepSeek dan DataForSEO secrets berjaya diselaraskan ke Supabase.'
 }
-finally { $client.Dispose(); $token = $null; $blob = $null }
+finally {
+  $client.Dispose(); $token = $null; $blob = $null; $values.Clear(); $body = $null
+}
