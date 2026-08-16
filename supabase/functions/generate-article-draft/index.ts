@@ -6,6 +6,16 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 });
 
 const categories = new Set(['Al-Quran', 'Hadis', 'Doa', 'Sirah', 'Akhlak', 'Sedekah']);
+const scheduledKeywords = [
+  'kelebihan sedekah subuh',
+  'doa selepas solat fardu',
+  'cara solat taubat',
+  'amalan selepas solat subuh',
+  'doa untuk ibu bapa',
+  'adab bersedekah dalam islam',
+  'cara menjaga lisan menurut islam',
+  'amalan kecil yang konsisten dalam islam',
+];
 const slugify = (value: string) => value.toLowerCase()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
   .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 110);
@@ -22,8 +32,9 @@ Deno.serve(async (request) => {
   if (!deepseekKey || !supabaseUrl || !serviceRoleKey) return json({ error: 'Server configuration incomplete.' }, 500);
 
   const input = await request.json().catch(() => ({}));
-  const keyword = String(input.keyword || '').trim().slice(0, 120);
-  if (!keyword) return json({ error: 'A keyword is required.' }, 400);
+  const requestedKeyword = String(input.keyword || '').trim().slice(0, 120);
+  // Scheduled requests rotate a reviewed keyword list; manual calls can still supply a specific keyword.
+  const keyword = requestedKeyword || scheduledKeywords[Math.floor(Date.now() / 604_800_000) % scheduledKeywords.length];
 
   const prompt = `Create one Malay-language Islamic SEO article draft for the keyword: "${keyword}".
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.

@@ -69,6 +69,7 @@ supabase/.singapore-secrets.txt
 !artikel/**
 !scripts/
 !scripts/generate_static_articles.ps1
+!scripts/deploy_generate_article_draft.ps1
 !scraper_qr/
 !scraper_qr/muamalat_ederma/
 !scraper_qr/muamalat_ederma/*/
