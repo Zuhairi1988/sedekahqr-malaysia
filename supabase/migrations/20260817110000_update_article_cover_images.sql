@@ -6,6 +6,7 @@ set cover_image = case slug
   when 'menjaga-lisan-di-rumah-tempat-kerja-dan-media-sosial' then 'assets/article-menjaga-lisan.png'
   when 'amalan-kecil-yang-konsisten' then 'assets/article-amalan-konsisten.png'
   when 'adab-bersedekah-menjaga-niat-dan-maruah' then 'assets/article-adab-sedekah.png'
+  when 'cara-solat-taubat-panduan-lengkap-niat-dan-doa-taubat-nasuha-978940' then 'assets/article-cara-solat-taubat.png'
   else cover_image
 end
 where slug in (
@@ -14,5 +15,6 @@ where slug in (
   'berbuat-baik-kepada-ibu-bapa-dalam-kehidupan-harian',
   'menjaga-lisan-di-rumah-tempat-kerja-dan-media-sosial',
   'amalan-kecil-yang-konsisten',
-  'adab-bersedekah-menjaga-niat-dan-maruah'
+  'adab-bersedekah-menjaga-niat-dan-maruah',
+  'cara-solat-taubat-panduan-lengkap-niat-dan-doa-taubat-nasuha-978940'
 );
