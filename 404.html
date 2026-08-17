@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Halaman tidak ditemui - SedekahQR</title>
+  <script>
+    (() => {
+      const match = window.location.pathname.match(/^\/artikel\/([^/]+)\/?$/);
+      if (!match) return;
+      const slug = decodeURIComponent(match[1]);
+      window.location.replace(`/article.html?slug=${encodeURIComponent(slug)}`);
+    })();
+  </script>
+</head>
+<body>
+  <p>Halaman tidak ditemui. <a href="/blog.html">Lihat Artikel</a></p>
+</body>
+</html>
