@@ -88,7 +88,7 @@ Deno.serve(async (request) => {
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
 Use 700-1000 original Malay words, clear H2 headings, practical advice, and a neutral educational tone.
 content must be an array with at least 7 objects: {"type":"heading"|"paragraph"|"quote"|"list","text":"...","source":"..."?,"items":["..."]?}.
-sources must use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This is a DRAFT for human editorial review and must not include financial, medical, or legal advice.`;
+sources must contain at least one source object with label and url, and may use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This article will be published automatically and must not include financial, medical, or legal advice.`;
 
   const aiResponse = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
@@ -119,7 +119,7 @@ sources must use only Quran.com or Sunnah.com URLs. Never invent Quran verses, h
   const sources = Array.isArray(draft.sources) ? draft.sources.filter((source) => {
     try { return ['quran.com', 'sunnah.com'].includes(new URL(String(source?.url || '')).hostname); } catch { return false; }
   }) : [];
-  if (title.length < 8 || excerpt.length < 30 || content.length < 3) {
+  if (title.length < 8 || excerpt.length < 30 || content.length < 7 || !sources.length) {
     return json({ error: 'Generated draft did not meet editorial checks.', checks: { titleLength: title.length, excerptLength: excerpt.length, contentBlocks: content.length, category } }, 422);
   }
 
@@ -128,9 +128,9 @@ sources must use only Quran.com or Sunnah.com URLs. Never invent Quran verses, h
   const slug = `${baseSlug.slice(0, 95)}-${Date.now().toString().slice(-6)}`;
   const coverImage = category === 'Sedekah' ? 'assets/banner-sedekah-komuniti.jpg' : category === 'Hadis' ? 'assets/banner-sedekah-subuh.jpg' : 'assets/blog-hero-quran.jpg';
   const { data, error } = await supabase.from('islamic_articles').insert({
-    slug, title, excerpt, category, author: 'Draf AI SedekahQR', cover_image: coverImage,
+    slug, title, excerpt, category, author: 'SedekahQR', cover_image: coverImage,
     reading_minutes: Math.min(10, Math.max(4, Number(draft.reading_minutes) || 5)), content, sources,
-    is_published: false, published_at: null,
+    is_published: true, published_at: new Date().toISOString(),
   }).select('id, slug, title').single();
   if (error) return json({ error: 'Draft could not be saved.' }, 500);
   return json({ ok: true, draft: data, keyword: keywordSelection }, 201);
