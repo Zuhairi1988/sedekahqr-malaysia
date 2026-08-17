@@ -16,6 +16,15 @@ const scheduledKeywords = [
   'cara menjaga lisan menurut islam',
   'amalan kecil yang konsisten dalam islam',
 ];
+const articleCoverImages = [
+  'assets/article-syukur-nikmat.jpg',
+  'assets/article-sabar-solat.jpg',
+  'assets/article-berbuat-baik-ibu-bapa.jpg',
+  'assets/article-menjaga-lisan.jpg',
+  'assets/article-amalan-konsisten.jpg',
+  'assets/article-adab-sedekah.jpg',
+  'assets/article-cara-solat-taubat.jpg',
+];
 type KeywordCandidate = { keyword: string; search_volume?: number | null; competition_index?: number | null };
 const slugify = (value: string) => value.toLowerCase()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
@@ -126,7 +135,7 @@ sources must contain at least one source object with label and url, and may use 
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const baseSlug = slugify(title) || `artikel-${Date.now()}`;
   const slug = `${baseSlug.slice(0, 95)}-${Date.now().toString().slice(-6)}`;
-  const coverImage = category === 'Sedekah' ? 'assets/banner-sedekah-komuniti.jpg' : category === 'Hadis' ? 'assets/banner-sedekah-subuh.jpg' : 'assets/blog-hero-quran.jpg';
+  const coverImage = articleCoverImages[Math.floor(Date.now() / 86_400_000) % articleCoverImages.length];
   const { data, error } = await supabase.from('islamic_articles').insert({
     slug, title, excerpt, category, author: 'SedekahQR', cover_image: coverImage,
     reading_minutes: Math.min(10, Math.max(4, Number(draft.reading_minutes) || 5)), content, sources,
