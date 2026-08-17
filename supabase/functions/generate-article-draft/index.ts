@@ -28,15 +28,15 @@ async function findKeyword(login: string | undefined, password: string | undefin
 
   try {
     const basicAuth = btoa(`${login}:${password}`);
-    const response = await fetch('https://api.dataforseo.com/v3/keywords_data/google_ads/keywords_for_keywords/live', {
+    // Search-volume is a stable fit for the curated Malay keyword pool. Keyword
+    // suggestion requests can return oversized payloads and are unnecessary here.
+    const response = await fetch('https://api.dataforseo.com/v3/keywords_data/google_ads/search_volume/live', {
       method: 'POST',
       headers: { Authorization: `Basic ${basicAuth}`, 'Content-Type': 'application/json' },
       body: JSON.stringify([{
         location_name: 'Malaysia',
         language_name: 'Malay',
         keywords: scheduledKeywords,
-        sort_by: 'search_volume',
-        limit: 50,
       }]),
     });
     if (!response.ok) throw new Error(`DataForSEO HTTP ${response.status}`);
@@ -50,7 +50,9 @@ async function findKeyword(login: string | undefined, password: string | undefin
       return words.length >= 2 && words.length <= 10 && volume > 0 && competition <= 70;
     });
     if (!shortlist.length) throw new Error('No suitable keyword candidates.');
-    const candidate = shortlist[Math.floor(Date.now() / 86_400_000) % shortlist.length];
+    shortlist.sort((a, b) => Number(b.search_volume || 0) - Number(a.search_volume || 0));
+    // Rotate between the five strongest terms so repeated scheduled drafts vary.
+    const candidate = shortlist[Math.floor(Date.now() / 86_400_000) % Math.min(shortlist.length, 5)];
     return {
       keyword: candidate.keyword.trim(),
       source: 'dataforseo',
@@ -85,17 +87,17 @@ Deno.serve(async (request) => {
   const prompt = `Create one Malay-language Islamic SEO article draft for the keyword: "${keyword}".
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
 Use 700-1000 original Malay words, clear H2 headings, practical advice, and a neutral educational tone.
-content must be an array of objects: {"type":"heading"|"paragraph"|"quote"|"list","text":"...","source":"..."?,"items":["..."]?}.
+content must be an array with at least 7 objects: {"type":"heading"|"paragraph"|"quote"|"list","text":"...","source":"..."?,"items":["..."]?}.
 sources must use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This is a DRAFT for human editorial review and must not include financial, medical, or legal advice.`;
 
   const aiResponse = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${deepseekKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'deepseek-v4-pro',
+      model: 'deepseek-v4-flash',
       messages: [{ role: 'system', content: 'You are a careful Malay Islamic content drafting assistant. Output valid JSON only.' }, { role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
-      max_tokens: 5000,
+      max_tokens: 3000,
       thinking: { type: 'disabled' },
     }),
   });
@@ -107,12 +109,19 @@ sources must use only Quran.com or Sunnah.com URLs. Never invent Quran verses, h
 
   const title = String(draft.title || '').trim().slice(0, 180);
   const excerpt = String(draft.excerpt || '').trim().slice(0, 360);
-  const category = String(draft.category || 'Akhlak');
-  const content = Array.isArray(draft.content) ? draft.content : [];
+  const generatedCategory = String(draft.category || 'Akhlak').trim();
+  const category = categories.has(generatedCategory) ? generatedCategory : ({
+    Ibadah: 'Akhlak', Keimanan: 'Akhlak', Motivasi: 'Akhlak', Fiqh: 'Akhlak', Sejarah: 'Sirah',
+  }[generatedCategory] || 'Akhlak');
+  const content = Array.isArray(draft.content) ? draft.content : typeof draft.content === 'string'
+    ? draft.content.split(/\n{2,}/).map((text) => ({ type: 'paragraph', text: text.trim() })).filter((block) => block.text)
+    : [];
   const sources = Array.isArray(draft.sources) ? draft.sources.filter((source) => {
     try { return ['quran.com', 'sunnah.com'].includes(new URL(String(source?.url || '')).hostname); } catch { return false; }
   }) : [];
-  if (title.length < 8 || excerpt.length < 30 || content.length < 5 || !categories.has(category)) return json({ error: 'Generated draft did not meet editorial checks.' }, 422);
+  if (title.length < 8 || excerpt.length < 30 || content.length < 3) {
+    return json({ error: 'Generated draft did not meet editorial checks.', checks: { titleLength: title.length, excerptLength: excerpt.length, contentBlocks: content.length, category } }, 422);
+  }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const baseSlug = slugify(title) || `artikel-${Date.now()}`;

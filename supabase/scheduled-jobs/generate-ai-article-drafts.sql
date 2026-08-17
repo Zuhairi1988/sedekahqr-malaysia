@@ -19,7 +19,7 @@ select cron.schedule(
       'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'article_automation_secret')
     ),
     body := '{}'::jsonb,
-    timeout_milliseconds := 30000
+    timeout_milliseconds := 120000
   );
   $$
 );
