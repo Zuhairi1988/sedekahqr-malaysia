@@ -26,7 +26,7 @@ foreach ($article in $articles) {
   $html = @"
 <!DOCTYPE html>
 <html lang="ms"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" href="/assets/sedekahqr-icon-192.png" type="image/png" sizes="192x192">
 <title>$(Encode $article.title) - SedekahQR</title><meta name="description" content="$(Encode $article.excerpt)">
 <link rel="canonical" href="$canonical"><meta property="og:type" content="article"><meta property="og:site_name" content="SedekahQR"><meta property="og:title" content="$(Encode $article.title) - SedekahQR"><meta property="og:description" content="$(Encode $article.excerpt)"><meta property="og:url" content="$canonical"><meta property="og:image" content="$image"><meta name="twitter:card" content="summary_large_image">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3569037848347426" crossorigin="anonymous"></script><script type="application/ld+json">$schema</script><link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="../../blog.css"></head>
