@@ -16,19 +16,56 @@ const scheduledKeywords = [
   'cara menjaga lisan menurut islam',
   'amalan kecil yang konsisten dalam islam',
 ];
-const articleCoverImages = [
-  'assets/article-syukur-nikmat.jpg',
-  'assets/article-sabar-solat.jpg',
-  'assets/article-berbuat-baik-ibu-bapa.jpg',
-  'assets/article-menjaga-lisan.jpg',
-  'assets/article-amalan-konsisten.jpg',
-  'assets/article-adab-sedekah.jpg',
-  'assets/article-cara-solat-taubat.jpg',
-];
+const articleCoverBucket = 'article-covers';
 type KeywordCandidate = { keyword: string; search_volume?: number | null; competition_index?: number | null };
 const slugify = (value: string) => value.toLowerCase()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
   .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 110);
+
+const escapeXml = (value: string) => value.replace(/[<>&"']/g, (character) => ({
+  '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;',
+}[character] || character));
+
+const hashValue = (value: string) => [...value].reduce((hash, character) => ((hash << 5) - hash + character.charCodeAt(0)) | 0, 0) >>> 0;
+
+const createArticleCoverSvg = (title: string, category: string, slug: string) => {
+  const hash = hashValue(slug);
+  const palettes = [
+    ['#0c513e', '#187453', '#d6a933'], ['#123d5e', '#1d6a83', '#e3b250'],
+    ['#5b3548', '#9a5968', '#d7b161'], ['#254d43', '#4c806a', '#d9c27a'],
+    ['#443763', '#75649a', '#d7b35d'], ['#5b4526', '#9a7650', '#d9bc72'],
+  ][hash % 6];
+  const titleLines = title.match(/.{1,28}(?:\s|$)/g)?.slice(0, 3).map((line) => line.trim()) || [title];
+  const titleMarkup = titleLines.map((line, index) => `<text x="108" y="${510 + index * 72}" fill="#ffffff" font-family="Arial, sans-serif" font-size="54" font-weight="700">${escapeXml(line)}</text>`).join('');
+  const stars = Array.from({ length: 14 }, (_, index) => {
+    const x = 80 + ((hash >> (index % 16)) % 1320);
+    const y = 70 + ((hash >> ((index + 7) % 16)) % 320);
+    return `<circle cx="${x}" cy="${y}" r="${2 + (index % 3)}" fill="#fff" opacity="0.55"/>`;
+  }).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-label="${escapeXml(title)}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${palettes[0]}"/><stop offset="1" stop-color="${palettes[1]}"/></linearGradient></defs><rect width="1536" height="1024" fill="url(#g)"/><circle cx="1230" cy="228" r="132" fill="none" stroke="#fff" stroke-width="26" opacity="0.92"/><circle cx="1280" cy="190" r="132" fill="url(#g)"/><path d="M0 900 Q260 700 520 900 T1040 900 T1536 860 V1024 H0Z" fill="#071f19" opacity="0.28"/>${stars}<text x="108" y="130" fill="${palettes[2]}" font-family="Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="4">SEDEKAHQR · ${escapeXml(category.toUpperCase())}</text><path d="M108 195 H310" stroke="${palettes[2]}" stroke-width="8"/>${titleMarkup}<text x="108" y="870" fill="#fff" font-family="Arial, sans-serif" font-size="30" opacity="0.82">Bacaan dan renungan Islam</text></svg>`;
+};
+
+async function createUniqueArticleCover(supabase: any, title: string, category: string, slug: string) {
+  const { data: buckets, error: bucketListError } = await supabase.storage.listBuckets();
+  if (bucketListError) throw bucketListError;
+  if (!buckets?.some((bucket: { id: string }) => bucket.id === articleCoverBucket)) {
+    const { error: bucketError } = await supabase.storage.createBucket(articleCoverBucket, {
+      public: true,
+      allowedMimeTypes: ['image/svg+xml'],
+      fileSizeLimit: '1MB',
+    });
+    if (bucketError) throw bucketError;
+  }
+  const path = `${slug}.svg`;
+  const svg = createArticleCoverSvg(title, category, slug);
+  const { error: uploadError } = await supabase.storage.from(articleCoverBucket).upload(
+    path,
+    new Blob([svg], { type: 'image/svg+xml' }),
+    { contentType: 'image/svg+xml', cacheControl: '31536000', upsert: false },
+  );
+  if (uploadError) throw uploadError;
+  return supabase.storage.from(articleCoverBucket).getPublicUrl(path).data.publicUrl;
+}
 
 const fallbackKeyword = () => scheduledKeywords[Math.floor(Date.now() / 86_400_000) % scheduledKeywords.length];
 
@@ -135,7 +172,12 @@ sources must contain at least one source object with label and url, and may use 
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const baseSlug = slugify(title) || `artikel-${Date.now()}`;
   const slug = `${baseSlug.slice(0, 95)}-${Date.now().toString().slice(-6)}`;
-  const coverImage = articleCoverImages[Math.floor(Date.now() / 86_400_000) % articleCoverImages.length];
+  let coverImage: string;
+  try { coverImage = await createUniqueArticleCover(supabase, title, category, slug); }
+  catch (error) {
+    console.error('Unique article cover generation failed.', error);
+    return json({ error: 'Article cover generation failed.' }, 502);
+  }
   const { data, error } = await supabase.from('islamic_articles').insert({
     slug, title, excerpt, category, author: 'SedekahQR', cover_image: coverImage,
     reading_minutes: Math.min(10, Math.max(4, Number(draft.reading_minutes) || 5)), content, sources,

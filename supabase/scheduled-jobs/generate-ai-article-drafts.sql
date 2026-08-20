@@ -1,4 +1,4 @@
--- Run by Supabase Cron at 10:00 AM Malaysia time (02:00 UTC), every Monday and Thursday.
+-- Run by Supabase Cron at 10:00 AM Malaysia time (02:00 UTC), every Sunday, Monday, Wednesday and Friday.
 -- The internal authorization token remains in Supabase Vault.
 do $$
 begin
@@ -9,7 +9,7 @@ end $$;
 
 select cron.schedule(
   'generate-seo-article-drafts',
-  '0 2 * * 1,4',
+  '0 2 * * 0,1,3,5',
   $$
   select net.http_post(
     url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url') || '/functions/v1/generate-article-draft',
