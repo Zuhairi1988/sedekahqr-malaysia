@@ -169,6 +169,23 @@ sources must contain at least one source object with label and url, and may use 
     return json({ error: 'Generated draft did not meet editorial checks.', checks: { titleLength: title.length, excerptLength: excerpt.length, contentBlocks: content.length, category } }, 422);
   }
 
+  const qualityResponse = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${deepseekKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'deepseek-v4-flash',
+      messages: [{ role: 'system', content: 'You are a strict Malay Islamic content quality reviewer. Return valid JSON only.' }, { role: 'user', content: `Review this article before publication. Reject it if it is generic, repetitive, contains unsupported religious claims, uses sources that do not support its claims, lacks practical value, or needs qualified human review for a legal/fatwa issue. Return {"approved":boolean,"score":number,"reason":"..."}. Require score 85 or higher.\n\n${JSON.stringify({ title, excerpt, category, content, sources })}` }],
+      response_format: { type: 'json_object' }, max_tokens: 350, thinking: { type: 'disabled' },
+    }),
+  });
+  if (!qualityResponse.ok) return json({ error: 'Article quality review failed.' }, 502);
+  let quality: { approved?: boolean; score?: number; reason?: string } = {};
+  try { quality = JSON.parse((await qualityResponse.json()).choices?.[0]?.message?.content || '{}'); }
+  catch { return json({ error: 'Article quality review was invalid.' }, 502); }
+  if (!quality.approved || Number(quality.score || 0) < 85) {
+    return json({ error: 'Article did not pass publication quality checks.', quality }, 422);
+  }
+
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const baseSlug = slugify(title) || `artikel-${Date.now()}`;
   const slug = `${baseSlug.slice(0, 95)}-${Date.now().toString().slice(-6)}`;
