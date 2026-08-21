@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   let deferredPrompt = null;
   let modalTrigger = null;
+  const t = (text) => window.SedekahQRLanguage?.t?.(text) || text;
+  const track = (name, parameters = {}) => window.gtag?.('event', name, parameters);
 
   const isDismissed = () => {
     try {
@@ -38,14 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
     modalTrigger = document.activeElement;
     iosSteps.hidden = !isIos;
     installButton.hidden = isIos;
-    laterButton.textContent = isIos ? 'Faham' : 'Nanti';
+    laterButton.textContent = isIos ? t('Faham') : t('Nanti');
     modal.hidden = false;
     document.body.classList.add('install-open');
     modal.querySelector('.reminder-close').focus();
+    track('pwa_install_prompt_shown', { device: isIos ? 'ios' : 'android' });
   };
 
   const schedulePrompt = () => {
-    window.setTimeout(openModal, 5000);
+    window.setTimeout(openModal, 6000);
   };
 
   window.addEventListener('beforeinstallprompt', (event) => {
@@ -56,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
+    track('pwa_install_completed', { device: isIos ? 'ios' : 'android' });
     closeModal(false);
   });
 
@@ -65,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
+      track(choice.outcome === 'accepted' ? 'pwa_install_accepted' : 'pwa_install_dismissed', { device: 'android' });
       if (choice.outcome !== 'accepted') dismissForTwoWeeks();
       closeModal(false);
     } finally {
@@ -73,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  laterButton.addEventListener('click', () => closeModal());
+  laterButton.addEventListener('click', () => { track('pwa_install_later', { device: isIos ? 'ios' : 'android' }); closeModal(); });
   modal.querySelectorAll('[data-close-install]').forEach((button) => {
     button.addEventListener('click', () => closeModal());
   });

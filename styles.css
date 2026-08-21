@@ -1900,6 +1900,68 @@
   line-height: 1.55;
 }
 
+.install-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-right: 40px;
+}
+
+.install-app-icon {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 12px;
+  box-shadow: 0 5px 14px rgba(13, 81, 63, 0.16);
+}
+
+.install-heading h2 {
+  margin-top: 2px;
+  color: var(--directory-ink);
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.install-benefits {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  list-style: none;
+}
+
+.install-benefits li {
+  position: relative;
+  padding: 0 0 0 20px;
+  color: var(--directory-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.install-benefits li::before {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--directory-green);
+  content: '';
+}
+
+.install-benefits strong,
+.install-benefits span {
+  display: block;
+}
+
+.install-benefits strong {
+  color: var(--directory-ink);
+  font-size: 13px;
+}
+
+.install-benefits span {
+  margin-top: 1px;
+}
+
 .reminder-heading h2 {
   margin-top: 2px;
   color: var(--directory-ink);
@@ -2075,6 +2137,7 @@
   text-align: center;
 }
 
+.directory-body.install-open,
 .directory-body.reminder-open {
   overflow: hidden;
 }
