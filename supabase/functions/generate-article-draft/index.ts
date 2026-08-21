@@ -132,7 +132,7 @@ Deno.serve(async (request) => {
 
   const prompt = `Create one Malay-language Islamic SEO article draft for the keyword: "${keyword}".
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
-Use 850-1100 original Malay words, clear H2 headings, and a neutral educational tone. Include at least three specific, realistic everyday Malaysian scenarios, explain one common misconception, and give a practical checklist or steps readers can apply. Avoid generic motivational filler and repeated advice.
+Use 850-1100 original Malay words, clear H2 headings, and a neutral educational tone. Include at least three specific, realistic everyday Malaysian scenarios, include one short section headed "Salah Faham" that corrects a common misunderstanding, and give a practical checklist or steps readers can apply. Avoid generic motivational filler and repeated advice.
 content must be an array with at least 7 objects: {"type":"heading"|"paragraph"|"quote"|"list","text":"...","source":"..."?,"items":["..."]?}.
 sources must contain at least one source object with label and url, and may use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This article will be published automatically and must not include financial, medical, or legal advice.`;
 
