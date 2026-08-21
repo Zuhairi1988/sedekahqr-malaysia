@@ -65,7 +65,30 @@
     audio.removeAttribute('src');
     audio.load();
   };
+  const toArabicDigits = (value) => String(value).replace(/\d/g, (digit) => String.fromCharCode(0x0660 + Number(digit)));
+  const fitMushafPage = (mushafText) => {
+    window.requestAnimationFrame(() => {
+      const content = mushafText.closest('.quran-content');
+      if (!content) return;
+      mushafText.style.fontSize = '';
+      let fontSize = Number.parseFloat(getComputedStyle(mushafText).fontSize);
+      while (mushafText.scrollHeight > content.clientHeight - 8 && fontSize > 14) {
+        fontSize -= 1;
+        mushafText.style.fontSize = `${fontSize}px`;
+      }
+    });
+  };
   const renderAyahs = (arabicAyahs, malayAyahs, includeSurahName = false, includeTranslation = true) => {
+    if (!includeTranslation) {
+      ayahList.replaceChildren();
+      const mushafText = document.createElement('p');
+      mushafText.className = 'mushaf-text';
+      mushafText.lang = 'ar';
+      mushafText.dir = 'rtl';
+      mushafText.textContent = arabicAyahs.map((ayah) => `${ayah.text} \uFD3F${toArabicDigits(ayah.numberInSurah)}\uFD3E`).join('  ');
+      ayahList.append(mushafText);
+      return;
+    }
     const translationByNumber = new Map((malayAyahs || []).map((ayah) => [ayah.number, ayah.text]));
     ayahList.replaceChildren();
     let previousSurah = null;
