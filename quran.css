@@ -200,3 +200,4 @@ body.quran-flip-active .quran-reader.is-flip-mode .quran-content { flex: 1 1 aut
   body.quran-flip-active .quran-main { height: auto; padding: 8px 16px; }
   body.quran-flip-active .quran-reader.is-flip-mode .quran-content { height: auto; box-sizing: border-box; padding: 12px 54px; }
 }
+.quran-reader.is-flip-mode .quran-flip-page-indicator { display: none; }
