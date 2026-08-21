@@ -123,8 +123,8 @@
 
 .quran-reading-entry img {
   display: block;
-  width: min(100%, 720px);
-  aspect-ratio: 5 / 4;
+  width: min(100%, 460px);
+  height: auto;
   object-fit: contain;
   transition: transform .28s ease;
 }
@@ -152,5 +152,6 @@
 @media (max-width: 760px) {
   .quran-landing { text-align: left; }
   .quran-landing-intro { margin-right: 0; margin-left: 0; }
-  .quran-reading-entry-caption { padding: 18px; }
+  .quran-reading-entry img { width: min(100%, 320px); }
+  .quran-reading-entry-caption { padding: 0 12px; }
 }
