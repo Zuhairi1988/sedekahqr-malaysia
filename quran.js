@@ -65,7 +65,7 @@
     audio.removeAttribute('src');
     audio.load();
   };
-  const renderAyahs = (arabicAyahs, malayAyahs, includeSurahName = false) => {
+  const renderAyahs = (arabicAyahs, malayAyahs, includeSurahName = false, includeTranslation = true) => {
     const translationByNumber = new Map((malayAyahs || []).map((ayah) => [ayah.number, ayah.text]));
     ayahList.replaceChildren();
     let previousSurah = null;
@@ -90,7 +90,8 @@
       const translation = document.createElement('p');
       translation.className = 'ayah-translation';
       translation.textContent = translationByNumber.get(ayah.number) || '';
-      block.append(number, arabicText, translation);
+      block.append(number, arabicText);
+      if (includeTranslation) block.append(translation);
       ayahList.append(block);
     });
   };
@@ -150,7 +151,7 @@
       document.querySelector('#surah-translation').textContent = 'Teks Arab dan terjemahan Bahasa Melayu';
       document.querySelector('#surah-arabic-name').textContent = '';
       document.querySelector('#translation-credit').textContent = 'Terjemahan Bahasa Melayu: Abdullah Muhammad Basmeih.';
-      renderAyahs(arabicPage.ayahs, malayPage.ayahs, true);
+      renderAyahs(arabicPage.ayahs, malayPage.ayahs, readerMode !== 'flip', readerMode !== 'flip');
       animatePageTurn(direction);
       saveReading({ type: 'page', value: selectedPage });
       updateHistory('page', selectedPage);
@@ -160,6 +161,7 @@
     readerMode = mode;
     const isFlip = mode === 'flip';
     readerShell.classList.toggle('is-flip-mode', isFlip);
+    document.body.classList.toggle('quran-flip-active', isFlip);
     modeTabs.forEach((tab) => {
       const active = tab.dataset.readerMode === mode;
       tab.classList.toggle('is-active', active);

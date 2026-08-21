@@ -167,3 +167,23 @@
 @keyframes quran-page-next { 0% { opacity: .35; transform: perspective(900px) rotateY(-8deg) translateX(10px); } 100% { opacity: 1; transform: perspective(900px) rotateY(0) translateX(0); } }
 @keyframes quran-page-previous { 0% { opacity: .35; transform: perspective(900px) rotateY(8deg) translateX(-10px); } 100% { opacity: 1; transform: perspective(900px) rotateY(0) translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .quran-reader.is-turning-next #surah-reader, .quran-reader.is-turning-previous #surah-reader { animation: none; } }
+.quran-reader.is-flip-mode .quran-filter-bar .quran-status { display: none; }
+.quran-reader.is-flip-mode .surah-heading,
+.quran-reader.is-flip-mode .translation-credit { display: none; }
+.quran-reader.is-flip-mode .quran-content { overflow: hidden; padding: 18px 76px; }
+.quran-reader.is-flip-mode .ayah-list { margin-top: 0; }
+.quran-reader.is-flip-mode .ayah { padding: 4px 0; border-bottom: 0; }
+.quran-reader.is-flip-mode .ayah-number { width: 20px; height: 20px; margin-bottom: 2px; font-size: .62rem; }
+.quran-reader.is-flip-mode .ayah-arabic { font-size: 24px; line-height: 1.55; }
+.quran-reader.is-flip-mode .quran-page-surah { display: none; }
+body.quran-flip-active { overflow: hidden; }
+body.quran-flip-active .directory-footer { display: none; }
+body.quran-flip-active .quran-main { height: calc(100svh - 86px); padding: 12px 0; }
+body.quran-flip-active .quran-reader { height: 100%; overflow: hidden; }
+body.quran-flip-active .quran-reader.is-flip-mode .quran-content { height: calc(100% - 118px); min-height: 0; }
+@media (max-width: 760px) {
+  body.quran-flip-active .quran-main { height: calc(100svh - 64px); padding: 8px 16px; }
+  body.quran-flip-active .quran-reader.is-flip-mode .quran-content { height: calc(100% - 104px); padding: 12px 54px; }
+  .quran-reader.is-flip-mode .ayah { padding: 2px 0; }
+  .quran-reader.is-flip-mode .ayah-arabic { font-size: 19px; line-height: 1.5; }
+}
