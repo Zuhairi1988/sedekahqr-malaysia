@@ -122,7 +122,15 @@
       updateHistory('surah', selectedId);
     } catch { showError(); }
   };
-  const loadPage = async (page) => {
+  const animatePageTurn = (direction) => {
+    if (!direction) return;
+    const className = direction > 0 ? 'is-turning-next' : 'is-turning-previous';
+    readerShell.classList.remove('is-turning-next', 'is-turning-previous');
+    void readerShell.offsetWidth;
+    readerShell.classList.add(className);
+    window.setTimeout(() => readerShell.classList.remove(className), 360);
+  };
+  const loadPage = async (page, direction = 0) => {
     const selectedPage = Number(page);
     if (!selectedPage || selectedPage < 1 || selectedPage > 604) return;
     selectedId = null;
@@ -143,6 +151,7 @@
       document.querySelector('#surah-arabic-name').textContent = '';
       document.querySelector('#translation-credit').textContent = 'Terjemahan Bahasa Melayu: Abdullah Muhammad Basmeih.';
       renderAyahs(arabicPage.ayahs, malayPage.ayahs, true);
+      animatePageTurn(direction);
       saveReading({ type: 'page', value: selectedPage });
       updateHistory('page', selectedPage);
     } catch { showError(); }
@@ -203,8 +212,8 @@
   surahSelect.addEventListener('change', () => { if (surahSelect.value) void loadSurah(surahSelect.value); });
   pageSelect.addEventListener('change', () => { if (pageSelect.value) void loadPage(pageSelect.value); });
   modeTabs.forEach((tab) => tab.addEventListener('click', () => setReaderMode(tab.dataset.readerMode)));
-  flipPrevious.addEventListener('click', () => void loadPage(Number(pageSelect.value) - 1));
-  flipNext.addEventListener('click', () => void loadPage(Number(pageSelect.value) + 1));
+  flipPrevious.addEventListener('click', () => void loadPage(Number(pageSelect.value) - 1, -1));
+  flipNext.addEventListener('click', () => void loadPage(Number(pageSelect.value) + 1, 1));
   document.querySelector('#retry-quran').addEventListener('click', () => { error.hidden = true; loadList(); });
   loadList();
 })();
