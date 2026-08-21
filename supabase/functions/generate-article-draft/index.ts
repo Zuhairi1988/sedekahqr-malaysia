@@ -125,6 +125,21 @@ Deno.serve(async (request) => {
   if (!deepseekKey || !supabaseUrl || !serviceRoleKey) return json({ error: 'Server configuration incomplete.' }, 500);
 
   const input = await request.json().catch(() => ({}));
+  const retryAttempt = Math.min(2, Math.max(1, Number(input.retryAttempt) || 1));
+  const retryOrReject = async (error: string, details: Record<string, unknown>) => {
+    if (retryAttempt < 2) {
+      const retryResponse = await fetch(`${supabaseUrl}/functions/v1/generate-article-draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${automationSecret}` },
+        body: JSON.stringify({ retryAttempt: retryAttempt + 1 }),
+      });
+      return new Response(await retryResponse.text(), {
+        status: retryResponse.status,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return json({ error, details, attempts: retryAttempt }, 422);
+  };
   const requestedKeyword = String(input.keyword || '').trim().slice(0, 120);
   // Manual calls retain editorial control; scheduled runs use Malaysian keyword data when available.
   const keywordSelection = requestedKeyword ? { keyword: requestedKeyword, source: 'manual' } : await findKeyword(dataForSeoLogin, dataForSeoPassword);
@@ -166,7 +181,7 @@ sources must contain at least one source object with label and url, and may use 
     try { return ['quran.com', 'sunnah.com'].includes(new URL(String(source?.url || '')).hostname); } catch { return false; }
   }) : [];
   if (title.length < 8 || excerpt.length < 30 || content.length < 7 || !sources.length) {
-    return json({ error: 'Generated draft did not meet editorial checks.', checks: { titleLength: title.length, excerptLength: excerpt.length, contentBlocks: content.length, category } }, 422);
+    return retryOrReject('Generated draft did not meet editorial checks.', { titleLength: title.length, excerptLength: excerpt.length, contentBlocks: content.length, category });
   }
 
   const qualityResponse = await fetch('https://api.deepseek.com/chat/completions', {
@@ -183,7 +198,7 @@ sources must contain at least one source object with label and url, and may use 
   try { quality = JSON.parse((await qualityResponse.json()).choices?.[0]?.message?.content || '{}'); }
   catch { return json({ error: 'Article quality review was invalid.' }, 502); }
   if (!quality.approved || Number(quality.score || 0) < 80) {
-    return json({ error: 'Article did not pass publication quality checks.', quality }, 422);
+    return retryOrReject('Article did not pass publication quality checks.', { quality });
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
