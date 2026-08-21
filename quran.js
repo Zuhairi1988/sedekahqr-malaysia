@@ -12,6 +12,7 @@
   const audio = document.querySelector('#surah-audio');
   let surahs = [];
   let selectedId = null;
+  const surahStartPages = new Map();
 
   const request = async (path) => {
     const response = await fetch(`${api}${path}`);
@@ -118,7 +119,8 @@
     surahs.forEach((surah) => {
       const option = document.createElement('option');
       option.value = surah.number;
-      option.textContent = `${surah.number}. ${surah.englishName} (${surah.name})`;
+      const startPage = surahStartPages.get(surah.number);
+      option.textContent = `${surah.number}. ${surah.englishName} (${surah.name})${startPage ? ` - Halaman ${startPage}` : ''}`;
       surahFragment.append(option);
     });
     surahSelect.append(surahFragment);
@@ -134,7 +136,15 @@
   };
   const loadList = async () => {
     try {
-      surahs = await request('/surah');
+      const [surahList, mushaf] = await Promise.all([
+        request('/surah'),
+        request('/quran/quran-uthmani'),
+      ]);
+      surahs = surahList;
+      (mushaf.surahs || []).forEach((surah) => {
+        const firstAyah = surah.ayahs?.[0];
+        if (firstAyah?.page) surahStartPages.set(surah.number, firstAyah.page);
+      });
       populateFilters();
       const params = new URLSearchParams(location.search);
       const page = Number(params.get('page'));
