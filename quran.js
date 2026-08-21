@@ -6,12 +6,19 @@
   const status = document.querySelector('#surah-status');
   const empty = document.querySelector('#quran-empty');
   const reader = document.querySelector('#surah-reader');
+  const readerShell = document.querySelector('.quran-reader');
   const error = document.querySelector('#quran-error');
   const ayahList = document.querySelector('#ayah-list');
   const audioSection = document.querySelector('.surah-audio');
   const audio = document.querySelector('#surah-audio');
+  const modeTabs = document.querySelectorAll('[data-reader-mode]');
+  const flipNavigation = document.querySelector('#quran-flip-navigation');
+  const flipPrevious = document.querySelector('#flip-previous');
+  const flipNext = document.querySelector('#flip-next');
+  const flipPageIndicator = document.querySelector('#flip-page-indicator');
   let surahs = [];
   let selectedId = null;
+  let readerMode = 'ayah';
   const surahStartPages = new Map();
 
   const request = async (path) => {
@@ -21,9 +28,29 @@
     if (!payload?.data) throw new Error('Invalid Quran API response');
     return payload.data;
   };
-  const showError = () => { error.hidden = false; empty.hidden = true; reader.hidden = true; };
+  const updateHistory = (key, value) => {
+    const params = new URLSearchParams({ [key]: value });
+    if (readerMode === 'flip') params.set('mode', 'flip');
+    history.replaceState(null, '', `quran-reader.html?${params}`);
+  };
+  const updateFlipNavigation = (page) => {
+    const isFlip = readerMode === 'flip';
+    flipNavigation.hidden = !isFlip;
+    if (!isFlip) return;
+    flipPageIndicator.textContent = `Halaman ${page} daripada 604`;
+    flipPrevious.disabled = page <= 1;
+    flipNext.disabled = page >= 604;
+  };
+  const showError = () => {
+    error.hidden = false;
+    empty.hidden = true;
+    reader.hidden = true;
+    flipNavigation.hidden = true;
+  };
   const showLoading = () => {
-    empty.hidden = true; error.hidden = true; reader.hidden = false;
+    empty.hidden = true;
+    error.hidden = true;
+    reader.hidden = false;
     ayahList.replaceChildren();
     const loading = document.createElement('p');
     loading.className = 'quran-status';
@@ -69,8 +96,13 @@
   };
   const loadSurah = async (id) => {
     selectedId = Number(id);
+    if (readerMode === 'flip') {
+      void loadPage(surahStartPages.get(selectedId) || 1);
+      return;
+    }
     surahSelect.value = String(selectedId);
     pageSelect.value = '';
+    updateFlipNavigation(1);
     showLoading();
     clearAudio();
     audioSection.hidden = false;
@@ -87,7 +119,7 @@
       audio.load();
       renderAyahs(arabic.ayahs, malay?.ayahs);
       saveReading({ type: 'surah', value: selectedId });
-      history.replaceState(null, '', `quran.html?surah=${selectedId}`);
+      updateHistory('surah', selectedId);
     } catch { showError(); }
   };
   const loadPage = async (page) => {
@@ -96,6 +128,7 @@
     selectedId = null;
     surahSelect.value = '';
     pageSelect.value = String(selectedPage);
+    updateFlipNavigation(selectedPage);
     showLoading();
     clearAudio();
     audioSection.hidden = true;
@@ -111,8 +144,24 @@
       document.querySelector('#translation-credit').textContent = 'Terjemahan Bahasa Melayu: Abdullah Muhammad Basmeih.';
       renderAyahs(arabicPage.ayahs, malayPage.ayahs, true);
       saveReading({ type: 'page', value: selectedPage });
-      history.replaceState(null, '', `quran.html?page=${selectedPage}`);
+      updateHistory('page', selectedPage);
     } catch { showError(); }
+  };
+  const setReaderMode = (mode, pageOverride = 0) => {
+    readerMode = mode;
+    const isFlip = mode === 'flip';
+    readerShell.classList.toggle('is-flip-mode', isFlip);
+    modeTabs.forEach((tab) => {
+      const active = tab.dataset.readerMode === mode;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
+    if (!isFlip) {
+      flipNavigation.hidden = true;
+      return;
+    }
+    const currentPage = Number(pageOverride) || Number(pageSelect.value) || surahStartPages.get(Number(surahSelect.value)) || 1;
+    void loadPage(currentPage);
   };
   const populateFilters = () => {
     const surahFragment = document.createDocumentFragment();
@@ -136,10 +185,7 @@
   };
   const loadList = async () => {
     try {
-      const [surahList, mushaf] = await Promise.all([
-        request('/surah'),
-        request('/quran/quran-uthmani'),
-      ]);
+      const [surahList, mushaf] = await Promise.all([request('/surah'), request('/quran/quran-uthmani')]);
       surahs = surahList;
       (mushaf.surahs || []).forEach((surah) => {
         const firstAyah = surah.ayahs?.[0];
@@ -149,14 +195,16 @@
       const params = new URLSearchParams(location.search);
       const page = Number(params.get('page'));
       const surah = Number(params.get('surah'));
-      if (page >= 1 && page <= 604) void loadPage(page);
+      if (params.get('mode') === 'flip') setReaderMode('flip', page);
+      else if (page >= 1 && page <= 604) void loadPage(page);
       else if (surah >= 1 && surah <= 114) void loadSurah(surah);
-
     } catch { showError(); }
   };
   surahSelect.addEventListener('change', () => { if (surahSelect.value) void loadSurah(surahSelect.value); });
   pageSelect.addEventListener('change', () => { if (pageSelect.value) void loadPage(pageSelect.value); });
-
+  modeTabs.forEach((tab) => tab.addEventListener('click', () => setReaderMode(tab.dataset.readerMode)));
+  flipPrevious.addEventListener('click', () => void loadPage(Number(pageSelect.value) - 1));
+  flipNext.addEventListener('click', () => void loadPage(Number(pageSelect.value) + 1));
   document.querySelector('#retry-quran').addEventListener('click', () => { error.hidden = true; loadList(); });
   loadList();
 })();
