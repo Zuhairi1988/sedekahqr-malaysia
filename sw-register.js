@@ -2,7 +2,7 @@
   if (!('serviceWorker' in navigator)) return;
 
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js?v=20260821-2', {
+    navigator.serviceWorker.register('./service-worker.js?v=20260821-3', {
       scope: './',
       updateViaCache: 'none'
     }).catch(() => {

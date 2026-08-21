@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest?v=20260812-1" />
   <link rel="stylesheet" href="styles.css?v=20260812-1" />
-  <link rel="stylesheet" href="quran.css?v=20260812-1" />
+  <link rel="stylesheet" href="quran.css?v=20260821-1" />
 </head>
 <body class="directory-body quran-body">
   <header class="directory-header">
@@ -58,18 +58,17 @@
     </section>
 
     <section class="quran-reader" aria-label="Pembaca Al-Quran">
-      <aside class="quran-surah-panel">
-        <label for="surah-search">Cari surah</label>
-        <input id="surah-search" type="search" placeholder="Contoh: Al-Baqarah atau 2" autocomplete="off" />
+      <div class="quran-filter-bar">
+        <label for="surah-select"><span>Surah</span><select id="surah-select"><option value="">Pilih surah</option></select></label>
+        <label for="page-select"><span>Halaman</span><select id="page-select"><option value="">Pilih halaman mushaf</option></select></label>
         <p id="surah-status" class="quran-status" aria-live="polite">Memuatkan senarai surah...</p>
-        <ol id="surah-list" class="surah-list" aria-label="Senarai surah"></ol>
-      </aside>
+      </div>
 
       <section class="quran-content" aria-live="polite">
         <div id="quran-empty" class="quran-empty">
           <p class="quran-eyebrow">MULAKAN BACAAN</p>
-          <h2>Pilih satu surah</h2>
-          <p>Gunakan carian atau pilih surah daripada senarai di sebelah.</p>
+          <h2>Pilih surah atau halaman</h2>
+          <p>Gunakan dropdown di atas untuk mula membaca Al-Quran.</p>
         </div>
         <article id="surah-reader" hidden>
           <header class="surah-heading">
@@ -85,9 +84,7 @@
               <p class="quran-eyebrow">DENGAR BACAAN</p>
               <p>Sheikh Mishary Rashid Alafasy</p>
             </div>
-            <audio id="surah-audio" controls preload="none">
-              Audio tidak disokong oleh pelayar anda.
-            </audio>
+            <audio id="surah-audio" controls preload="none">Audio tidak disokong oleh pelayar anda.</audio>
           </section>
           <p id="translation-credit" class="translation-credit"></p>
           <div id="ayah-list" class="ayah-list"></div>
@@ -98,8 +95,7 @@
           <button id="retry-quran" class="quran-primary-button" type="button">Cuba semula</button>
         </div>
       </section>
-    </section>
-  </main>
+    </section>  </main>
 
   <footer class="directory-footer">
     <div class="directory-container">
@@ -115,11 +111,11 @@
     </div>
   </footer>
 
-  <script src="language.js?v=20260812-1"></script>
+  <script src="language.js?v=20260821-2"></script>
   <script src="nav-menu.js?v=20260812-1"></script>
   <script src="analytics.js?v=20260813-3"></script>
-  <script src="sw-register.js?v=20260814-2"></script>
-  <script src="quran.js?v=20260812-1"></script>
+  <script src="sw-register.js?v=20260821-3"></script>
+  <script src="quran.js?v=20260821-1"></script>
 </body>
 </html>
 
