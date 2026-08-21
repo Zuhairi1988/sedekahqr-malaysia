@@ -115,29 +115,18 @@
 }
 
 .quran-reading-entry {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  border: 1px solid #cbdcd4;
-  border-radius: 8px;
-  background: #123b33;
-  color: #fff;
-  text-align: left;
+  display: grid;
+  justify-items: center;
+  color: #123b33;
+  text-align: center;
 }
 
 .quran-reading-entry img {
   display: block;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  transition: transform .35s ease;
-}
-
-.quran-reading-entry::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(6, 27, 20, 0) 45%, rgba(6, 27, 20, .84));
-  content: '';
+  width: min(100%, 720px);
+  aspect-ratio: 5 / 4;
+  object-fit: contain;
+  transition: transform .28s ease;
 }
 
 .quran-reading-entry:hover img,
@@ -146,22 +135,17 @@
 }
 
 .quran-reading-entry-caption {
-  position: absolute;
-  z-index: 1;
-  right: 0;
-  bottom: 0;
-  left: 0;
   display: grid;
   gap: 4px;
-  padding: 24px;
+  margin-top: -6px;
 }
 
 .quran-reading-entry-caption strong {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
 }
 
 .quran-reading-entry-caption small {
-  color: rgba(255, 255, 255, .86);
+  color: #5a6e65;
   font-size: .9rem;
 }
 

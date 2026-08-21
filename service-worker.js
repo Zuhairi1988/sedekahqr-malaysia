@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sedekahqr-shell-v49';
+const CACHE_NAME = 'sedekahqr-shell-v50';
 const APP_SHELL = [
   './',
   './index.html',
@@ -42,7 +42,7 @@ const APP_SHELL = [
   './assets/sedekahqr-icon-192.png',
   './assets/sedekahqr-icon-512.png',
   './assets/blog-hero-quran.jpg',
-  './assets/quran-rehal.jpg',
+  './assets/quran-rehal.png',
   './assets/banner-sedekah-subuh.jpg',
   './assets/banner-sedekah-komuniti.jpg',
   './assets/banner-sedekah-subuh-hadis.jpg'
