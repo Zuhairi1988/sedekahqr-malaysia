@@ -67,18 +67,18 @@
   };
   const toArabicDigits = (value) => String(value).replace(/\d/g, (digit) => String.fromCharCode(0x0660 + Number(digit)));
   const fitMushafPage = (mushafText) => {
-    window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
       const content = mushafText.closest('.quran-content');
       if (!content) return;
       mushafText.style.fontSize = '';
       const contentStyle = getComputedStyle(content);
       const availableHeight = content.clientHeight - Number.parseFloat(contentStyle.paddingTop) - Number.parseFloat(contentStyle.paddingBottom) - 4;
       let fontSize = Number.parseFloat(getComputedStyle(mushafText).fontSize);
-      while (mushafText.scrollHeight > availableHeight && fontSize > 12) {
+      while (mushafText.scrollHeight > availableHeight && fontSize > 8) {
         fontSize -= 1;
         mushafText.style.fontSize = `${fontSize}px`;
       }
-    });
+    }));
   };
   const renderAyahs = (arabicAyahs, malayAyahs, includeSurahName = false, includeTranslation = true) => {
     if (!includeTranslation) {
@@ -89,6 +89,7 @@
       mushafText.dir = 'rtl';
       mushafText.textContent = arabicAyahs.map((ayah) => `${ayah.text} \uFD3F${toArabicDigits(ayah.numberInSurah)}\uFD3E`).join('  ');
       ayahList.append(mushafText);
+      fitMushafPage(mushafText);
       return;
     }
     const translationByNumber = new Map((malayAyahs || []).map((ayah) => [ayah.number, ayah.text]));
@@ -242,5 +243,6 @@
   flipPrevious.addEventListener('click', () => void loadPage(Number(pageSelect.value) - 1, -1));
   flipNext.addEventListener('click', () => void loadPage(Number(pageSelect.value) + 1, 1));
   document.querySelector('#retry-quran').addEventListener('click', () => { error.hidden = true; loadList(); });
+  window.addEventListener('resize', () => { const mushafText = document.querySelector('.is-flip-mode .mushaf-text'); if (mushafText) fitMushafPage(mushafText); });
   loadList();
 })();
