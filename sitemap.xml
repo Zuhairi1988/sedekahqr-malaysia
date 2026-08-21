@@ -3,6 +3,7 @@
   <url><loc>https://sedekahqr.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://sedekahqr.com/blog.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://sedekahqr.com/quran.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sedekahqr.com/quran-reader.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://sedekahqr.com/hadis.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://sedekahqr.com/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://sedekahqr.com/about.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>

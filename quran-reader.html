@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d513f" />
   <meta name="description" content="Baca Al-Quran dengan teks Arab dan terjemahan Bahasa Melayu di SedekahQR." />
-  <title>The Quran - SedekahQR</title>
+  <title>Baca Al-Quran - SedekahQR</title>
   <link rel="icon" href="assets/sedekahqr-logo.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest?v=20260812-1" />
@@ -27,7 +27,7 @@
         <a href="/">Homepage</a>
         <a href="/#direktori">Direktori</a>
         <a href="/#panduan">Cara Sedekah</a>
-        <a href="quran.html" aria-current="page">The Quran</a>
+        <a href="quran.html">Al-Quran</a>
         <a href="blog.html">Artikel</a>
       </nav>
       <button class="mobile-menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-page-menu"><span></span><span></span><span></span></button>
@@ -42,16 +42,61 @@
   </header>
 
   <main class="quran-main directory-container">
-    <section class="quran-landing" aria-labelledby="quran-title">
-      <p class="quran-eyebrow">BACAAN HARIAN</p>
-      <h1 id="quran-title">The Quran</h1>
-      <p class="quran-landing-intro">Baca ayat suci Al-Quran bersama terjemahan Bahasa Melayu dan audio bacaan.</p>
-      <a class="quran-reading-entry" href="quran-reader.html" aria-label="Mulakan bacaan Al-Quran">
-        <img src="assets/quran-rehal.jpg" alt="Al-Quran terbuka di atas rehal kayu" width="1440" height="960" />
-        <span class="quran-reading-entry-caption"><strong>Mulakan bacaan</strong><small>Tekan Al-Quran untuk memilih Surah atau halaman</small></span>
-      </a>
+    <section class="quran-intro" aria-labelledby="quran-title">
+      <div>
+        <p class="quran-eyebrow">BACAAN HARIAN</p>
+        <h1 id="quran-title">Al-Quran</h1>
+        <p>Teks Arab dan terjemahan Bahasa Melayu untuk bacaan harian anda.</p>
+      </div>
+      <div class="quran-intro-actions">
+        <button id="continue-reading" class="quran-secondary-button" type="button" hidden>Teruskan bacaan</button>
+        <div class="quran-font-controls" role="group" aria-label="Saiz teks Arab">
+          <button id="decrease-font" type="button" title="Kecilkan teks Arab" aria-label="Kecilkan teks Arab">A-</button>
+          <button id="increase-font" type="button" title="Besarkan teks Arab" aria-label="Besarkan teks Arab">A+</button>
+        </div>
+      </div>
     </section>
-  </main>
+
+    <section class="quran-reader" aria-label="Pembaca Al-Quran">
+      <div class="quran-filter-bar">
+        <label for="surah-select"><span>Surah</span><select id="surah-select"><option value="">Surah</option></select></label>
+        <label for="page-select"><span>Halaman</span><select id="page-select"><option value="">Halaman</option></select></label>
+        <p id="surah-status" class="quran-status" aria-live="polite">Memuatkan senarai surah...</p>
+      </div>
+
+      <section class="quran-content" aria-live="polite">
+        <div id="quran-empty" class="quran-empty">
+          <p class="quran-eyebrow">MULAKAN BACAAN</p>
+          <h2>Pilih surah atau halaman</h2>
+          <p>Gunakan dropdown di atas untuk mula membaca Al-Quran.</p>
+        </div>
+        <article id="surah-reader" hidden>
+          <header class="surah-heading">
+            <div>
+              <p id="surah-meta" class="quran-eyebrow"></p>
+              <h2 id="surah-title"></h2>
+              <p id="surah-translation"></p>
+            </div>
+            <p id="surah-arabic-name" class="surah-arabic-name" lang="ar" dir="rtl"></p>
+          </header>
+          <section class="surah-audio" aria-label="Audio bacaan surah">
+            <div>
+              <p class="quran-eyebrow">DENGAR BACAAN</p>
+              <p>Sheikh Mishary Rashid Alafasy</p>
+            </div>
+            <audio id="surah-audio" controls preload="none">Audio tidak disokong oleh pelayar anda.</audio>
+          </section>
+          <p id="translation-credit" class="translation-credit"></p>
+          <div id="ayah-list" class="ayah-list"></div>
+        </article>
+        <div id="quran-error" class="quran-error" hidden>
+          <h2>Tidak dapat memuatkan Al-Quran</h2>
+          <p>Semak sambungan internet anda dan cuba semula.</p>
+          <button id="retry-quran" class="quran-primary-button" type="button">Cuba semula</button>
+        </div>
+      </section>
+    </section>  </main>
+
   <footer class="directory-footer">
     <div class="directory-container">
       <div class="footer-main">
@@ -70,6 +115,7 @@
   <script src="nav-menu.js?v=20260812-1"></script>
   <script src="analytics.js?v=20260813-3"></script>
   <script src="sw-register.js?v=20260821-4"></script>
+  <script src="quran.js?v=20260821-1"></script>
 </body>
 </html>
 
