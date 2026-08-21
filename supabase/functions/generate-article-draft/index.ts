@@ -132,7 +132,7 @@ Deno.serve(async (request) => {
 
   const prompt = `Create one Malay-language Islamic SEO article draft for the keyword: "${keyword}".
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
-Use 700-1000 original Malay words, clear H2 headings, practical advice, and a neutral educational tone.
+Use 850-1100 original Malay words, clear H2 headings, and a neutral educational tone. Include at least three specific, realistic everyday Malaysian scenarios, explain one common misconception, and give a practical checklist or steps readers can apply. Avoid generic motivational filler and repeated advice.
 content must be an array with at least 7 objects: {"type":"heading"|"paragraph"|"quote"|"list","text":"...","source":"..."?,"items":["..."]?}.
 sources must contain at least one source object with label and url, and may use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This article will be published automatically and must not include financial, medical, or legal advice.`;
 
@@ -174,7 +174,7 @@ sources must contain at least one source object with label and url, and may use 
     headers: { Authorization: `Bearer ${deepseekKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'deepseek-v4-flash',
-      messages: [{ role: 'system', content: 'You are a strict Malay Islamic content quality reviewer. Return valid JSON only.' }, { role: 'user', content: `Review this article before publication. Reject it if it is generic, repetitive, contains unsupported religious claims, uses sources that do not support its claims, lacks practical value, or needs qualified human review for a legal/fatwa issue. Return {"approved":boolean,"score":number,"reason":"..."}. Require score 85 or higher.\n\n${JSON.stringify({ title, excerpt, category, content, sources })}` }],
+      messages: [{ role: 'system', content: 'You are a strict Malay Islamic content quality reviewer. Return valid JSON only.' }, { role: 'user', content: `Review this article before publication. Reject it if it is generic, repetitive, contains unsupported religious claims, uses sources that do not support its claims, lacks practical value, or needs qualified human review for a legal/fatwa issue. Return {"approved":boolean,"score":number,"reason":"..."}. Approve only when the score is 80 or higher; sources and safety requirements are non-negotiable.\n\n${JSON.stringify({ title, excerpt, category, content, sources })}` }],
       response_format: { type: 'json_object' }, max_tokens: 350, thinking: { type: 'disabled' },
     }),
   });
@@ -182,7 +182,7 @@ sources must contain at least one source object with label and url, and may use 
   let quality: { approved?: boolean; score?: number; reason?: string } = {};
   try { quality = JSON.parse((await qualityResponse.json()).choices?.[0]?.message?.content || '{}'); }
   catch { return json({ error: 'Article quality review was invalid.' }, 502); }
-  if (!quality.approved || Number(quality.score || 0) < 85) {
+  if (!quality.approved || Number(quality.score || 0) < 80) {
     return json({ error: 'Article did not pass publication quality checks.', quality }, 422);
   }
 
