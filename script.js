@@ -270,12 +270,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const locateButton = document.getElementById('locate-prayer');
   const locationPopover = document.getElementById('prayer-location-popover');
   const useCurrentLocationButton = document.getElementById('use-current-prayer-location');
+  const locationConsentModal = document.getElementById('location-consent-modal');
+  const allowPrayerLocationButton = document.getElementById('allow-prayer-location');
+  const keepDefaultPrayerLocationButton = document.getElementById('keep-default-prayer-location');
   const zoneSelect = document.getElementById('prayer-zone-select');
   const nextLabel = document.getElementById('prayer-next-label');
   const countdown = document.getElementById('prayer-countdown');
   const timeElements = [...document.querySelectorAll('.prayer-time')];
   const storageKey = 'sedekahqr-prayer-zone';
   const analyticsLocationKey = 'sedekahqr-analytics-location';
+  const locationConsentDismissedKey = 'sedekahqr-location-consent-dismissed-until';
   const defaultZone = 'WLY01';
   const malaysiaTimeZone = 'Asia/Kuala_Lumpur';
   const hijriMonths = [
@@ -539,11 +543,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const dismissLocationConsentForTwoWeeks = () => {
+    try { window.localStorage.setItem(locationConsentDismissedKey, String(Date.now() + (14 * 24 * 60 * 60 * 1000))); } catch {}
+  };
+
+  const isLocationConsentDismissed = () => {
+    try { return Number(window.localStorage.getItem(locationConsentDismissedKey)) > Date.now(); } catch { return false; }
+  };
+
+  const closeLocationConsent = (remember = true) => {
+    if (!locationConsentModal) return;
+    locationConsentModal.hidden = true;
+    document.body.classList.remove('location-consent-open');
+    if (remember) dismissLocationConsentForTwoWeeks();
+  };
+
+  const openLocationConsent = (force = false) => {
+    if (!locationConsentModal || locationConsentModal.hidden === false || (!force && isLocationConsentDismissed())) return;
+    locationConsentModal.hidden = false;
+    document.body.classList.add('location-consent-open');
+    locationConsentModal.querySelector('.reminder-close')?.focus();
+    window.gtag?.('event', 'prayer_location_consent_shown');
+  };
+
+  const suggestPrayerLocation = async () => {
+    if (!navigator.geolocation || isLocationConsentDismissed()) return;
+    try {
+      const permission = await navigator.permissions?.query?.({ name: 'geolocation' });
+      if (permission?.state === 'granted') {
+        void locatePrayerTimes();
+        return;
+      }
+      if (permission?.state === 'denied') return;
+    } catch {}
+    window.setTimeout(() => openLocationConsent(), 1600);
+  };
+
   locateButton.addEventListener('click', toggleLocationPopover);
   zoneName.addEventListener('click', toggleLocationPopover);
-  useCurrentLocationButton.addEventListener('click', async () => {
-    await locatePrayerTimes();
+  useCurrentLocationButton.addEventListener('click', () => {
     closeLocationPopover();
+    openLocationConsent(true);
+  });
+  allowPrayerLocationButton?.addEventListener('click', async () => {
+    closeLocationConsent(false);
+    window.gtag?.('event', 'prayer_location_consent_requested');
+    await locatePrayerTimes();
+  });
+  keepDefaultPrayerLocationButton?.addEventListener('click', () => {
+    closeLocationConsent();
+    setStatus('Waktu default Kuala Lumpur/Putrajaya digunakan. Tekan ikon lokasi untuk menukar zon.');
+  });
+  locationConsentModal?.querySelectorAll('[data-close-location-consent]').forEach((button) => {
+    button.addEventListener('click', () => closeLocationConsent());
   });
   zoneSelect.addEventListener('change', () => {
     if (!zoneSelect.value) return;
@@ -565,10 +617,10 @@ document.addEventListener('DOMContentLoaded', () => {
     void loadPrayerTimes(
       defaultZone,
       'Kuala Lumpur dan Putrajaya',
-      'Waktu default Kuala Lumpur/Putrajaya digunakan sementara lokasi dikesan.',
+      'Waktu default Kuala Lumpur/Putrajaya digunakan. Benarkan lokasi untuk zon yang lebih tepat.',
       'Default · Kuala Lumpur, Putrajaya'
     );
-    void locatePrayerTimes();
+    void suggestPrayerLocation();
   };
 
   initializePrayerTimes();

@@ -1890,6 +1890,20 @@
   height: 20px;
 }
 
+.location-consent-dialog {
+  width: min(100%, 450px);
+}
+
+.location-consent-note {
+  margin-top: 14px;
+  padding: 11px 12px;
+  border: 1px solid #d9e6e1;
+  border-radius: 6px;
+  background: #f2f8f5;
+  color: #476057;
+  font-size: 12px;
+  line-height: 1.55;
+}
 .install-ios-steps {
   margin-top: 16px;
   padding: 12px;
@@ -2137,6 +2151,7 @@
   text-align: center;
 }
 
+.directory-body.location-consent-open,
 .directory-body.install-open,
 .directory-body.reminder-open {
   overflow: hidden;

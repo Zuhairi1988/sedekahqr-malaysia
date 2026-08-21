@@ -19,7 +19,7 @@
   <link rel="icon" href="/assets/sedekahqr-icon-192.png" type="image/png" sizes="192x192" />
   <link rel="apple-touch-icon" href="assets/sedekahqr-icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest?v=20260809-6" />
-  <link rel="stylesheet" href="styles.css?v=20260821-1" />
+  <link rel="stylesheet" href="styles.css?v=20260821-2" />
 </head>
 <body class="directory-body">
   <header class="directory-header">
@@ -519,6 +519,27 @@
     </section>
   </div>
 
+  <div id="location-consent-modal" class="reminder-modal location-consent-modal" hidden>
+    <div class="reminder-backdrop" data-close-location-consent></div>
+    <section class="reminder-dialog location-consent-dialog" role="dialog" aria-modal="true" aria-labelledby="location-consent-title">
+      <button class="reminder-close" type="button" data-close-location-consent aria-label="Tutup" title="Tutup">&times;</button>
+      <div class="reminder-heading">
+        <div class="reminder-heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+        </div>
+        <div>
+          <p class="directory-eyebrow">WAKTU SOLAT LEBIH TEPAT</p>
+          <h2 id="location-consent-title">Gunakan lokasi anda</h2>
+        </div>
+      </div>
+      <p class="reminder-intro">Benarkan lokasi untuk memaparkan zon dan waktu solat yang tepat di kawasan anda.</p>
+      <p class="location-consent-note">Lokasi hanya digunakan untuk menentukan zon waktu solat dan tidak dipaparkan kepada pengguna lain.</p>
+      <div class="reminder-modal-actions">
+        <button id="allow-prayer-location" class="reminder-primary" type="button">Guna lokasi saya</button>
+        <button id="keep-default-prayer-location" class="reminder-secondary" type="button">Kekal Kuala Lumpur</button>
+      </div>
+    </section>
+  </div>
   <div id="install-modal" class="reminder-modal install-modal" hidden>
     <div class="reminder-backdrop" data-close-install></div>
     <section class="reminder-dialog install-dialog" role="dialog" aria-modal="true" aria-labelledby="install-title">
@@ -553,15 +574,15 @@
   <script src="prayer-zones.js?v=20260809-2"></script>
   <script src="qr-data.js?v=20260814-2"></script>
   <script src="blog-config.js?v=20260811-1"></script>
-  <script src="language.js?v=20260821-1"></script>
+  <script src="language.js?v=20260821-2"></script>
   <script src="nav-menu.js?v=20260812-1"></script>
-  <script src="script.js?v=20260811-4"></script>
+  <script src="script.js?v=20260821-1"></script>
   <script src="push-config.js?v=20260809-6"></script>
   <script src="notification.js?v=20260810-2"></script>
   <script src="install.js?v=20260821-1"></script>
   <script src="analytics.js?v=20260813-3"></script>
   <script src="campaign.js?v=20260811-3"></script>
-  <script src="sw-register.js?v=20260821-1"></script>
+  <script src="sw-register.js?v=20260821-2"></script>
 </body>
 </html>
 
