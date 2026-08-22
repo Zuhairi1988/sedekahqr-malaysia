@@ -149,7 +149,7 @@ Deno.serve(async (request) => {
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
 Use 850-1100 original Malay words, clear H2 headings, and a neutral educational tone. Include at least three specific, realistic everyday Malaysian scenarios, include one short section headed "Salah Faham" that corrects a common misunderstanding, and give a practical checklist or steps readers can apply. Write in clear standard Bahasa Melayu using accurate, familiar Malaysian usage. Check spelling, grammar, and word choice carefully. Avoid Indonesian vocabulary, awkward literal translations, unexplained Arabic terms, and jargon; when an Islamic term is necessary, explain it briefly in plain language. Avoid generic motivational filler and repeated advice.
 content must be an array with at least 7 objects: {"type":"heading"|"paragraph"|"quote"|"list","text":"...","source":"..."?,"items":["..."]?}.
-sources must contain at least one source object with label and url, and may use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This article is a draft for editorial review. It must not include financial, medical, or legal advice.`;
+sources must contain at least one source object with label and url, and may use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This article may be published automatically only after it passes all editorial checks. It must not include financial, medical, or legal advice.`;
 
   const aiResponse = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
@@ -213,7 +213,7 @@ sources must contain at least one source object with label and url, and may use 
   const { data, error } = await supabase.from('islamic_articles').insert({
     slug, title, excerpt, category, author: 'SedekahQR', cover_image: coverImage,
     reading_minutes: Math.min(10, Math.max(4, Number(draft.reading_minutes) || 5)), content, sources,
-    is_published: false, published_at: null,
+    is_published: true, published_at: new Date().toISOString(),
   }).select('id, slug, title').single();
   if (error) return json({ error: 'Draft could not be saved.' }, 500);
   return json({ ok: true, draft: data, keyword: keywordSelection }, 201);
