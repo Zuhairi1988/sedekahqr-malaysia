@@ -72,8 +72,14 @@
       if (!content) return;
       mushafText.style.fontSize = '';
       const contentStyle = getComputedStyle(content);
-      const availableHeight = content.clientHeight - Number.parseFloat(contentStyle.paddingTop) - Number.parseFloat(contentStyle.paddingBottom) - 4;
-      let fontSize = Number.parseFloat(getComputedStyle(mushafText).fontSize);
+      const page = mushafText.closest('.mushaf-page');
+      let availableHeight = content.clientHeight - Number.parseFloat(contentStyle.paddingTop) - Number.parseFloat(contentStyle.paddingBottom) - 4;
+      if (page) {
+        const pageStyle = getComputedStyle(page);
+        const headingHeight = page.querySelector('.mushaf-surah-heading')?.offsetHeight || 0;
+        const bismillahHeight = page.querySelector('.mushaf-bismillah')?.offsetHeight || 0;
+        availableHeight = page.clientHeight - Number.parseFloat(pageStyle.paddingTop) - Number.parseFloat(pageStyle.paddingBottom) - headingHeight - bismillahHeight - 8;
+      }      let fontSize = Number.parseFloat(getComputedStyle(mushafText).fontSize);
       while (mushafText.scrollHeight > availableHeight && fontSize > 8) {
         fontSize -= 1;
         mushafText.style.fontSize = `${fontSize}px`;
@@ -83,16 +89,42 @@
   const renderAyahs = (arabicAyahs, malayAyahs, includeSurahName = false, includeTranslation = true) => {
     if (!includeTranslation) {
       ayahList.replaceChildren();
+      const mushafPage = document.createElement('section');
+      mushafPage.className = 'mushaf-page';
+      ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((position) => {
+        const corner = document.createElement('span');
+        corner.className = `mushaf-corner mushaf-corner-${position}`;
+        corner.setAttribute('aria-hidden', 'true');
+        mushafPage.append(corner);
+      });
+      const firstAyah = arabicAyahs[0];
+      const surahNumber = firstAyah?.surah?.number;
+      if (firstAyah?.numberInSurah === 1 && firstAyah?.surah?.name) {
+        const heading = document.createElement('p');
+        heading.className = 'mushaf-surah-heading';
+        heading.lang = 'ar';
+        heading.dir = 'rtl';
+        heading.textContent = `سورة ${firstAyah.surah.name}`;
+        mushafPage.append(heading);
+        if (surahNumber !== 1 && surahNumber !== 9) {
+          const bismillah = document.createElement('p');
+          bismillah.className = 'mushaf-bismillah';
+          bismillah.lang = 'ar';
+          bismillah.dir = 'rtl';
+          bismillah.textContent = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+          mushafPage.append(bismillah);
+        }
+      }
       const mushafText = document.createElement('p');
       mushafText.className = 'mushaf-text';
       mushafText.lang = 'ar';
       mushafText.dir = 'rtl';
       mushafText.textContent = arabicAyahs.map((ayah) => `${ayah.text} \uFD3F${toArabicDigits(ayah.numberInSurah)}\uFD3E`).join('  ');
-      ayahList.append(mushafText);
+      mushafPage.append(mushafText);
+      ayahList.append(mushafPage);
       fitMushafPage(mushafText);
       return;
-    }
-    const translationByNumber = new Map((malayAyahs || []).map((ayah) => [ayah.number, ayah.text]));
+    }    const translationByNumber = new Map((malayAyahs || []).map((ayah) => [ayah.number, ayah.text]));
     ayahList.replaceChildren();
     let previousSurah = null;
     arabicAyahs.forEach((ayah) => {
