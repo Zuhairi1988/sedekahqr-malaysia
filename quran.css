@@ -198,7 +198,7 @@ body.quran-flip-active .quran-reader.is-flip-mode .quran-filter-bar { flex: 0 0 
 body.quran-flip-active .quran-reader.is-flip-mode .quran-content { flex: 1 1 auto; min-height: 0; height: auto; box-sizing: border-box; }
 @media (max-width: 760px) {
   body.quran-flip-active .quran-main { height: auto; padding: 8px 16px; }
-  body.quran-flip-active .quran-reader.is-flip-mode .quran-content { height: auto; box-sizing: border-box; padding: 12px 54px; }
+  body.quran-flip-active .quran-reader.is-flip-mode .quran-content { height: auto; box-sizing: border-box; padding: 12px 50px 12px 4px; }
 }
 .quran-reader.is-flip-mode .quran-flip-page-indicator { display: none; }
 /* Keep all flip controls on the right edge, outside the mushaf text. */
