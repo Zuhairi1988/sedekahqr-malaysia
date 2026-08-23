@@ -7,10 +7,9 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 const categories = new Set(['Al-Quran', 'Hadis', 'Doa', 'Sirah', 'Akhlak', 'Sedekah']);
 const scheduledKeywords = [
-  'kelebihan sedekah subuh',
   'doa selepas solat fardu',
   'cara solat taubat',
-  'amalan selepas solat subuh',
+  'amalan pagi yang baik selepas subuh',
   'doa untuk ibu bapa',
   'adab bersedekah dalam islam',
   'cara menjaga lisan menurut islam',
@@ -67,10 +66,10 @@ async function createUniqueArticleCover(supabase: any, title: string, category: 
   return supabase.storage.from(articleCoverBucket).getPublicUrl(path).data.publicUrl;
 }
 
-const fallbackKeyword = () => scheduledKeywords[Math.floor(Date.now() / 86_400_000) % scheduledKeywords.length];
+const fallbackKeyword = (retryAttempt = 1) => scheduledKeywords[(Math.floor(Date.now() / 86_400_000) + retryAttempt - 1) % scheduledKeywords.length];
 
-async function findKeyword(login: string | undefined, password: string | undefined) {
-  if (!login || !password) return { keyword: fallbackKeyword(), source: 'reviewed_fallback' };
+async function findKeyword(login: string | undefined, password: string | undefined, retryAttempt = 1) {
+  if (!login || !password) return { keyword: fallbackKeyword(retryAttempt), source: 'reviewed_fallback' };
 
   try {
     const basicAuth = btoa(`${login}:${password}`);
@@ -98,7 +97,7 @@ async function findKeyword(login: string | undefined, password: string | undefin
     if (!shortlist.length) throw new Error('No suitable keyword candidates.');
     shortlist.sort((a, b) => Number(b.search_volume || 0) - Number(a.search_volume || 0));
     // Rotate between the five strongest terms so repeated scheduled drafts vary.
-    const candidate = shortlist[Math.floor(Date.now() / 86_400_000) % Math.min(shortlist.length, 5)];
+    const candidate = shortlist[(Math.floor(Date.now() / 86_400_000) + retryAttempt - 1) % Math.min(shortlist.length, 5)];
     return {
       keyword: candidate.keyword.trim(),
       source: 'dataforseo',
@@ -107,7 +106,7 @@ async function findKeyword(login: string | undefined, password: string | undefin
     };
   } catch (error) {
     console.error('DataForSEO keyword research failed.', error);
-    return { keyword: fallbackKeyword(), source: 'reviewed_fallback' };
+    return { keyword: fallbackKeyword(retryAttempt), source: 'reviewed_fallback' };
   }
 }
 
@@ -142,12 +141,12 @@ Deno.serve(async (request) => {
   };
   const requestedKeyword = String(input.keyword || '').trim().slice(0, 120);
   // Manual calls retain editorial control; scheduled runs use Malaysian keyword data when available.
-  const keywordSelection = requestedKeyword ? { keyword: requestedKeyword, source: 'manual' } : await findKeyword(dataForSeoLogin, dataForSeoPassword);
+  const keywordSelection = requestedKeyword ? { keyword: requestedKeyword, source: 'manual' } : await findKeyword(dataForSeoLogin, dataForSeoPassword, retryAttempt);
   const keyword = keywordSelection.keyword;
 
   const prompt = `Create one Malay-language Islamic SEO article draft for the keyword: "${keyword}".
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
-Use 850-1100 original Malay words, clear H2 headings, and a neutral educational tone. Include at least three specific, realistic everyday Malaysian scenarios, include one short section headed "Salah Faham" that corrects a common misunderstanding, and give a practical checklist or steps readers can apply. Write in clear standard Bahasa Melayu using accurate, familiar Malaysian usage. Check spelling, grammar, and word choice carefully. Avoid Indonesian vocabulary, awkward literal translations, unexplained Arabic terms, and jargon; when an Islamic term is necessary, explain it briefly in plain language. Avoid generic motivational filler and repeated advice.
+Use 850-1100 original Malay words, clear H2 headings, and a neutral educational tone. Include at least three specific, realistic everyday Malaysian scenarios, include one short section headed "Salah Faham" that corrects a common misunderstanding, and give a practical checklist or steps readers can apply. Write in clear standard Bahasa Melayu using accurate, familiar Malaysian usage. Check spelling, grammar, and word choice carefully. Avoid Indonesian vocabulary, awkward literal translations, unexplained Arabic terms, and jargon; when an Islamic term is necessary, explain it briefly in plain language. Avoid generic motivational filler and repeated advice. Do not make specific reward, merit, or time-based religious claims unless they are directly and accurately supported by the cited source; choose a safer educational angle when a source does not support the proposed keyword.
 content must be an array with at least 7 objects: {"type":"heading"|"paragraph"|"quote"|"list","text":"...","source":"..."?,"items":["..."]?}.
 sources must contain at least one source object with label and url, and may use only Quran.com or Sunnah.com URLs. Never invent Quran verses, hadith grades, citations, or legal rulings. If a reliable source cannot be cited, omit the claim. This article may be published automatically only after it passes all editorial checks. It must not include financial, medical, or legal advice.`;
 
