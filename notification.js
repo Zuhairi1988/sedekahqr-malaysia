@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerServiceWorker = async () => {
     if (!('serviceWorker' in navigator)) throw new Error('Pelayar ini tidak menyokong notifikasi aplikasi web.');
     if (serviceWorkerRegistration) return serviceWorkerRegistration;
-    serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js?v=20260811-2', { scope: './', updateViaCache: 'none' });
+    serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js?v=20260824-1', { scope: './', updateViaCache: 'none' });
     await navigator.serviceWorker.ready;
     return serviceWorkerRegistration;
   };
@@ -211,7 +211,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const registration = await registerServiceWorker();
       const worker = registration.active || registration.waiting || registration.installing;
-      worker?.postMessage({ type: 'SHOW_TEST_NOTIFICATION' });
+      worker?.postMessage({
+        type: 'SHOW_TEST_NOTIFICATION',
+        title: 'Sedekah Subuh',
+        body: 'Assalamualaikum. Mulakan pagi dengan satu kebaikan.',
+        url: './#direktori'
+      });
       setStatus('Notifikasi ujian telah dihantar.', 'success');
     } catch {
       setStatus('Notifikasi ujian tidak dapat dihantar.', 'error');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sedekahqr-shell-v70';
+const CACHE_NAME = 'sedekahqr-shell-v71';
 const APP_SHELL = [
   './',
   './index.html',
@@ -116,24 +116,35 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+const showSubuhNotification = (data = {}, isTest = false) => self.registration.showNotification(
+  data.title || (isTest ? 'Ujian Sedekah Subuh' : 'Sedekah Subuh'),
+  {
+    body: data.body || 'Assalamualaikum. Mulakan pagi dengan satu kebaikan.',
+    icon: data.icon || './assets/sedekahqr-icon-192.png',
+    badge: './assets/sedekahqr-icon-192.png',
+    tag: isTest ? 'sedekahqr-test' : 'sedekahqr-subuh-' + (data.date || 'today'),
+    renotify: true,
+    silent: false,
+    vibrate: [100, 60, 100],
+    actions: [
+      { action: 'open-directory', title: 'Cari QR' },
+      { action: 'later', title: 'Nanti' }
+    ],
+    data: { url: data.url || './#direktori' }
+  }
+);
+
 self.addEventListener('message', (event) => {
   if (!['SHOW_TEST_NOTIFICATION', 'SHOW_PUSH_NOTIFICATION'].includes(event.data?.type)) return;
-
   const isTest = event.data.type === 'SHOW_TEST_NOTIFICATION';
-
-  event.waitUntil(self.registration.showNotification(event.data.title || 'Peringatan Subuh', {
-    body: event.data.body || 'Mulakan pagi dengan syukur, doa dan satu kebaikan.',
-    icon: './assets/sedekahqr-logo.svg',
-    badge: './assets/sedekahqr-logo.svg',
-    tag: isTest ? 'sedekahqr-test' : `sedekahqr-subuh-${event.data.date || 'today'}`,
-    data: { url: event.data.url || './#direktori' }
-  }));
+  event.waitUntil(showSubuhNotification(event.data, isTest));
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = new URL(event.notification.data?.url || './#direktori', self.registration.scope).href;
+  if (event.action === 'later') return;
 
+  const targetUrl = new URL(event.notification.data?.url || './#direktori', self.registration.scope).href;
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       const matchingClient = clients.find((client) => client.url.startsWith(self.registration.scope));
@@ -153,12 +164,5 @@ self.addEventListener('push', (event) => {
   } catch {
     data = { body: event.data?.text() || '' };
   }
-
-  event.waitUntil(self.registration.showNotification(data.title || 'Peringatan Subuh', {
-    body: data.body || 'Mulakan pagi dengan syukur, doa dan satu kebaikan.',
-    icon: './assets/sedekahqr-icon-192.png',
-    badge: './assets/sedekahqr-icon-192.png',
-    tag: `sedekahqr-subuh-${data.date || 'today'}`,
-    data: { url: data.url || './#direktori' }
-  }));
+  event.waitUntil(showSubuhNotification(data));
 });

@@ -11,7 +11,7 @@ type Subscription = {
 };
 
 const malaysiaTimeZone = 'Asia/Kuala_Lumpur';
-const siteUrl = 'https://zuhairi1988.github.io/sedekahqr-malaysia/#direktori';
+const siteUrl = 'https://sedekahqr.com/#direktori';
 
 const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -196,7 +196,7 @@ Deno.serve(async (request) => {
   ) / 86400000);
   const reflection = reflections[dayIndex % reflections.length];
   const notification = JSON.stringify({
-    title: reflection.title,
+    title: 'Sedekah Subuh · ' + reflection.title,
     body: `${reflection.text} (${reflection.source}) ${reflection.prompt}`,
     date: dateKey,
     url: siteUrl
