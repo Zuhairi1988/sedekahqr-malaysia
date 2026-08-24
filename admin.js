@@ -803,6 +803,12 @@
       const date = document.createElement('span');
       date.textContent = formatDate(article.published_at);
       meta.append(status, category, date);
+      if (article.seo_keyword) {
+        const keyword = document.createElement('span');
+        const volume = Number(article.seo_search_volume || 0);
+        keyword.textContent = 'Keyword: ' + article.seo_keyword + (volume ? ' · ' + volume.toLocaleString('ms-MY') + ' carian/bln' : '');
+        meta.append(keyword);
+      }
       details.append(title, meta);
 
       const actions = document.createElement('div');

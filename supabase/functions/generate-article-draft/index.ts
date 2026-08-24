@@ -6,17 +6,26 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 });
 
 const categories = new Set(['Al-Quran', 'Hadis', 'Doa', 'Sirah', 'Akhlak', 'Sedekah']);
-const scheduledKeywords = [
-  'doa selepas solat fardu',
-  'cara solat taubat',
-  'amalan pagi yang baik selepas subuh',
-  'doa untuk ibu bapa',
-  'adab bersedekah dalam islam',
-  'cara menjaga lisan menurut islam',
-  'amalan kecil yang konsisten dalam islam',
+const keywordDiscoverySeeds = [
+  'sedekah', 'infak', 'doa harian', 'doa selepas solat', 'solat sunat',
+  'wuduk', 'al quran', 'tafsir al quran', 'hadis nabi', 'sirah nabi',
+  'akhlak islam', 'adab islam', 'puasa sunat', 'zikir harian', 'selawat',
+  'doa ibu bapa', 'amalan islam', 'doa rezeki',
 ];
 const articleCoverBucket = 'article-covers';
-type KeywordCandidate = { keyword: string; search_volume?: number | null; competition_index?: number | null };
+type KeywordCandidate = {
+  keyword: string;
+  search_volume?: number | null;
+  competition_index?: number | null;
+  competition?: string | null;
+};
+type KeywordSelection = {
+  keyword: string;
+  source: 'dataforseo' | 'manual';
+  searchVolume?: number | null;
+  competition?: number | null;
+  researchedAt?: string | null;
+};
 const slugify = (value: string) => value.toLowerCase()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
   .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 110);
@@ -66,50 +75,79 @@ async function createUniqueArticleCover(supabase: any, title: string, category: 
   return supabase.storage.from(articleCoverBucket).getPublicUrl(path).data.publicUrl;
 }
 
-const fallbackKeyword = (retryAttempt = 1) => scheduledKeywords[(Math.floor(Date.now() / 86_400_000) + retryAttempt - 1) % scheduledKeywords.length];
+const normalizedKeyword = (value: string) => value.toLowerCase().trim().replace(/\s+/g, ' ');
+const isSuitableKeyword = (value: string) => {
+  const words = value.split(/\s+/).filter(Boolean);
+  const excluded = /\b(?:pinjaman|pelaburan|forex|crypto|judi|ubat|rawatan|penyakit|hukum|fatwa|cerai|kahwin|seks)\b/i;
+  return words.length >= 2 && words.length <= 8 && !excluded.test(value);
+};
 
-async function findKeyword(login: string | undefined, password: string | undefined, retryAttempt = 1) {
-  if (!login || !password) return { keyword: fallbackKeyword(retryAttempt), source: 'reviewed_fallback' };
+async function findKeyword(
+  supabase: any,
+  login: string | undefined,
+  password: string | undefined,
+  retryAttempt = 1,
+): Promise<KeywordSelection> {
+  if (!login || !password) throw new Error('DataForSEO credentials are not configured.');
 
-  try {
-    const basicAuth = btoa(`${login}:${password}`);
-    // Search-volume is a stable fit for the curated Malay keyword pool. Keyword
-    // suggestion requests can return oversized payloads and are unnecessary here.
-    const response = await fetch('https://api.dataforseo.com/v3/keywords_data/google_ads/search_volume/live', {
-      method: 'POST',
-      headers: { Authorization: `Basic ${basicAuth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify([{
-        location_name: 'Malaysia',
-        language_name: 'Malay',
-        keywords: scheduledKeywords,
-      }]),
-    });
-    if (!response.ok) throw new Error(`DataForSEO HTTP ${response.status}`);
-    const payload = await response.json();
-    const candidates: KeywordCandidate[] = payload?.tasks?.[0]?.result || [];
-    const shortlist = candidates.filter((item) => {
-      const keyword = String(item?.keyword || '').trim();
-      const words = keyword.split(/\s+/).filter(Boolean);
-      const volume = Number(item?.search_volume || 0);
-      const competition = Number(item?.competition_index ?? 100);
-      return words.length >= 2 && words.length <= 10 && volume > 0 && competition <= 70;
-    });
-    if (!shortlist.length) throw new Error('No suitable keyword candidates.');
-    shortlist.sort((a, b) => Number(b.search_volume || 0) - Number(a.search_volume || 0));
-    // Rotate between the five strongest terms so repeated scheduled drafts vary.
-    const candidate = shortlist[(Math.floor(Date.now() / 86_400_000) + retryAttempt - 1) % Math.min(shortlist.length, 5)];
-    return {
-      keyword: candidate.keyword.trim(),
-      source: 'dataforseo',
-      searchVolume: Number(candidate.search_volume || 0),
-      competition: Number(candidate.competition_index ?? 0),
-    };
-  } catch (error) {
-    console.error('DataForSEO keyword research failed.', error);
-    return { keyword: fallbackKeyword(retryAttempt), source: 'reviewed_fallback' };
+  const basicAuth = btoa(login + ':' + password);
+  const response = await fetch('https://api.dataforseo.com/v3/keywords_data/google_ads/keywords_for_keywords/live', {
+    method: 'POST',
+    headers: { Authorization: 'Basic ' + basicAuth, 'Content-Type': 'application/json' },
+    body: JSON.stringify([{
+      location_name: 'Malaysia',
+      language_name: 'Malay',
+      keywords: keywordDiscoverySeeds,
+      sort_by: 'search_volume',
+      include_adult_keywords: false,
+      tag: 'sedekahqr-article-research',
+    }]),
+  });
+  if (!response.ok) throw new Error('DataForSEO HTTP ' + response.status);
+
+  const payload = await response.json();
+  const task = payload?.tasks?.[0];
+  if (Number(task?.status_code) !== 20000 || !Array.isArray(task?.result)) {
+    throw new Error(task?.status_message || 'DataForSEO did not return keyword suggestions.');
   }
-}
 
+  const { data: publishedKeywords, error: keywordHistoryError } = await supabase
+    .from('islamic_articles')
+    .select('seo_keyword')
+    .not('seo_keyword', 'is', null)
+    .limit(500);
+  if (keywordHistoryError) throw keywordHistoryError;
+  const usedKeywords = new Set((publishedKeywords || [])
+    .map((article: { seo_keyword?: string | null }) => normalizedKeyword(String(article.seo_keyword || '')))
+    .filter(Boolean));
+
+  const shortlist = (task.result as KeywordCandidate[])
+    .map((item) => ({
+      keyword: String(item?.keyword || '').trim(),
+      searchVolume: Number(item?.search_volume || 0),
+      competition: Number.isFinite(Number(item?.competition_index))
+        ? Number(item?.competition_index) : null,
+    }))
+    .filter((item) => item.searchVolume >= 50
+      && isSuitableKeyword(item.keyword)
+      && !usedKeywords.has(normalizedKeyword(item.keyword))
+      && (item.competition === null || item.competition <= 70))
+    .sort((first, second) => second.searchVolume - first.searchVolume
+      || (first.competition ?? 70) - (second.competition ?? 70));
+
+  if (!shortlist.length) throw new Error('No unused Malaysian keyword with sufficient search volume was found.');
+
+  // Rotate within the strongest ten candidates to avoid repeatedly targeting one keyword.
+  const selectionWindow = shortlist.slice(0, Math.min(10, shortlist.length));
+  const selected = selectionWindow[(Math.floor(Date.now() / 86_400_000) + retryAttempt - 1) % selectionWindow.length];
+  return {
+    keyword: selected.keyword,
+    source: 'dataforseo',
+    searchVolume: selected.searchVolume,
+    competition: selected.competition,
+    researchedAt: new Date().toISOString(),
+  };
+}
 Deno.serve(async (request) => {
   if (request.method !== 'POST') return json({ error: 'Method not allowed.' }, 405);
   const automationSecret = Deno.env.get('ARTICLE_AUTOMATION_SECRET');
@@ -123,6 +161,7 @@ Deno.serve(async (request) => {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!deepseekKey || !supabaseUrl || !serviceRoleKey) return json({ error: 'Server configuration incomplete.' }, 500);
 
+  const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const input = await request.json().catch(() => ({}));
   const retryAttempt = Math.min(2, Math.max(1, Number(input.retryAttempt) || 1));
   const retryOrReject = async (error: string, details: Record<string, unknown>) => {
@@ -140,9 +179,21 @@ Deno.serve(async (request) => {
     return json({ error, details, attempts: retryAttempt }, 422);
   };
   const requestedKeyword = String(input.keyword || '').trim().slice(0, 120);
-  // Manual calls retain editorial control; scheduled runs use Malaysian keyword data when available.
-  const keywordSelection = requestedKeyword ? { keyword: requestedKeyword, source: 'manual' } : await findKeyword(dataForSeoLogin, dataForSeoPassword, retryAttempt);
+  let keywordSelection: KeywordSelection;
+  try {
+    // Scheduled articles use live Malaysian Google Ads keyword ideas, not a fixed keyword list.
+    keywordSelection = requestedKeyword
+      ? { keyword: requestedKeyword, source: 'manual', researchedAt: new Date().toISOString() }
+      : await findKeyword(supabase, dataForSeoLogin, dataForSeoPassword, retryAttempt);
+  } catch (error) {
+    console.error('DataForSEO keyword discovery failed.', error);
+    return json({
+      error: 'Keyword research unavailable. No article was published.',
+      details: error instanceof Error ? error.message : 'Unknown keyword research error.',
+    }, 503);
+  }
   const keyword = keywordSelection.keyword;
+  if (input.researchOnly === true) return json({ ok: true, keyword: keywordSelection });
 
   const prompt = `Create one Malay-language Islamic SEO article draft for the keyword: "${keyword}".
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
@@ -200,7 +251,7 @@ sources must contain at least one source object with label and url, and may use 
     return retryOrReject('Article did not pass publication quality checks.', { quality });
   }
 
-  const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
   const baseSlug = slugify(title) || `artikel-${Date.now()}`;
   const slug = `${baseSlug.slice(0, 95)}-${Date.now().toString().slice(-6)}`;
   let coverImage: string;
@@ -212,6 +263,11 @@ sources must contain at least one source object with label and url, and may use 
   const { data, error } = await supabase.from('islamic_articles').insert({
     slug, title, excerpt, category, author: 'SedekahQR', cover_image: coverImage,
     reading_minutes: Math.min(10, Math.max(4, Number(draft.reading_minutes) || 5)), content, sources,
+    seo_keyword: keyword,
+    seo_keyword_source: keywordSelection.source,
+    seo_search_volume: keywordSelection.searchVolume ?? null,
+    seo_competition_index: keywordSelection.competition ?? null,
+    seo_keyword_researched_at: keywordSelection.researchedAt ?? new Date().toISOString(),
     is_published: true, published_at: new Date().toISOString(),
   }).select('id, slug, title').single();
   if (error) return json({ error: 'Draft could not be saved.' }, 500);
