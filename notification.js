@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const closeButtons = [...modal.querySelectorAll('[data-close-reminder]')];
   const zoneSelect = document.getElementById('reminder-zone-select');
+  const dayInputs = [...form.querySelectorAll('input[name="reminder-day"]')];
   const consent = document.getElementById('reminder-consent');
   const enableButton = document.getElementById('enable-reminder');
   const disableButton = document.getElementById('disable-reminder');
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const prayerZoneKey = 'sedekahqr-prayer-zone';
   const pushConfig = window.SEDEKAHQR_PUSH;
   const zones = Array.isArray(window.PRAYER_ZONES) ? window.PRAYER_ZONES : [];
+  const defaultDays = [0, 1, 2, 3, 4, 5, 6];
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent)
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -48,6 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch {
       return 'WLY01';
     }
+  };
+
+  const getSelectedDays = () => dayInputs
+    .filter((input) => input.checked)
+    .map((input) => Number(input.value))
+    .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6);
+
+  const setSelectedDays = (days) => {
+    const selected = new Set(Array.isArray(days) && days.length ? days.map(Number) : defaultDays);
+    dayInputs.forEach((input) => { input.checked = selected.has(Number(input.value)); });
   };
 
   const setStatus = (message, type = '') => {
@@ -85,11 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const active = settings.enabled === true && permission === 'granted';
     openButton.classList.toggle('is-active', active);
     openButton.setAttribute('aria-pressed', String(active));
-    enableButton.hidden = active;
+    enableButton.hidden = false;
+    enableButton.textContent = active ? 'Simpan pilihan' : 'Aktifkan peringatan';
     disableButton.hidden = !active;
     testButton.hidden = !active;
     consent.checked = active;
     if (settings.zone) zoneSelect.value = settings.zone;
+    setSelectedDays(settings.days);
     if (active) setStatus(`Aktif untuk zon ${settings.zone}.`, 'success');
     else setStatus('');
   };
@@ -108,12 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
   };
 
-  const syncSubscription = async (action, subscription, zone) => {
+  const syncSubscription = async (action, subscription, zone, days = []) => {
     if (!pushConfig?.subscribeUrl) throw new Error('Perkhidmatan notifikasi sedang disediakan. Cuba sebentar lagi.');
     const response = await fetch(pushConfig.subscribeUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, zone, subscription: subscription.toJSON() })
+      body: JSON.stringify({ action, zone, days, subscription: subscription.toJSON() })
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.error || 'Pendaftaran notifikasi tidak dapat disimpan.');
@@ -139,9 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const zone = zoneSelect.value;
+    const days = getSelectedDays();
     if (!zone) {
       setStatus('Pilih zon waktu solat terlebih dahulu.', 'error');
       zoneSelect.focus();
+      return;
+    }
+    if (!days.length) {
+      setStatus('Pilih sekurang-kurangnya satu hari.', 'error');
       return;
     }
     if (!consent.checked) {
@@ -176,8 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
           applicationServerKey: decodeVapidKey(pushConfig.vapidPublicKey)
         });
       }
-      await syncSubscription('subscribe', subscription, zone);
-      writeSettings({ enabled: true, zone });
+      await syncSubscription('subscribe', subscription, zone, days);
+      writeSettings({ enabled: true, zone, days });
       updateState();
       showToast('Peringatan Sedekah Subuh telah diaktifkan.');
     } catch (error) {

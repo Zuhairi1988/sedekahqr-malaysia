@@ -4,6 +4,7 @@ import { corsHeaders, isAllowedOrigin, jsonResponse } from '../_shared/http.ts';
 type PushPayload = {
   action?: 'subscribe' | 'unsubscribe';
   zone?: string;
+  days?: unknown;
   subscription?: {
     endpoint?: string;
     keys?: { p256dh?: string; auth?: string };
@@ -47,6 +48,7 @@ Deno.serve(async (request) => {
   const endpoint = String(payload.subscription?.endpoint || '');
   const p256dh = String(payload.subscription?.keys?.p256dh || '');
   const auth = String(payload.subscription?.keys?.auth || '');
+  const days = [...new Set((Array.isArray(payload.days) ? payload.days : []).map((day) => Number(day)))].sort((first, second) => first - second);
 
   let endpointUrl: URL;
   try {
@@ -84,7 +86,7 @@ Deno.serve(async (request) => {
     return jsonResponse(request, { ok: true });
   }
 
-  if (!/^[A-Z]{3}[0-9]{2}$/.test(zone) || p256dh.length < 40 || auth.length < 12) {
+  if (!/^[A-Z]{3}[0-9]{2}$/.test(zone) || p256dh.length < 40 || auth.length < 12 || !days.length || days.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) {
     return jsonResponse(request, { error: 'Zon atau kunci peranti tidak sah.' }, 400);
   }
 
@@ -94,6 +96,7 @@ Deno.serve(async (request) => {
     p256dh,
     auth,
     zone,
+    days_of_week: days,
     user_agent: (request.headers.get('user-agent') || '').slice(0, 255),
     enabled: true
   }, { onConflict: 'subscription_id' });

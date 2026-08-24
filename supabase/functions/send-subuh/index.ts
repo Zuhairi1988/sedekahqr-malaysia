@@ -8,6 +8,7 @@ type Subscription = {
   auth: string;
   zone: string;
   last_sent_date: string | null;
+  days_of_week: number[];
 };
 
 const malaysiaTimeZone = 'Asia/Kuala_Lumpur';
@@ -65,6 +66,7 @@ Deno.serve(async (request) => {
     hourCycle: 'h23'
   }).format(now);
   const currentMinutes = toMinutes(currentTime);
+  const dayOfWeek = new Date(dateKey + 'T12:00:00+08:00').getUTCDay();
 
   if (currentMinutes < 240 || currentMinutes > 420) {
     return jsonResponse({ ok: true, message: 'Di luar tetingkap Subuh.', sent: 0 });
@@ -72,7 +74,7 @@ Deno.serve(async (request) => {
 
   const { data, error } = await supabase
     .from('push_subscriptions')
-    .select('subscription_id, endpoint, p256dh, auth, zone, last_sent_date')
+    .select('subscription_id, endpoint, p256dh, auth, zone, last_sent_date, days_of_week')
     .eq('enabled', true)
     .or(`last_sent_date.is.null,last_sent_date.neq.${dateKey}`);
 
@@ -96,6 +98,7 @@ Deno.serve(async (request) => {
   }));
 
   const due = subscriptions.filter((item) => {
+    if (!item.days_of_week.includes(dayOfWeek)) return false;
     const fajr = prayerTimes.get(item.zone);
     if (!fajr) return false;
     const difference = currentMinutes - toMinutes(fajr);

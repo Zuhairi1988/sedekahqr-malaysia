@@ -4855,3 +4855,52 @@ a {
     flex-direction: column;
   }
 }
+
+.reminder-days {
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.reminder-days legend {
+  margin-bottom: 8px;
+  color: var(--directory-ink);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.reminder-days-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.reminder-days-grid label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  gap: 5px;
+  padding: 5px 4px;
+  border: 1px solid var(--directory-border);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--directory-ink);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.reminder-days-grid input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--directory-green);
+}
+
+@media (max-width: 460px) {
+  .reminder-days-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
