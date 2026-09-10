@@ -8,7 +8,7 @@
   <title>Pengurusan - SedekahQR</title>
   <link rel="icon" href="/favicon.png?v=20260822-2" type="image/png" sizes="192x192" />
   <link rel="stylesheet" href="styles.css?v=20260811-1" />
-  <link rel="stylesheet" href="admin.css?v=20260818-1" />
+  <link rel="stylesheet" href="admin.css?v=20260910-1" />
 </head>
 <body class="admin-body">
   <header class="admin-header">
@@ -71,6 +71,7 @@
           <button class="admin-sidebar-link" type="button" data-admin-nav="campaign">Campaign</button>
           <button class="admin-sidebar-link" type="button" data-admin-nav="seo">SEO &amp; Artikel</button>
           <button class="admin-sidebar-link" type="button" data-admin-nav="qr">Direktori QR</button>
+          <button class="admin-sidebar-link" type="button" data-admin-nav="cost">Kos</button>
           <div class="admin-sidebar-divider"></div>
           <a class="admin-sidebar-link" href="admin-pricing.html">Pricing</a>
         </nav>
@@ -261,6 +262,48 @@
         <p id="verification-message" class="admin-inline-status" role="status" aria-live="polite"></p>
       </section>
 
+      <section class="admin-cost-panel" data-admin-panel="cost" aria-labelledby="cost-title">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-kicker">Kawalan perbelanjaan</p>
+            <h2 id="cost-title">Kos website</h2>
+          </div>
+          <p>Anggaran dikira dalam Ringgit Malaysia berdasarkan artikel automatik yang telah diterbitkan dan kos tetap yang anda masukkan.</p>
+        </div>
+
+        <div class="cost-kpis" aria-label="Ringkasan kos">
+          <div><span>Anggaran bulan ini</span><strong id="cost-monthly-total">RM0.00</strong><small id="cost-monthly-detail">Kos tetap dan automasi artikel</small></div>
+          <div><span>Kos automasi terkumpul</span><strong id="cost-automation-total">RM0.00</strong><small id="cost-automation-detail">0 artikel menggunakan DataForSEO</small></div>
+          <div><span>Anggaran setiap artikel</span><strong id="cost-per-article">RM0.00</strong><small>DataForSEO dan DeepSeek</small></div>
+          <div><span>Kos tetap sebulan</span><strong id="cost-fixed-monthly">RM0.00</strong><small>Termasuk pecahan domain tahunan</small></div>
+        </div>
+
+        <div class="cost-breakdown" aria-labelledby="cost-breakdown-title">
+          <div class="cost-section-heading">
+            <div><p class="admin-kicker">Pecahan</p><h3 id="cost-breakdown-title">Kos semasa</h3></div>
+            <span id="cost-settings-updated" class="admin-inline-status"></span>
+          </div>
+          <div id="cost-breakdown-list" class="cost-breakdown-list" aria-live="polite"></div>
+        </div>
+
+        <form id="cost-settings-form" class="cost-settings-form">
+          <div class="cost-section-heading">
+            <div><p class="admin-kicker">Tetapan anggaran</p><h3>Masukkan kos anda</h3></div>
+            <p>Masukkan caj sebenar daripada invois atau dashboard penyedia servis. Nilai RM0 bermaksud tiada caj.</p>
+          </div>
+          <div class="cost-settings-grid">
+            <label class="admin-field"><span>Supabase sebulan (RM)</span><input id="cost-supabase-monthly" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+            <label class="admin-field"><span>Domain setahun (RM)</span><input id="cost-domain-annual" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+            <label class="admin-field"><span>DataForSEO setiap artikel (RM)</span><input id="cost-dataforseo-per-article" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+            <label class="admin-field"><span>DeepSeek setiap artikel (RM)</span><input id="cost-deepseek-per-article" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+            <label class="admin-field"><span>Nama perkhidmatan lain</span><input id="cost-other-label" type="text" maxlength="60" placeholder="Contoh: E-mel atau storan" /></label>
+            <label class="admin-field"><span>Perkhidmatan lain sebulan (RM)</span><input id="cost-other-monthly" type="number" min="0" step="0.01" inputmode="decimal" /></label>
+          </div>
+          <div class="admin-form-actions"><button id="save-cost-settings" class="admin-primary-button" type="submit">Simpan kos</button><p id="cost-settings-status" class="admin-inline-status" role="status" aria-live="polite"></p></div>
+        </form>
+        <p class="cost-note">GitHub Pages dan imej SVG artikel direkodkan sebagai RM0 pada tetapan semasa. Kos automasi hanya mengira artikel yang berjaya diterbitkan melalui DataForSEO; caj untuk percubaan gagal tidak dapat dikesan daripada rekod artikel.</p>
+      </section>
+
       <div class="admin-summary" data-admin-panel="seo" aria-label="Ringkasan artikel">
         <div><strong id="total-count">0</strong><span>Semua artikel</span></div>
         <div><strong id="published-count">0</strong><span>Diterbitkan</span></div>
@@ -383,7 +426,7 @@
 
   <script src="blog-config.js?v=20260809-1"></script>
   <script src="qr-data.js?v=20260814-2"></script>
-  <script src="admin-language.js?v=20260814-1"></script>
-  <script src="admin.js?v=20260816-1"></script>
+  <script src="admin-language.js?v=20260910-1"></script>
+  <script src="admin.js?v=20260910-1"></script>
 </body>
 </html>
