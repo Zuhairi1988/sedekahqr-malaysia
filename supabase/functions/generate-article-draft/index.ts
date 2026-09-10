@@ -75,6 +75,25 @@ async function createUniqueArticleCover(supabase: any, title: string, category: 
   return supabase.storage.from(articleCoverBucket).getPublicUrl(path).data.publicUrl;
 }
 
+const recordAutomationCost = async (supabase: any, event: Record<string, unknown>) => {
+  const { error } = await supabase.from('automation_cost_events').insert(event);
+  if (error) console.error('Automation cost recording failed.', error);
+};
+
+const deepSeekCost = (usage: Record<string, unknown> | undefined) => {
+  const now = new Date();
+  const hour = now.getUTCHours();
+  const weekday = now.getUTCDay();
+  const peak = weekday >= 1 && weekday <= 5 && ((hour >= 1 && hour < 4) || (hour >= 6 && hour < 10));
+  const cacheHit = Number(usage?.prompt_cache_hit_tokens || 0);
+  const cacheMiss = Number(usage?.prompt_cache_miss_tokens ?? usage?.prompt_tokens ?? 0);
+  const output = Number(usage?.completion_tokens || 0);
+  const multiplier = peak ? 2 : 1;
+  return (
+    (cacheHit * 0.007 + cacheMiss * 0.22 + output * 0.66) * multiplier
+  ) / 1_000_000;
+};
+
 const normalizedKeyword = (value: string) => value.toLowerCase().trim().replace(/\s+/g, ' ');
 const isSuitableKeyword = (value: string) => {
   const words = value.split(/\s+/).filter(Boolean);
@@ -107,6 +126,12 @@ async function findKeyword(
 
   const payload = await response.json();
   const task = payload?.tasks?.[0];
+  await recordAutomationCost(supabase, {
+    provider: 'dataforseo',
+    event_type: 'keyword_research',
+    cost_usd: Math.max(0, Number(task?.cost ?? payload?.cost ?? 0)),
+    metadata: { task_id: task?.id || null, status_code: task?.status_code || null }
+  });
   if (Number(task?.status_code) !== 20000 || !Array.isArray(task?.result)) {
     throw new Error(task?.status_message || 'DataForSEO did not return keyword suggestions.');
   }
@@ -214,8 +239,17 @@ sources must contain at least one source object with label and url, and may use 
   });
   if (!aiResponse.ok) return json({ error: 'Draft generation failed.' }, 502);
 
+  const aiPayload = await aiResponse.json();
+  await recordAutomationCost(supabase, {
+    provider: 'deepseek',
+    event_type: 'article_draft',
+    cost_usd: deepSeekCost(aiPayload?.usage),
+    input_tokens: Number(aiPayload?.usage?.prompt_tokens || 0),
+    output_tokens: Number(aiPayload?.usage?.completion_tokens || 0),
+    metadata: { model: aiPayload?.model || 'deepseek-v4-flash' }
+  });
   let draft: Record<string, unknown>;
-  try { draft = JSON.parse((await aiResponse.json()).choices?.[0]?.message?.content || '{}'); }
+  try { draft = JSON.parse(aiPayload?.choices?.[0]?.message?.content || '{}'); }
   catch { return json({ error: 'Draft response was invalid.' }, 502); }
 
   const title = String(draft.title || '').trim().slice(0, 180);
@@ -244,8 +278,17 @@ sources must contain at least one source object with label and url, and may use 
     }),
   });
   if (!qualityResponse.ok) return json({ error: 'Article quality review failed.' }, 502);
+  const qualityPayload = await qualityResponse.json();
+  await recordAutomationCost(supabase, {
+    provider: 'deepseek',
+    event_type: 'quality_review',
+    cost_usd: deepSeekCost(qualityPayload?.usage),
+    input_tokens: Number(qualityPayload?.usage?.prompt_tokens || 0),
+    output_tokens: Number(qualityPayload?.usage?.completion_tokens || 0),
+    metadata: { model: qualityPayload?.model || 'deepseek-v4-flash' }
+  });
   let quality: { approved?: boolean; score?: number; reason?: string } = {};
-  try { quality = JSON.parse((await qualityResponse.json()).choices?.[0]?.message?.content || '{}'); }
+  try { quality = JSON.parse(qualityPayload?.choices?.[0]?.message?.content || '{}'); }
   catch { return json({ error: 'Article quality review was invalid.' }, 502); }
   if (!quality.approved || Number(quality.score || 0) < 80) {
     return retryOrReject('Article did not pass publication quality checks.', { quality });

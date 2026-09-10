@@ -114,13 +114,6 @@
     addSource: document.querySelector('#add-source'),
     saveArticle: document.querySelector('#save-article'),
     previewArticle: document.querySelector('#preview-article'),
-    costSettingsForm: document.querySelector('#cost-settings-form'),
-    costSupabaseMonthly: document.querySelector('#cost-supabase-monthly'),
-    costDomainAnnual: document.querySelector('#cost-domain-annual'),
-    costDataForSeoPerArticle: document.querySelector('#cost-dataforseo-per-article'),
-    costDeepSeekPerArticle: document.querySelector('#cost-deepseek-per-article'),
-    costOtherLabel: document.querySelector('#cost-other-label'),
-    costOtherMonthly: document.querySelector('#cost-other-monthly'),
     costMonthlyTotal: document.querySelector('#cost-monthly-total'),
     costMonthlyDetail: document.querySelector('#cost-monthly-detail'),
     costAutomationTotal: document.querySelector('#cost-automation-total'),
@@ -128,9 +121,7 @@
     costPerArticle: document.querySelector('#cost-per-article'),
     costFixedMonthly: document.querySelector('#cost-fixed-monthly'),
     costBreakdownList: document.querySelector('#cost-breakdown-list'),
-    costSettingsUpdated: document.querySelector('#cost-settings-updated'),
-    costSettingsStatus: document.querySelector('#cost-settings-status'),
-    saveCostSettings: document.querySelector('#save-cost-settings')
+    costSettingsUpdated: document.querySelector('#cost-settings-updated')
   };
 
   let session = null;
@@ -143,15 +134,7 @@
   let campaignImagePath = '';
   let campaignImageFile = null;
   let activeAdminPanel = 'overview';
-  let costSettings = {
-    supabase_monthly_myr: 0,
-    domain_annual_myr: 0,
-    other_monthly_label: 'Perkhidmatan lain',
-    other_monthly_myr: 0,
-    dataforseo_per_article_myr: 0.40,
-    deepseek_per_article_myr: 0.10,
-    updated_at: null
-  };
+  let costEvents = [];
 
   const showMessage = (element, message, success = false) => {
     element.textContent = message;
@@ -323,59 +306,38 @@
   const formatCurrency = (value) => new Intl.NumberFormat(adminLocale(), {
     style: 'currency', currency: 'MYR', minimumFractionDigits: 2, maximumFractionDigits: 2
   }).format(Math.max(0, Number(value) || 0));
-  const costValue = (value) => Math.max(0, Number(value) || 0);
+  const formatUsd = (value) => `USD${Math.max(0, Number(value) || 0).toFixed(4)}`;
   const malaysiaMonthKey = (value = new Date()) => {
-    const parts = new Intl.DateTimeFormat('en', {
-      timeZone: 'Asia/Kuala_Lumpur', year: 'numeric', month: '2-digit'
-    }).formatToParts(value);
-    const year = parts.find((part) => part.type === 'year')?.value;
-    const month = parts.find((part) => part.type === 'month')?.value;
-    return `${year}-${month}`;
+    const parts = new Intl.DateTimeFormat('en', { timeZone: 'Asia/Kuala_Lumpur', year: 'numeric', month: '2-digit' }).formatToParts(value);
+    return `${parts.find((part) => part.type === 'year')?.value}-${parts.find((part) => part.type === 'month')?.value}`;
   };
-  const currentMalaysiaMonth = () => malaysiaMonthKey();
-  const isAutomatedArticle = (article) => Boolean(article?.is_published && article?.seo_keyword_source === 'dataforseo');
-  const isCurrentMalaysiaMonth = (article) => article?.published_at
-    ? malaysiaMonthKey(new Date(article.published_at)) === currentMalaysiaMonth()
+  const isCurrentMalaysiaMonth = (event) => event?.created_at
+    ? malaysiaMonthKey(new Date(event.created_at)) === malaysiaMonthKey()
     : false;
 
-  const setCostStatus = (message, type = '') => {
-    elements.costSettingsStatus.textContent = message;
-    elements.costSettingsStatus.className = `admin-inline-status${type ? ` is-${type}` : ''}`;
-  };
-
   const renderCostDashboard = () => {
-    if (!elements.costSettingsForm) return;
-    const settings = costSettings;
-    const supabaseMonthly = costValue(settings.supabase_monthly_myr);
-    const domainMonthly = costValue(settings.domain_annual_myr) / 12;
-    const otherMonthly = costValue(settings.other_monthly_myr);
-    const dataForSeoPerArticle = costValue(settings.dataforseo_per_article_myr);
-    const deepSeekPerArticle = costValue(settings.deepseek_per_article_myr);
-    const perArticle = dataForSeoPerArticle + deepSeekPerArticle;
-    const automatedArticles = articles.filter(isAutomatedArticle);
-    const currentMonthArticles = automatedArticles.filter(isCurrentMalaysiaMonth);
-    const fixedMonthly = supabaseMonthly + domainMonthly + otherMonthly;
-    const monthlyAutomation = currentMonthArticles.length * perArticle;
-    const totalMonthly = fixedMonthly + monthlyAutomation;
-    const automationTotal = automatedArticles.length * perArticle;
+    const currentMonth = costEvents.filter(isCurrentMalaysiaMonth);
+    const providerTotal = (provider, events = costEvents) => events.filter((event) => event.provider === provider).reduce((total, event) => total + Number(event.cost_usd || 0), 0);
+    const total = providerTotal('dataforseo') + providerTotal('deepseek');
+    const monthTotal = providerTotal('dataforseo', currentMonth) + providerTotal('deepseek', currentMonth);
+    const generatedArticles = costEvents.filter((event) => event.provider === 'deepseek' && event.event_type === 'article_draft');
+    const averagePerArticle = generatedArticles.length ? total / generatedArticles.length : 0;
+    const deepSeekTokens = costEvents.filter((event) => event.provider === 'deepseek').reduce((sum, event) => sum + Number(event.input_tokens || 0) + Number(event.output_tokens || 0), 0);
 
-    elements.costMonthlyTotal.textContent = formatCurrency(totalMonthly);
-    elements.costMonthlyDetail.textContent = `${formatNumber(currentMonthArticles.length)} ${t('artikel automatik bulan ini')}`;
-    elements.costAutomationTotal.textContent = formatCurrency(automationTotal);
-    elements.costAutomationDetail.textContent = `${formatNumber(automatedArticles.length)} ${t('artikel menggunakan DataForSEO')}`;
-    elements.costPerArticle.textContent = formatCurrency(perArticle);
-    elements.costFixedMonthly.textContent = formatCurrency(fixedMonthly);
-    elements.costSettingsUpdated.textContent = settings.updated_at
-      ? `${t('Dikemas kini')} ${formatDate(settings.updated_at)}`
-      : t('Belum disimpan');
+    elements.costMonthlyTotal.textContent = formatUsd(monthTotal);
+    elements.costMonthlyDetail.textContent = `${currentMonth.length} panggilan API bulan ini`;
+    elements.costAutomationTotal.textContent = formatUsd(total);
+    elements.costAutomationDetail.textContent = costEvents.length ? `${costEvents.length} rekod API` : 'Belum ada rekod API';
+    elements.costPerArticle.textContent = generatedArticles.length ? formatUsd(averagePerArticle) : 'USD0.0000';
+    elements.costFixedMonthly.textContent = formatCurrency(0);
+    elements.costSettingsUpdated.textContent = costEvents[0]?.created_at ? `Rekod terkini: ${formatDate(costEvents[0].created_at)}` : 'Kos akan direkodkan pada penerbitan artikel seterusnya.';
 
     const rows = [
-      { label: 'Supabase', detail: t('Kos tetap bulanan'), amount: supabaseMonthly },
-      { label: 'Domain', detail: `${t('Pecahan daripada kos tahunan')}: ${formatCurrency(costValue(settings.domain_annual_myr))}`, amount: domainMonthly },
-      { label: 'GitHub Pages', detail: t('Hosting statik semasa'), amount: 0 },
-      { label: 'DataForSEO', detail: `${formatNumber(currentMonthArticles.length)} ${t('artikel automatik bulan ini')}`, amount: currentMonthArticles.length * dataForSeoPerArticle },
-      { label: 'DeepSeek', detail: `${formatNumber(currentMonthArticles.length)} ${t('artikel automatik bulan ini')}`, amount: currentMonthArticles.length * deepSeekPerArticle },
-      { label: String(settings.other_monthly_label || t('Perkhidmatan lain')).trim().slice(0, 60) || t('Perkhidmatan lain'), detail: t('Kos tetap bulanan'), amount: otherMonthly }
+      { label: 'DataForSEO', detail: `${costEvents.filter((event) => event.provider === 'dataforseo').length} carian keyword direkodkan`, amount: formatUsd(providerTotal('dataforseo')) },
+      { label: 'DeepSeek', detail: `${deepSeekTokens.toLocaleString('ms-MY')} token direkodkan`, amount: formatUsd(providerTotal('deepseek')) },
+      { label: 'Supabase Nano', detail: 'Pelan semasa percuma', amount: formatCurrency(0) },
+      { label: 'GitHub Pages', detail: 'Hosting statik semasa percuma', amount: formatCurrency(0) },
+      { label: 'Domain', detail: 'Caj registrar tidak boleh dibaca secara automatik', amount: 'Tidak dikesan' }
     ];
     elements.costBreakdownList.replaceChildren();
     rows.forEach((row) => {
@@ -388,56 +350,16 @@
       detail.textContent = row.detail;
       copy.append(title, detail);
       const amount = document.createElement('strong');
-      amount.textContent = formatCurrency(row.amount);
+      amount.textContent = row.amount;
       item.append(copy, amount);
       elements.costBreakdownList.append(item);
     });
-
-    const inputValues = [
-      [elements.costSupabaseMonthly, supabaseMonthly],
-      [elements.costDomainAnnual, costValue(settings.domain_annual_myr)],
-      [elements.costDataForSeoPerArticle, dataForSeoPerArticle],
-      [elements.costDeepSeekPerArticle, deepSeekPerArticle],
-      [elements.costOtherMonthly, otherMonthly]
-    ];
-    inputValues.forEach(([input, value]) => {
-      if (document.activeElement !== input) input.value = value.toFixed(2);
-    });
-    if (document.activeElement !== elements.costOtherLabel) {
-      elements.costOtherLabel.value = String(settings.other_monthly_label || 'Perkhidmatan lain');
-    }
   };
 
-  const loadCostSettings = async () => {
-    const userId = session?.user?.id;
-    if (!userId) return;
-    const response = await restRequest(`admin_cost_settings?select=*&user_id=eq.${encodeURIComponent(userId)}&limit=1`);
-    if (!response.ok) throw new Error(await parseResponseError(response, 'Tetapan kos tidak dapat dimuatkan.'));
-    const [saved] = await response.json();
-    costSettings = saved ? { ...costSettings, ...saved } : costSettings;
-    renderCostDashboard();
-  };
-
-  const saveCostSettings = async () => {
-    const userId = session?.user?.id;
-    if (!userId) throw new Error('Sesi admin tidak sah.');
-    const payload = {
-      user_id: userId,
-      supabase_monthly_myr: costValue(elements.costSupabaseMonthly.value),
-      domain_annual_myr: costValue(elements.costDomainAnnual.value),
-      dataforseo_per_article_myr: costValue(elements.costDataForSeoPerArticle.value),
-      deepseek_per_article_myr: costValue(elements.costDeepSeekPerArticle.value),
-      other_monthly_label: elements.costOtherLabel.value.trim().slice(0, 60) || 'Perkhidmatan lain',
-      other_monthly_myr: costValue(elements.costOtherMonthly.value)
-    };
-    const response = await restRequest('admin_cost_settings?on_conflict=user_id', {
-      method: 'POST',
-      headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-      body: JSON.stringify(payload)
-    });
-    if (!response.ok) throw new Error(await parseResponseError(response, 'Tetapan kos tidak dapat disimpan.'));
-    const [saved] = await response.json();
-    costSettings = { ...costSettings, ...saved };
+  const loadCostEvents = async () => {
+    const response = await restRequest('automation_cost_events?select=provider,event_type,cost_usd,input_tokens,output_tokens,created_at&order=created_at.desc&limit=500');
+    if (!response.ok) throw new Error(await parseResponseError(response, 'Rekod kos automasi tidak dapat dimuatkan.'));
+    costEvents = await response.json();
     renderCostDashboard();
   };
 
@@ -1196,7 +1118,7 @@
       setAuthenticatedView(true);
       populateCampaignQrOptions();
       populateVerificationOptions();
-      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign(), loadQrReports(), loadVerification(), loadCostSettings()]);
+      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign(), loadQrReports(), loadVerification(), loadCostEvents()]);
     } catch (error) {
       persistSession(null);
       showMessage(elements.loginMessage, error.message || 'Log masuk gagal.');
@@ -1321,21 +1243,6 @@
     }
     showCampaignImagePreview(URL.createObjectURL(file));
   });
-  elements.costSettingsForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    setCostStatus('');
-    elements.saveCostSettings.disabled = true;
-    elements.saveCostSettings.textContent = t('Menyimpan...');
-    try {
-      await saveCostSettings();
-      setCostStatus('Kos berjaya disimpan.', 'success');
-    } catch (error) {
-      setCostStatus(error.message || 'Tetapan kos tidak dapat disimpan.', 'error');
-    } finally {
-      elements.saveCostSettings.disabled = false;
-      elements.saveCostSettings.textContent = t('Simpan kos');
-    }
-  });
   elements.campaignForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     setCampaignStatus('');
@@ -1406,7 +1313,7 @@
       if (!await verifyAdmin()) throw new Error('Akaun ini belum diberi akses admin.');
       setAuthenticatedView(true);
       populateCampaignQrOptions();
-      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign(), loadCostSettings()]);
+      await Promise.all([loadArticles(), loadAnalytics(), loadCampaign(), loadCostEvents()]);
     } catch (error) {
       persistSession(null);
       setAuthenticatedView(false);
