@@ -13,6 +13,7 @@ const keywordDiscoverySeeds = [
   'doa ibu bapa', 'amalan islam', 'doa rezeki',
 ];
 const articleCoverBucket = 'article-covers';
+const openAiImageModel = 'gpt-image-2.5-flare';
 type KeywordCandidate = {
   keyword: string;
   search_volume?: number | null;
@@ -53,26 +54,155 @@ const createArticleCoverSvg = (title: string, category: string, slug: string) =>
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-label="${escapeXml(title)}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${palettes[0]}"/><stop offset="1" stop-color="${palettes[1]}"/></linearGradient></defs><rect width="1536" height="1024" fill="url(#g)"/><circle cx="1230" cy="228" r="132" fill="none" stroke="#fff" stroke-width="26" opacity="0.92"/><circle cx="1280" cy="190" r="132" fill="url(#g)"/><path d="M0 900 Q260 700 520 900 T1040 900 T1536 860 V1024 H0Z" fill="#071f19" opacity="0.28"/>${stars}<text x="108" y="130" fill="${palettes[2]}" font-family="Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="4">SEDEKAHQR · ${escapeXml(category.toUpperCase())}</text><path d="M108 195 H310" stroke="${palettes[2]}" stroke-width="8"/>${titleMarkup}<text x="108" y="870" fill="#fff" font-family="Arial, sans-serif" font-size="30" opacity="0.82">Bacaan dan renungan Islam</text></svg>`;
 };
 
-async function createUniqueArticleCover(supabase: any, title: string, category: string, slug: string) {
+const openAiImageCost = (usage: Record<string, any> | undefined) => {
+  const inputTokens = Math.max(0, Number(usage?.input_tokens || 0));
+  const cachedTokens = Math.min(inputTokens, Math.max(0, Number(usage?.input_tokens_details?.cached_tokens || 0)));
+  const outputTokens = Math.max(0, Number(usage?.output_tokens || 0));
+  return (((inputTokens - cachedTokens) * 5) + (cachedTokens * 1.25) + (outputTokens * 30)) / 1_000_000;
+};
+
+const articleCoverPrompt = (title: string, category: string, content: unknown[], slug: string) => {
+  const hash = hashValue(slug);
+  const compositions = [
+    'an intimate eye-level documentary photograph with a clear human-scale focal point',
+    'a calm wide environmental photograph with layered foreground, middle ground and background',
+    'a refined overhead editorial still life using meaningful everyday objects',
+    'a natural side-lit interior scene with authentic Malaysian architectural details',
+    'a candid community moment photographed from a respectful distance',
+    'an early-morning exterior scene with soft directional light and restrained colours',
+  ];
+  const palettes = [
+    'deep green, warm white and muted gold accents',
+    'fresh daylight, neutral stone and natural wood',
+    'soft blue-green, white and restrained terracotta accents',
+    'warm morning light, charcoal details and fresh foliage',
+  ];
+  const context = content
+    .slice(0, 10)
+    .flatMap((block: any) => [block?.text, ...(Array.isArray(block?.items) ? block.items : [])])
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 900);
+
+  return `Create one original landscape editorial cover photograph for a Malaysian Islamic educational article.
+
+Article title: "${title}"
+Category: "${category}"
+Article context: "${context}"
+Creative variation key: "${slug}"
+Composition: ${compositions[hash % compositions.length]}.
+Colour direction: ${palettes[(hash >>> 3) % palettes.length]}.
+
+Show a specific visual scene that directly represents this article, in an authentic contemporary Malaysian setting. Use realistic people only when relevant, dressed modestly and shown naturally. Keep the image respectful, calm, credible and suitable for a professional Islamic publication. Every article must receive a visibly different subject, camera angle, setting and composition.
+
+Do not add any words, captions, typography, logos, brand marks, watermarks, QR codes, decorative crescents, floating icons, fake Arabic writing, or legible generated Quran text. Do not depict prophets, angels or sacred figures. Avoid generic stock-photo poses, repeated mosque silhouettes, heavy green colour casts, fantasy lighting and excessive ornament. Use a clean 3:2 composition that remains clear when cropped as a website card.`;
+};
+
+const base64Bytes = (value: string) => {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return bytes;
+};
+
+async function ensureArticleCoverBucket(supabase: any) {
   const { data: buckets, error: bucketListError } = await supabase.storage.listBuckets();
   if (bucketListError) throw bucketListError;
   if (!buckets?.some((bucket: { id: string }) => bucket.id === articleCoverBucket)) {
     const { error: bucketError } = await supabase.storage.createBucket(articleCoverBucket, {
       public: true,
-      allowedMimeTypes: ['image/svg+xml'],
-      fileSizeLimit: '1MB',
+      allowedMimeTypes: ['image/webp', 'image/svg+xml'],
+      fileSizeLimit: '3MB',
     });
     if (bucketError) throw bucketError;
   }
-  const path = `${slug}.svg`;
-  const svg = createArticleCoverSvg(title, category, slug);
+}
+
+async function uploadArticleCover(supabase: any, path: string, body: Blob, contentType: string) {
   const { error: uploadError } = await supabase.storage.from(articleCoverBucket).upload(
     path,
-    new Blob([svg], { type: 'image/svg+xml' }),
-    { contentType: 'image/svg+xml', cacheControl: '31536000', upsert: false },
+    body,
+    { contentType, cacheControl: '31536000', upsert: false },
   );
   if (uploadError) throw uploadError;
   return supabase.storage.from(articleCoverBucket).getPublicUrl(path).data.publicUrl;
+}
+
+async function createUniqueArticleCover(
+  supabase: any,
+  openAiKey: string | undefined,
+  title: string,
+  category: string,
+  content: unknown[],
+  slug: string,
+) {
+  await ensureArticleCoverBucket(supabase);
+
+  if (openAiKey) {
+    try {
+      const response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${openAiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: openAiImageModel,
+          prompt: articleCoverPrompt(title, category, content, slug),
+          size: '1536x1024',
+          quality: 'medium',
+          output_format: 'webp',
+          output_compression: 72,
+        }),
+        signal: AbortSignal.timeout(120_000),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(`OpenAI image API ${response.status}: ${String(payload?.error?.message || 'Unknown error').slice(0, 240)}`);
+      const encodedImage = String(payload?.data?.[0]?.b64_json || '');
+      if (!encodedImage) throw new Error('OpenAI image API returned no image data.');
+
+      await recordAutomationCost(supabase, {
+        provider: 'openai',
+        event_type: 'article_cover',
+        cost_usd: openAiImageCost(payload?.usage),
+        input_tokens: Number(payload?.usage?.input_tokens || 0),
+        output_tokens: Number(payload?.usage?.output_tokens || 0),
+        metadata: {
+          model: openAiImageModel,
+          size: '1536x1024',
+          quality: 'medium',
+          format: 'webp',
+          compression: 72,
+        },
+      });
+
+      return await uploadArticleCover(
+        supabase,
+        `${slug}.webp`,
+        new Blob([base64Bytes(encodedImage)], { type: 'image/webp' }),
+        'image/webp',
+      );
+    } catch (error) {
+      console.error('GPT Image article cover failed; using SVG fallback.', error);
+      await recordAutomationCost(supabase, {
+        provider: 'openai',
+        event_type: 'article_cover_fallback',
+        cost_usd: 0,
+        metadata: {
+          model: openAiImageModel,
+          reason: error instanceof Error ? error.message.slice(0, 300) : 'Unknown image generation error.',
+        },
+      });
+    }
+  } else {
+    console.warn('OPENAI_API_KEY is not configured; using SVG article cover fallback.');
+  }
+
+  const svg = createArticleCoverSvg(title, category, slug);
+  return await uploadArticleCover(
+    supabase,
+    `${slug}.svg`,
+    new Blob([svg], { type: 'image/svg+xml' }),
+    'image/svg+xml',
+  );
 }
 
 const recordAutomationCost = async (supabase: any, event: Record<string, unknown>) => {
@@ -181,6 +311,7 @@ Deno.serve(async (request) => {
 
   const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY');
   const dataForSeoLogin = Deno.env.get('DATAFORSEO_LOGIN');
+  const openAiKey = Deno.env.get('OPENAI_API_KEY');
   const dataForSeoPassword = Deno.env.get('DATAFORSEO_PASSWORD');
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -298,7 +429,7 @@ sources must contain at least one source object with label and url, and may use 
   const baseSlug = slugify(title) || `artikel-${Date.now()}`;
   const slug = `${baseSlug.slice(0, 95)}-${Date.now().toString().slice(-6)}`;
   let coverImage: string;
-  try { coverImage = await createUniqueArticleCover(supabase, title, category, slug); }
+  try { coverImage = await createUniqueArticleCover(supabase, openAiKey, title, category, content, slug); }
   catch (error) {
     console.error('Unique article cover generation failed.', error);
     return json({ error: 'Article cover generation failed.' }, 502);

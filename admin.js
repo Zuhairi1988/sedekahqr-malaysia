@@ -318,11 +318,12 @@
   const renderCostDashboard = () => {
     const currentMonth = costEvents.filter(isCurrentMalaysiaMonth);
     const providerTotal = (provider, events = costEvents) => events.filter((event) => event.provider === provider).reduce((total, event) => total + Number(event.cost_usd || 0), 0);
-    const total = providerTotal('dataforseo') + providerTotal('deepseek');
-    const monthTotal = providerTotal('dataforseo', currentMonth) + providerTotal('deepseek', currentMonth);
+    const total = providerTotal('dataforseo') + providerTotal('deepseek') + providerTotal('openai');
+    const monthTotal = providerTotal('dataforseo', currentMonth) + providerTotal('deepseek', currentMonth) + providerTotal('openai', currentMonth);
     const generatedArticles = costEvents.filter((event) => event.provider === 'deepseek' && event.event_type === 'article_draft');
     const averagePerArticle = generatedArticles.length ? total / generatedArticles.length : 0;
     const deepSeekTokens = costEvents.filter((event) => event.provider === 'deepseek').reduce((sum, event) => sum + Number(event.input_tokens || 0) + Number(event.output_tokens || 0), 0);
+    const openAiCovers = costEvents.filter((event) => event.provider === 'openai' && event.event_type === 'article_cover');
 
     elements.costMonthlyTotal.textContent = formatUsd(monthTotal);
     elements.costMonthlyDetail.textContent = `${currentMonth.length} panggilan API bulan ini`;
@@ -334,7 +335,8 @@
 
     const rows = [
       { label: 'DataForSEO', detail: `${costEvents.filter((event) => event.provider === 'dataforseo').length} carian keyword direkodkan`, amount: formatUsd(providerTotal('dataforseo')) },
-      { label: 'DeepSeek', detail: `${deepSeekTokens.toLocaleString('ms-MY')} token direkodkan`, amount: formatUsd(providerTotal('deepseek')) },
+      { label: 'DeepSeek', detail: `${deepSeekTokens.toLocaleString(adminLocale())} ${t('token direkodkan')}`, amount: formatUsd(providerTotal('deepseek')) },
+      { label: 'GPT Image', detail: `${openAiCovers.length} ${t('imej artikel direkodkan')}`, amount: formatUsd(providerTotal('openai')) },
       { label: 'Supabase Nano', detail: 'Pelan semasa percuma', amount: formatCurrency(0) },
       { label: 'GitHub Pages', detail: 'Hosting statik semasa percuma', amount: formatCurrency(0) },
       { label: 'Domain', detail: 'Caj registrar tidak boleh dibaca secara automatik', amount: 'Tidak dikesan' }
