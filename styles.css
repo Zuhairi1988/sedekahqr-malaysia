@@ -228,7 +228,8 @@
 }
 
 .header-actions .prayer-locate-button,
-.header-actions .prayer-reminder-button {
+.header-actions .prayer-reminder-button,
+.header-actions .pwa-install-button {
   width: 32px;
   height: 32px;
   flex-basis: 32px;
@@ -238,7 +239,8 @@
 }
 
 .header-actions .prayer-locate-button:hover,
-.header-actions .prayer-reminder-button:hover {
+.header-actions .prayer-reminder-button:hover,
+.header-actions .pwa-install-button:hover {
   border-color: var(--directory-green);
   background: #edf6f2;
 }
@@ -250,7 +252,8 @@
 }
 
 .header-actions .prayer-locate-button svg,
-.header-actions .prayer-reminder-button svg {
+.header-actions .prayer-reminder-button svg,
+.header-actions .pwa-install-button svg {
   width: 15px;
   height: 15px;
 }
@@ -576,7 +579,8 @@
   font-weight: 700;
 }
 
-.prayer-reminder-button {
+.prayer-reminder-button,
+.pwa-install-button {
   position: relative;
   width: 26px;
   height: 26px;
@@ -592,13 +596,15 @@
 }
 
 .prayer-reminder-button:hover,
+.pwa-install-button:hover,
 .prayer-reminder-button.is-active {
   border-color: var(--directory-yellow);
   background: var(--directory-yellow);
   color: var(--directory-ink);
 }
 
-.prayer-reminder-button svg {
+.prayer-reminder-button svg,
+.pwa-install-button svg {
   width: 13px;
   height: 13px;
 }
@@ -2286,7 +2292,8 @@
   }
 
   .header-actions .prayer-locate-button,
-  .header-actions .prayer-reminder-button {
+  .header-actions .prayer-reminder-button,
+  .header-actions .pwa-install-button {
     width: 30px;
     height: 30px;
     flex-basis: 30px;

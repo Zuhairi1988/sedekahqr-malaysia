@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const installButton = document.getElementById('install-app');
   const laterButton = document.getElementById('install-later');
   const iosSteps = document.getElementById('install-ios-steps');
+  const openInstallButton = document.getElementById('open-install');
   if (!modal || !installButton || !laterButton || !iosSteps) return;
 
   const storageKey = 'sedekahqr-install-prompt-dismissed-until';
@@ -35,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modalTrigger) modalTrigger.focus();
   };
 
-  const openModal = () => {
-    if (isStandalone || isDismissed() || !modal.hidden) return;
+  const openModal = (manual = false) => {
+    if (isStandalone || (!manual && isDismissed()) || !modal.hidden) return;
     modalTrigger = document.activeElement;
     iosSteps.hidden = !isIos;
     installButton.hidden = isIos;
@@ -59,9 +60,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
+    if (openInstallButton) openInstallButton.hidden = true;
     track('pwa_install_completed', { device: isIos ? 'ios' : 'android' });
     closeModal(false);
   });
+
+  if (openInstallButton) {
+    openInstallButton.hidden = isStandalone;
+    openInstallButton.addEventListener('click', () => {
+      track('pwa_install_icon_clicked', { device: isIos ? 'ios' : 'other' });
+      openModal(true);
+    });
+  }
 
   installButton.addEventListener('click', async () => {
     if (!deferredPrompt) return;
