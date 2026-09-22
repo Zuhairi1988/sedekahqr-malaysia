@@ -1,0 +1,40 @@
+name: Publish static articles
+
+on:
+  schedule:
+    - cron: '15 2 * * 0,1,3,5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-static-articles
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generate static article pages
+        run: node scripts/generate-static-articles.mjs
+
+      - name: Commit generated pages
+        run: |
+          if [ -z "$(git status --porcelain -- artikel sitemap.xml scripts/generated-article-slugs.json)" ]; then
+            echo "No article changes to publish."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artikel sitemap.xml scripts/generated-article-slugs.json
+          git commit -m "Publish static article pages"
+          git push

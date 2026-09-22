@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     imageLink.className = 'blog-card-image';
     // Newly published articles live in Supabase immediately; the dynamic reader
     // prevents a GitHub Pages 404 before a static SEO page is generated.
-    imageLink.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
+    imageLink.href = `artikel/${encodeURIComponent(article.slug)}/`;
     imageLink.setAttribute('aria-label', `Baca ${article.title}`);
 
     const image = document.createElement('img');

@@ -78,8 +78,13 @@ supabase/.singapore-secrets.txt
 !artikel/**
 !scripts/
 !scripts/generate_static_articles.ps1
+!scripts/generate-static-articles.mjs
+!scripts/generated-article-slugs.json
 !scripts/deploy_generate_article_draft.ps1
 !scripts/sync_ai_secrets_from_env.ps1
+!.github/
+!.github/workflows/
+!.github/workflows/publish-static-articles.yml
 !scraper_qr/
 !scraper_qr/muamalat_ederma/
 !scraper_qr/muamalat_ederma/*/

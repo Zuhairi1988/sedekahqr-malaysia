@@ -31,6 +31,38 @@ const slugify = (value: string) => value.toLowerCase()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
   .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 110);
 
+const topicFingerprint = (value: string) => value.toLowerCase()
+  .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9\s]+/g, ' ')
+  .split(/\s+/).filter(Boolean).sort().join(' ');
+
+const editDistance = (left: string, right: string) => {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let row = 1; row <= left.length; row += 1) {
+    let diagonal = previous[0];
+    previous[0] = row;
+    for (let column = 1; column <= right.length; column += 1) {
+      const above = previous[column];
+      previous[column] = Math.min(
+        previous[column] + 1,
+        previous[column - 1] + 1,
+        diagonal + (left[row - 1] === right[column - 1] ? 0 : 1),
+      );
+      diagonal = above;
+    }
+  }
+  return previous[right.length];
+};
+
+const topicsOverlap = (left: string, right: string) => {
+  const first = topicFingerprint(left);
+  const second = topicFingerprint(right);
+  if (!first || !second) return false;
+  if (first === second) return true;
+  const allowedDistance = Math.max(1, Math.floor(Math.max(first.length, second.length) * 0.12));
+  return editDistance(first, second) <= allowedDistance;
+};
+
 const escapeXml = (value: string) => value.replace(/[<>&"']/g, (character) => ({
   '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;',
 }[character] || character));
@@ -351,6 +383,22 @@ Deno.serve(async (request) => {
   const keyword = keywordSelection.keyword;
   if (input.researchOnly === true) return json({ ok: true, keyword: keywordSelection });
 
+  const { data: publishedTopics, error: publishedTopicsError } = await supabase
+    .from('islamic_articles')
+    .select('title,seo_keyword')
+    .eq('is_published', true)
+    .limit(200);
+  if (publishedTopicsError) {
+    return retryOrReject('Existing article topics could not be checked.', { code: publishedTopicsError.code });
+  }
+  const duplicateTopic = publishedTopics?.find((article) => topicsOverlap(keyword, String(article.seo_keyword || article.title || '')));
+  if (duplicateTopic) {
+    if (requestedKeyword) {
+      return json({ error: 'The requested keyword overlaps an existing published article.', details: { existingTitle: duplicateTopic.title } }, 409);
+    }
+    return retryOrReject('Keyword overlaps an existing published article.', { existingTitle: duplicateTopic.title });
+  }
+
   const prompt = `Create one Malay-language Islamic SEO article draft for the keyword: "${keyword}".
 Return valid JSON only with title, excerpt, category, reading_minutes, content, sources.
 Use 850-1100 original Malay words, clear H2 headings, and a neutral educational tone. Include at least three specific, realistic everyday Malaysian scenarios, include one short section headed "Salah Faham" that corrects a common misunderstanding, and give a practical checklist or steps readers can apply. Write in clear standard Bahasa Melayu using accurate, familiar Malaysian usage. Check spelling, grammar, and word choice carefully. Avoid Indonesian vocabulary, awkward literal translations, unexplained Arabic terms, and jargon; when an Islamic term is necessary, explain it briefly in plain language. Avoid generic motivational filler and repeated advice. Do not make specific reward, merit, or time-based religious claims unless they are directly and accurately supported by the cited source; choose a safer educational angle when a source does not support the proposed keyword.
@@ -368,7 +416,9 @@ sources must contain at least one source object with label and url, and may use 
       thinking: { type: 'disabled' },
     }),
   });
-  if (!aiResponse.ok) return json({ error: 'Draft generation failed.' }, 502);
+  if (!aiResponse.ok) {
+    return retryOrReject('Draft generation failed.', { status: aiResponse.status });
+  }
 
   const aiPayload = await aiResponse.json();
   await recordAutomationCost(supabase, {
@@ -381,7 +431,7 @@ sources must contain at least one source object with label and url, and may use 
   });
   let draft: Record<string, unknown>;
   try { draft = JSON.parse(aiPayload?.choices?.[0]?.message?.content || '{}'); }
-  catch { return json({ error: 'Draft response was invalid.' }, 502); }
+  catch { return retryOrReject('Draft response was invalid.', {}); }
 
   const title = String(draft.title || '').trim().slice(0, 180);
   const excerpt = String(draft.excerpt || '').trim().slice(0, 360);
@@ -404,11 +454,13 @@ sources must contain at least one source object with label and url, and may use 
     headers: { Authorization: `Bearer ${deepseekKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'deepseek-v4-flash',
-      messages: [{ role: 'system', content: 'You are a strict Malay Islamic content quality reviewer. Return valid JSON only.' }, { role: 'user', content: `Review this article before publication. Reject it if it is generic, repetitive, contains unsupported religious claims, uses sources that do not support its claims, lacks practical value, needs qualified human review for a legal/fatwa issue, or has incorrect/non-standard Bahasa Melayu spelling, grammar, confusing vocabulary, Indonesian wording, awkward translations, or unnecessary jargon. Require clear, natural Malaysian Malay that a general reader can understand. Return {"approved":boolean,"score":number,"reason":"..."}. Approve only when the score is 80 or higher; sources and safety requirements are non-negotiable.\n\n${JSON.stringify({ title, excerpt, category, content, sources })}` }],
-      response_format: { type: 'json_object' }, max_tokens: 350, thinking: { type: 'disabled' },
+      messages: [{ role: 'system', content: 'You are a strict Malay Islamic content quality reviewer. Return one concise valid JSON object only, without markdown or extra commentary.' }, { role: 'user', content: `Review this article before publication. Reject it if it is generic, repetitive, contains unsupported religious claims, uses sources that do not support its claims, lacks practical value, needs qualified human review for a legal/fatwa issue, or has incorrect/non-standard Bahasa Melayu spelling, grammar, confusing vocabulary, Indonesian wording, awkward translations, or unnecessary jargon. Require clear, natural Malaysian Malay that a general reader can understand. Also reject misspelled or unnatural words copied from search keywords; article titles must use correct standard Bahasa Melayu. Return {"approved":boolean,"score":number,"reason":"one concise sentence"}. Approve only when the score is 80 or higher; sources and safety requirements are non-negotiable.\n\n${JSON.stringify({ title, excerpt, category, content, sources })}` }],
+      response_format: { type: 'json_object' }, max_tokens: 500, thinking: { type: 'disabled' },
     }),
   });
-  if (!qualityResponse.ok) return json({ error: 'Article quality review failed.' }, 502);
+  if (!qualityResponse.ok) {
+    return retryOrReject('Article quality review failed.', { status: qualityResponse.status });
+  }
   const qualityPayload = await qualityResponse.json();
   await recordAutomationCost(supabase, {
     provider: 'deepseek',
@@ -420,7 +472,7 @@ sources must contain at least one source object with label and url, and may use 
   });
   let quality: { approved?: boolean; score?: number; reason?: string } = {};
   try { quality = JSON.parse(qualityPayload?.choices?.[0]?.message?.content || '{}'); }
-  catch { return json({ error: 'Article quality review was invalid.' }, 502); }
+  catch { return retryOrReject('Article quality review was invalid.', {}); }
   if (!quality.approved || Number(quality.score || 0) < 80) {
     return retryOrReject('Article did not pass publication quality checks.', { quality });
   }
