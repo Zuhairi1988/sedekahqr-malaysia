@@ -3,17 +3,37 @@ document.addEventListener('DOMContentLoaded', () => {
   const installButton = document.getElementById('install-app');
   const laterButton = document.getElementById('install-later');
   const iosSteps = document.getElementById('install-ios-steps');
+  const manualText = document.getElementById('install-manual-text');
   const openInstallButton = document.getElementById('open-install');
   if (!modal || !installButton || !laterButton || !iosSteps) return;
 
   const storageKey = 'sedekahqr-install-prompt-dismissed-until';
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent)
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isChromeIos = /CriOS/.test(navigator.userAgent);
+  const isFirefoxIos = /FxiOS/.test(navigator.userAgent);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   let deferredPrompt = null;
   let modalTrigger = null;
   const t = (text) => window.SedekahQRLanguage?.t?.(text) || text;
   const track = (name, parameters = {}) => window.gtag?.('event', name, parameters);
+
+  const setManualInstructions = () => {
+    if (!manualText) return;
+    const isEnglish = window.SedekahQRLanguage?.getLanguage?.() === 'en';
+    let browser = 'browser anda';
+    if (isEnglish) browser = 'your browser';
+    if (isChromeIos) browser = 'Chrome';
+    else if (isFirefoxIos) browser = 'Firefox';
+    else if (isIos) browser = 'Safari';
+
+    const prefix = isIos
+      ? (isEnglish ? `On iPhone, open the Share menu in ${browser}, then select ` : `Pada iPhone, buka menu Kongsi dalam ${browser}, kemudian pilih `)
+      : (isEnglish ? 'Open the browser menu, then select ' : 'Buka menu browser, kemudian pilih ');
+    const option = document.createElement('strong');
+    option.textContent = isIos ? 'Add to Home Screen' : 'Install app atau Add to Home screen';
+    manualText.replaceChildren(document.createTextNode(prefix), option, document.createTextNode('.'));
+  };
 
   const isDismissed = () => {
     try {
@@ -39,9 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const openModal = (manual = false) => {
     if (isStandalone || (!manual && isDismissed()) || !modal.hidden) return;
     modalTrigger = document.activeElement;
-    iosSteps.hidden = !isIos;
-    installButton.hidden = isIos;
-    laterButton.textContent = isIos ? t('Faham') : t('Nanti');
+    const canInstallDirectly = Boolean(deferredPrompt) && !isIos;
+    setManualInstructions();
+    iosSteps.hidden = canInstallDirectly;
+    installButton.hidden = !canInstallDirectly;
+    laterButton.textContent = canInstallDirectly ? t('Nanti') : t('Faham');
     modal.hidden = false;
     document.body.classList.add('install-open');
     modal.querySelector('.reminder-close').focus();
@@ -55,6 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredPrompt = event;
+    if (!modal.hidden && !isIos) {
+      iosSteps.hidden = true;
+      installButton.hidden = false;
+      laterButton.textContent = t('Nanti');
+    }
     schedulePrompt();
   });
 
