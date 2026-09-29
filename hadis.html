@@ -7,13 +7,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d513f" />
-  <meta name="description" content="Koleksi hadis pilihan dengan teks Arab, terjemahan Bahasa Melayu dan rujukan." />
+  <meta name="description" content="Hadis sahih pilihan dengan teks Arab, terjemahan Bahasa Melayu, huraian dan pengajaran." />
+  <link rel="canonical" href="https://sedekahqr.com/hadis.html" />
   <title>Hadis - SedekahQR</title>
   <link rel="icon" href="/favicon.png?v=20260822-2" type="image/png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/sedekahqr-icon-192.png?v=20260822-1" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260822-1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&family=Amiri+Quran&display=swap" />
   <link rel="stylesheet" href="styles.css?v=20260812-2" />
-  <link rel="stylesheet" href="hadis.css?v=20260812-1" />
+  <link rel="stylesheet" href="quran.css?v=20260929-11" />
+  <link rel="stylesheet" href="hadis.css?v=20260930-1" />
 </head>
-<body class="directory-body hadis-body">
+<body class="directory-body quran-body hadis-body">
   <header class="directory-header"><div class="directory-container header-inner">
     <a class="directory-brand" href="/" aria-label="SedekahQR - halaman utama"><span class="brand-mark"><img src="assets/sedekahqr-logo.svg" alt="" /></span><span class="brand-wordmark"><strong><span>Sedekah</span><b>QR</b></strong></span></a>
     <nav class="directory-nav" aria-label="Navigasi utama"><a href="/">Homepage</a><a href="/#direktori">Direktori</a><a href="quran.html">Al-Quran</a><a href="hadis.html" aria-current="page">Hadis</a><a href="blog.html">Artikel</a></nav>
@@ -21,14 +28,91 @@
     <nav id="mobile-page-menu" class="mobile-page-menu" aria-label="Menu tambahan" hidden><a href="quran.html">Al-Quran</a><a href="hadis.html">Hadis</a><a href="blog.html">Artikel</a></nav>
     <div class="header-page-actions"><div class="language-switch" role="group" aria-label="Pilih bahasa"><button type="button" data-language="ms" aria-pressed="true">BM</button><button type="button" data-language="en" aria-pressed="false">EN</button></div></div>
   </div></header>
-  <main class="hadis-main directory-container">
-    <section class="hadis-intro"><div><p class="hadis-eyebrow">PANDUAN DARIPADA SUNNAH</p><h1>Hadis</h1><p>Koleksi pilihan untuk bacaan dan renungan harian, dengan rujukan kitab pada setiap hadis.</p></div><button id="hadis-favourite-filter" class="hadis-filter" type="button" aria-pressed="false">Simpanan saya</button></section>
-    <section class="hadis-tools"><label for="hadis-search">Cari hadis</label><input id="hadis-search" type="search" placeholder="Cari tema, perawi atau kitab" autocomplete="off" /><p id="hadis-count" aria-live="polite"></p></section>
-    <section id="hadis-list" class="hadis-list" aria-label="Koleksi hadis pilihan"></section>
-    <aside class="hadis-note"><strong>Nota rujukan</strong><p>Terjemahan ini disediakan sebagai bacaan umum. Sila rujuk kitab dan nombor hadis yang dipaparkan untuk semakan lanjut; halaman ini bukan fatwa atau huraian hukum.</p></aside>
+  <main class="qh hadis-main">
+    <section id="hadis-home" class="hadis-home" aria-labelledby="hadis-title">
+      <div class="qh-hero">
+        <p class="qh-hero-arabic" lang="ar" dir="rtl">ٱلْحَدِيثُ ٱلنَّبَوِيُّ ٱلشَّرِيفُ</p>
+        <h1 id="hadis-title">Hadis</h1>
+        <p class="qh-lead">Hadis sahih pilihan bersama terjemahan Bahasa Melayu, huraian dan pengajaran.</p>
+        <p class="q-ornament" aria-hidden="true">&#9670;</p>
+        <label class="qh-search" for="hadis-search">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <span class="sr-only">Cari hadis</span>
+          <input id="hadis-search" type="search" autocomplete="off" placeholder="Cari hadis, cth. niat, sedekah, solat" />
+        </label>
+      </div>
+
+      <a id="hadis-today" class="hd-today" href="hadis.html" hidden>
+        <span class="q-eyebrow">Hadis hari ini</span>
+        <span id="hadis-today-arabic" class="hd-today-arabic" lang="ar" dir="rtl"></span>
+        <span id="hadis-today-title" class="hd-today-title"></span>
+        <span class="hd-today-more">Baca huraian &#8594;</span>
+      </a>
+
+      <div class="qh-section">
+        <h2 class="q-eyebrow">Tema</h2>
+        <div id="hadis-filters" class="qh-chips hd-filters" role="group" aria-label="Tapis mengikut tema"></div>
+      </div>
+      <p id="hadis-count" class="q-eyebrow hd-count" aria-live="polite">Memuatkan hadis...</p>
+      <ol id="hadis-list" class="hd-list"></ol>
+      <p id="hadis-empty" class="qh-empty" hidden>Tiada hadis sepadan dengan carian atau simpanan anda.</p>
+
+      <aside class="hd-note">
+        <strong>Nota rujukan</strong>
+        <p>Teks hadis, terjemahan, huraian dan pengajaran dipaparkan seperti yang diterbitkan oleh <a href="https://hadeethenc.com/ms/home" target="_blank" rel="noopener">HadeethEnc.com</a> (Ensiklopedia Hadis Nabi Terjemahan). Halaman ini untuk bacaan umum dan bukan fatwa atau huraian hukum.</p>
+      </aside>
+    </section>
+
+    <section id="hadis-detail" class="hd-detail" hidden>
+      <div class="qr-bar">
+        <a class="qr-icon-button" href="hadis.html" data-hadis-home aria-label="Senarai hadis" title="Senarai hadis">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+        </a>
+        <p class="qr-bar-title"><strong>Hadis</strong><small id="hadis-position"></small></p>
+        <div class="qr-bar-actions">
+          <button id="hadis-save" class="qr-icon-button hd-save" type="button" aria-pressed="false" aria-label="Simpan hadis" title="Simpan hadis">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg>
+          </button>
+          <button id="hadis-share" class="qr-icon-button" type="button" aria-label="Kongsi hadis" title="Kongsi hadis">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.6 13.5 6.8 4"></path><path d="m15.4 6.5-6.8 4"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <article class="hd-article">
+        <div class="hd-badges"><span id="hadis-grade" class="hd-grade"></span><span id="hadis-source" class="hd-source"></span></div>
+        <h1 id="hadis-heading" class="hd-heading"></h1>
+        <p id="hadis-arabic" class="hd-arabic" lang="ar" dir="rtl"></p>
+        <p class="q-ornament" aria-hidden="true">&#9670;</p>
+        <p id="hadis-text" class="hd-translation"></p>
+        <p id="hadis-attribution-ar" class="hd-attribution-ar" lang="ar" dir="rtl"></p>
+
+        <p id="hadis-extra-status" class="hd-extra-status" aria-live="polite"></p>
+        <section id="hadis-explanation-wrap" class="hd-section" hidden>
+          <h2>Huraian</h2>
+          <div id="hadis-explanation"></div>
+        </section>
+        <section id="hadis-lessons-wrap" class="hd-section" hidden>
+          <h2>Pengajaran</h2>
+          <ul id="hadis-lessons"></ul>
+        </section>
+
+        <nav class="qr-surah-nav" aria-label="Hadis lain">
+          <a id="hadis-previous" href="hadis.html" data-hadis-link><small>Hadis sebelumnya</small><strong></strong></a>
+          <a id="hadis-next" class="is-next" href="hadis.html" data-hadis-link><small>Hadis seterusnya</small><strong></strong></a>
+        </nav>
+        <p class="hd-credit">Sumber: <a id="hadis-source-link" href="https://hadeethenc.com/ms/home" target="_blank" rel="noopener">HadeethEnc.com</a>, Ensiklopedia Hadis Nabi Terjemahan.</p>
+      </article>
+    </section>
+
+    <div id="hadis-error" class="quran-error" hidden>
+      <h2>Tidak dapat memuatkan hadis</h2>
+      <p>Semak sambungan internet anda dan cuba semula.</p>
+      <button id="hadis-retry" class="q-button" type="button">Cuba semula</button>
+    </div>
   </main>
   <footer class="directory-footer"><div class="directory-container"><div class="footer-main"><div class="footer-brand-block"><a class="footer-brand" href="/"><img src="assets/sedekahqr-logo.svg" alt="" width="48" height="48" /><strong>SedekahQR</strong></a><p>Direktori komuniti untuk memudahkan sumbangan secara terus melalui aplikasi bank atau e-wallet.</p></div><nav class="footer-links"><h2>Jelajah</h2><a href="/">Homepage</a><a href="quran.html">Al-Quran</a><a href="hadis.html">Hadis</a><a href="blog.html">Artikel</a></nav><div class="footer-info"><h2>Hubungi</h2><a href="mailto:sedekahqr@gmail.com">sedekahqr@gmail.com</a><a href="about.html">Tentang SedekahQR</a><a href="privacy.html">Notis Privasi</a><a href="terms.html">Terma Penggunaan</a></div></div><div class="footer-bottom"><p>&copy; 2026 SedekahQR. Direktori komuniti bebas.</p></div></div></footer>
-  <script src="language.js?v=20260812-1"></script><script src="nav-menu.js?v=20260812-1"></script><script src="analytics.js?v=20260813-3"></script><script src="sw-register.js?v=20260814-2"></script><script src="hadis.js?v=20260812-1"></script>
+  <script src="language.js?v=20260930-1"></script><script src="nav-menu.js?v=20260812-1"></script><script src="analytics.js?v=20260813-3"></script><script src="sw-register.js?v=20260814-2"></script><script src="hadis.js?v=20260930-1"></script>
 </body>
 </html>
 

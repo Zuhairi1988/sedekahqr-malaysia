@@ -1,1 +1,65 @@
-.hadis-main { padding: 52px 0 72px; }.hadis-intro { display:flex; align-items:end; justify-content:space-between; gap:24px; margin-bottom:28px; }.hadis-eyebrow { margin:0 0 7px; color:#087552; font-size:.76rem; font-weight:800; }.hadis-intro h1 { margin:0; color:#112a22; font-size:clamp(2rem,4vw,3.25rem); }.hadis-intro p:not(.hadis-eyebrow) { max-width:650px; color:#5a6e65; font-size:1.05rem; }.hadis-filter { min-height:42px; padding:0 14px; border:1px solid #b8cfc5; border-radius:7px; background:#fff; color:#134d3a; font:inherit; font-weight:750; cursor:pointer; }.hadis-filter[aria-pressed="true"] { border-color:#176b4d; background:#176b4d; color:#fff; }.hadis-tools { display:grid; grid-template-columns:auto minmax(240px,500px) 1fr; align-items:center; gap:13px; margin-bottom:22px; padding:16px 18px; border:1px solid #d5e1db; border-radius:7px; background:#f4f8f6; }.hadis-tools label { color:#17382d; font-size:.85rem; font-weight:800; }.hadis-tools input { height:43px; padding:0 12px; border:1px solid #b8cfc5; border-radius:6px; background:#fff; font:inherit; }.hadis-tools p { justify-self:end; margin:0; color:#63776e; font-size:.85rem; }.hadis-list { display:grid; gap:16px; }.hadis-card { padding:clamp(22px,4vw,34px); border:1px solid #d5e1db; border-top:3px solid #f2c84b; border-radius:7px; background:#fff; }.hadis-card-head { display:flex; justify-content:space-between; gap:16px; align-items:start; }.hadis-topic { margin:0; color:#087552; font-size:.76rem; font-weight:850; }.hadis-reference { margin:6px 0 0; color:#5d7168; font-size:.87rem; }.hadis-save { width:38px; height:38px; border:1px solid #b8cfc5; border-radius:6px; background:#fff; color:#176b4d; font-size:1.05rem; cursor:pointer; }.hadis-save[aria-pressed="true"] { background:#e7f4ec; border-color:#176b4d; }.hadis-arabic { margin:24px 0 18px; color:#162c24; font-family:"Noto Naskh Arabic","Traditional Arabic",serif; font-size:clamp(1.5rem,3vw,2rem); line-height:2; text-align:right; }.hadis-translation { margin:0; color:#394f45; font-size:1.03rem; line-height:1.75; }.hadis-empty { padding:44px; border:1px dashed #b8cfc5; border-radius:7px; color:#63776e; text-align:center; }@media (max-width:760px){.hadis-main{padding:28px 16px 48px}.hadis-intro{align-items:flex-start;flex-direction:column;margin-bottom:20px}.hadis-tools{grid-template-columns:1fr}.hadis-tools p{justify-self:start}.hadis-card{padding:22px}.hadis-arabic{font-size:1.65rem}}
+/* Hadis: shares the calm Al-Quran look (quran.css tokens and pieces); these rules are hadith-specific. */
+.hadis-body { --h-arabic: "Amiri", "Amiri Quran", "Noto Naskh Arabic", "Traditional Arabic", serif; }
+
+/* Hadis of the day */
+.hd-today { display: grid; gap: 10px; margin: 30px 0 0; padding: 22px 22px 18px; border: 1px solid #d6e5dc; border-radius: var(--q-radius); background: linear-gradient(180deg, var(--q-accent-soft), var(--q-surface)); color: var(--q-ink); text-decoration: none; }
+.hd-today:hover { border-color: var(--q-accent); }
+.hd-today-arabic { display: -webkit-box; overflow: hidden; color: var(--q-accent-ink); font-family: var(--h-arabic); font-size: 1.45rem; line-height: 2; text-align: right; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.hd-today-title { color: var(--q-soft-ink); line-height: 1.7; }
+.hd-today-more { color: var(--q-accent); font-size: .9rem; font-weight: 600; }
+
+/* Theme chips */
+.hd-filters .qh-chip { cursor: pointer; font: inherit; font-size: .9rem; }
+.hd-filters .qh-chip.is-active { border-color: var(--q-accent); background: var(--q-accent); color: #fff; }
+.hd-chip-count { opacity: .6; font-size: .8em; font-variant-numeric: tabular-nums; }
+.hd-count { margin-top: 30px; }
+
+/* List */
+.hd-list { margin: 10px 0 0; padding: 0; list-style: none; }
+.hd-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px 8px; border-bottom: 1px solid var(--q-line); color: inherit; text-decoration: none; transition: background .15s; }
+.hd-row:hover { background: rgba(29, 107, 82, .045); }
+.hd-row:focus-visible { outline: 2px solid var(--q-accent); outline-offset: 2px; }
+.hd-row-body { min-width: 0; }
+.hd-row-body strong { display: -webkit-box; overflow: hidden; font-size: .98rem; font-weight: 600; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.hd-row-body small { display: block; margin-top: 2px; overflow: hidden; color: var(--q-muted); font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
+.hd-row-saved { color: var(--q-gold); font-size: 1.1rem; }
+
+.hd-note { margin: 40px 0 0; padding: 18px 20px; border: 1px solid var(--q-line); border-radius: var(--q-radius); background: var(--q-surface); color: var(--q-soft-ink); font-size: .88rem; line-height: 1.7; }
+.hd-note strong { display: block; margin-bottom: 4px; color: var(--q-ink); }
+.hd-note p { margin: 0; }
+.hd-note a, .hd-credit a { color: var(--q-accent); }
+
+/* Single hadith */
+.hd-detail .qr-bar { margin: 0 -16px; }
+.hd-detail .qr-bar-actions { display: flex; justify-self: end; gap: 2px; }
+.hd-detail .qr-bar { grid-template-columns: 1fr minmax(0, auto) 1fr; }
+.hd-detail .qr-bar > .qr-icon-button { justify-self: start; }
+.hd-save[aria-pressed="true"] { color: var(--q-gold); }
+.hd-save[aria-pressed="true"] svg { fill: currentColor; }
+.hd-article { padding: 34px 0 20px; }
+.hd-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.hd-grade, .hd-source { padding: 4px 12px; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+.hd-grade { background: var(--q-accent); color: #fff; }
+.hd-source { border: 1px solid var(--q-line); background: var(--q-surface); color: var(--q-soft-ink); }
+.hd-heading { margin: 18px auto 0; max-width: 34rem; color: var(--q-ink); font-size: 1.25rem; font-weight: 700; line-height: 1.5; text-align: center; }
+.hd-arabic { margin: 26px 0 0; color: var(--q-ink); font-family: var(--h-arabic); font-size: 1.75rem; line-height: 2.15; text-align: center; }
+.hd-translation { margin: 18px 0 0; color: var(--q-ink); font-size: 1.05rem; line-height: 1.9; }
+.hd-attribution-ar { margin: 10px 0 0; color: var(--q-muted); font-family: var(--h-arabic); font-size: .95rem; text-align: left; }
+.hd-extra-status { margin: 24px 0 0; color: var(--q-muted); font-size: .9rem; text-align: center; }
+.hd-extra-status:empty { display: none; }
+.hd-section { margin: 34px 0 0; padding-top: 26px; border-top: 1px solid var(--q-line); }
+.hd-section h2 { margin: 0 0 12px; color: var(--q-accent-ink); font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.hd-section p { margin: 0 0 12px; color: var(--q-soft-ink); line-height: 1.85; }
+.hd-section ul { margin: 0; padding: 0; list-style: none; }
+.hd-section li { position: relative; margin: 0 0 12px; padding-left: 22px; color: var(--q-soft-ink); line-height: 1.8; }
+.hd-section li::before { content: ''; position: absolute; top: .72em; left: 4px; width: 7px; height: 7px; border-radius: 2px; background: var(--q-gold); transform: rotate(45deg); }
+.hd-detail .qr-surah-nav strong { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: .9rem; font-weight: 600; line-height: 1.45; }
+.hd-credit { margin: 28px 0 0; color: var(--q-faint); font-size: .78rem; text-align: center; }
+
+@media (max-width: 640px) {
+  .hd-today { padding: 18px 16px 16px; }
+  .hd-today-arabic { font-size: 1.3rem; }
+  .hd-arabic { font-size: 1.5rem; }
+  .hd-translation { font-size: 1rem; }
+  .hd-row { gap: 12px; padding: 13px 4px; }
+}

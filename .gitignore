@@ -31,6 +31,7 @@
 !quran-data.js
 !quran-home.js
 !hadis.js
+!hadis-data.json
 !profile.js
 !admin.js
 !admin-language.js
@@ -86,6 +87,7 @@ supabase/.singapore-secrets.txt
 !scripts/sync_ai_secrets_from_env.ps1
 !scripts/sync_quran_secrets_from_env.ps1
 !scripts/deploy_quran_page.ps1
+!scripts/build-hadis-index.mjs
 !.github/
 !.github/workflows/
 !.github/workflows/publish-static-articles.yml
