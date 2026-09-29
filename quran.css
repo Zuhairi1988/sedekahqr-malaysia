@@ -206,10 +206,24 @@ body.quran-flip-active .qr-bar { position: relative; top: 0; margin: 0 -12px; pa
 .book-back { overflow: hidden; border: 1px solid #dccca6; border-radius: 6px; background: linear-gradient(to left, #e9dfc4, #f7f0dd 22%, #fdf9ee 60%, #f6efdc); box-shadow: 0 12px 32px rgba(70, 56, 24, .12); transform: rotateY(180deg); }
 .book-back::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(52, 38, 12, .22), rgba(52, 38, 12, 0) 60%); opacity: var(--lift, 0); }
 
-/* Printed-mushaf page: KFGQPC glyph lines inside a green and gold frame. */
-.mushaf-page.is-glyph { display: flex; flex-direction: column; padding: 22px 24px 18px; border: 0; outline: 0; border-radius: 4px; background: #fffdf5; box-shadow: 0 12px 32px rgba(70, 56, 24, .12); }
-.mushaf-page.is-glyph::before { content: ''; position: absolute; inset: 7px; border: 5px solid #2f6b4f; border-radius: 3px; box-shadow: inset 0 0 0 2px #fffdf5, inset 0 0 0 3px #c9a24a; pointer-events: none; }
-.glyph-running { position: relative; display: flex; flex: 0 0 auto; justify-content: space-between; margin: 0 4px 4px; color: #2f6b4f; font-family: var(--q-arabic); font-size: 12px; line-height: 1.6; }
+/* Printed-mushaf page: KFGQPC glyph lines on a paper panel inside a patterned border band.
+   The band uses an original interlaced-circle (petal) motif drawn in SVG below. */
+.mushaf-page.is-glyph {
+  --band-green: #2c5e45;
+  --band-gold: #c29a45;
+  --band-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%23e7f0da'/%3E%3Cg fill='none' stroke='%2371a35c' stroke-width='1'%3E%3Ccircle cx='0' cy='0' r='12'/%3E%3Ccircle cx='24' cy='0' r='12'/%3E%3Ccircle cx='0' cy='24' r='12'/%3E%3Ccircle cx='24' cy='24' r='12'/%3E%3Ccircle cx='12' cy='12' r='12'/%3E%3C/g%3E%3Cg fill='%23c29a45'%3E%3Ccircle cx='12' cy='12' r='1.7'/%3E%3Ccircle cx='0' cy='0' r='1.7'/%3E%3Ccircle cx='24' cy='0' r='1.7'/%3E%3Ccircle cx='0' cy='24' r='1.7'/%3E%3Ccircle cx='24' cy='24' r='1.7'/%3E%3C/g%3E%3C/svg%3E");
+  --band-pattern-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%232c5e45'/%3E%3Cg fill='none' stroke='%237fb069' stroke-opacity='.55' stroke-width='1'%3E%3Ccircle cx='0' cy='0' r='10'/%3E%3Ccircle cx='20' cy='0' r='10'/%3E%3Ccircle cx='0' cy='20' r='10'/%3E%3Ccircle cx='20' cy='20' r='10'/%3E%3Ccircle cx='10' cy='10' r='10'/%3E%3C/g%3E%3Ccircle cx='10' cy='10' r='1.4' fill='%23c29a45'/%3E%3C/svg%3E");
+  display: flex;
+  padding: 21px;
+  border: 1px solid var(--band-green);
+  border-radius: 4px;
+  outline: 0;
+  background: #e7f0da var(--band-pattern) 0 0 / 24px 24px;
+  box-shadow: inset 0 0 0 3px #e7f0da, inset 0 0 0 4px var(--band-green), 0 12px 32px rgba(40, 70, 40, .14);
+}
+.glyph-panel { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; min-height: 0; padding: 6px 12px 4px; border: 2px solid var(--band-green); background: #fffef6; box-shadow: 0 0 0 2px var(--band-gold), 0 0 0 3px var(--band-green); }
+.glyph-running { position: relative; display: flex; flex: 0 0 auto; justify-content: space-between; margin: 0 0 4px; font-family: var(--q-arabic); font-size: 12px; line-height: 1.5; }
+.glyph-running > div, .glyph-folio > div { padding: 0 10px; border: 1px solid var(--band-green); border-radius: 3px; background: #eef5e4; color: var(--band-green); }
 .glyph-lines { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; color: #1a1a1a; line-height: 1; }
 .glyph-lines.is-centered { justify-content: center; }
 .glyph-lines > * { flex: 1 1 0; min-height: 0; }
@@ -219,15 +233,48 @@ body.quran-flip-active .qr-bar { position: relative; top: 0; margin: 0 -12px; pa
 .glyph-line.is-measuring { justify-content: flex-start; gap: 0; }
 /* Header and bismillah text scale with the row height (the block holds 15 rows), not with the glyph size. */
 .glyph-lines, .glyph-header { container-type: size; }
-.glyph-header { display: flex; align-items: center; justify-content: center; }
-.glyph-header-name { display: flex; align-items: center; justify-content: center; width: 94%; height: 86%; margin: 0; overflow: hidden; border: 2px solid #2f6b4f; border-radius: 999px; background: linear-gradient(#f1e3bd, #fbf4de 50%, #f1e3bd); box-shadow: inset 0 0 0 3px #fffdf5, inset 0 0 0 4px #c9a24a; color: #1f4d39; font-family: var(--q-arabic); font-size: 1em; font-size: 46cqh; line-height: 1; }
+.glyph-header { position: relative; display: flex; align-items: center; justify-content: center; gap: 2%; padding: 0 1.5%; }
+.glyph-header::before { content: ''; position: absolute; inset: 6% 0; border: 1px solid var(--band-green); border-radius: 3px; background: var(--band-pattern-dark) 0 0 / 20px 20px; box-shadow: inset 0 0 0 2px var(--band-gold); }
+.glyph-medallion { position: relative; flex: 0 0 auto; height: 72%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #f7ecc8 0 28%, var(--band-gold) 30% 40%, var(--band-green) 42% 58%, var(--band-gold) 60% 68%, #f7ecc8 70%); box-shadow: 0 0 0 1px var(--band-green); }
+.glyph-header-name { position: relative; display: flex; flex: 1 1 auto; align-items: center; justify-content: center; height: 74%; margin: 0; overflow: hidden; border: 1px solid var(--band-gold); border-radius: 999px; background: linear-gradient(#f3e6c0, #fdf8e8 50%, #f3e6c0); color: #1f4d39; font-family: var(--q-arabic); font-size: 1em; font-size: 42cqh; line-height: 1; }
 .glyph-bismillah { display: flex; align-items: center; justify-content: center; margin: 0; color: #1a1a1a; font-family: var(--q-arabic); font-size: 1em; font-size: 3.2cqh; line-height: 1; }
-.glyph-folio { position: relative; flex: 0 0 auto; color: #2f6b4f; font-family: var(--q-arabic); font-size: 13px; line-height: 1.8; text-align: center; }
+.glyph-folio { position: relative; display: flex; flex: 0 0 auto; justify-content: center; margin-top: 3px; font-family: var(--q-arabic); font-size: 13px; line-height: 1.5; }
 .mushaf-credit { display: none; margin: 6px 0 0; color: var(--q-faint); font-size: .68rem; text-align: center; }
 .quran-reader.is-flip-mode .mushaf-credit { display: block; flex: 0 0 auto; }
 @media (max-width: 640px) {
-  .mushaf-page.is-glyph { padding: 18px 16px 14px; }
-  .mushaf-page.is-glyph::before { inset: 5px; border-width: 4px; }
+  /* On phones the mushaf page spans the screen; the thick side bands leave room for the page-turn buttons. */
+  body.quran-flip-active .qr:has(.mushaf-page.is-glyph) { width: calc(100% - 8px); }
+  body.quran-flip-active .qr:has(.mushaf-page.is-glyph) .qr-bar { margin: 0 -4px; padding-inline: 4px; }
+  .quran-reader.is-flip-mode .quran-content:has(.mushaf-page.is-glyph) { padding: 6px 0 0; }
+  .mushaf-page.is-glyph { padding: 14px 36px; }
+  .glyph-panel { padding: 5px 8px 3px; }
   .glyph-running { font-size: 10px; }
+  .glyph-running > div, .glyph-folio > div { padding: 0 7px; }
   .glyph-folio { font-size: 11px; }
 }
+
+/* Surah picker: the surah name in the reader bar opens a searchable list of surahs. */
+button.qr-bar-title { display: grid; justify-items: center; min-width: 0; padding: 3px 12px; border: 0; border-radius: 12px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+button.qr-bar-title:hover, button.qr-bar-title[aria-expanded="true"] { background: var(--q-accent-soft); }
+button.qr-bar-title:focus-visible { outline: 2px solid var(--q-accent); outline-offset: 2px; }
+.qr-bar-name { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+.qr-bar-name strong { overflow: hidden; font-size: .98rem; text-overflow: ellipsis; white-space: nowrap; }
+.qr-bar-name svg { flex: 0 0 auto; width: 15px; height: 15px; color: var(--q-muted); transition: transform .2s; }
+button.qr-bar-title[aria-expanded="true"] .qr-bar-name svg { transform: rotate(180deg); }
+.qr-picker { position: absolute; z-index: 5; top: calc(100% + 8px); left: 50%; display: flex; flex-direction: column; width: min(380px, calc(100vw - 24px)); max-height: min(70vh, 540px); overflow: hidden; border: 1px solid var(--q-line); border-radius: 18px; background: var(--q-surface); box-shadow: 0 20px 44px rgba(30, 42, 37, .16); transform: translateX(-50%); }
+.qr-picker-search { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; margin: 12px 12px 6px; padding: 0 14px; border: 1px solid var(--q-line); border-radius: 999px; background: var(--q-bg); }
+.qr-picker-search:focus-within { border-color: var(--q-accent); }
+.qr-picker-search svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--q-faint); }
+.qr-picker-search input { flex: 1; min-width: 0; height: 40px; border: 0; outline: 0; background: transparent; color: var(--q-ink); font: inherit; font-size: .95rem; }
+.qr-picker-list { position: relative; flex: 1 1 auto; margin: 0; padding: 4px 8px 10px; overflow-y: auto; list-style: none; overscroll-behavior: contain; }
+.qr-picker-item { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; padding: 9px 8px; border: 0; border-radius: 12px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.qr-picker-item:hover { background: rgba(29, 107, 82, .06); }
+.qr-picker-item:focus-visible { outline: 2px solid var(--q-accent); outline-offset: -2px; }
+.qr-picker-item.is-current { background: var(--q-accent-soft); }
+.qr-picker-number { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--q-track); color: var(--q-accent-ink); font-size: .74rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.qr-picker-item.is-current .qr-picker-number { background: var(--q-accent); color: #fff; }
+.qr-picker-name { min-width: 0; }
+.qr-picker-name strong { display: block; font-size: .95rem; font-weight: 600; }
+.qr-picker-name small { display: block; overflow: hidden; color: var(--q-muted); font-size: .76rem; text-overflow: ellipsis; white-space: nowrap; }
+.qr-picker-arabic { margin: 0; color: var(--q-accent-ink); font-family: var(--q-arabic); font-size: 1.2rem; line-height: 1.5; }
+.qr-picker-empty { margin: 8px 0 18px; color: var(--q-muted); font-size: .9rem; text-align: center; }

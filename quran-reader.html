@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" />
-  <link rel="stylesheet" href="quran.css?v=20260929-8" />
+  <link rel="stylesheet" href="quran.css?v=20260929-11" />
 </head>
 <body class="directory-body quran-body quran-reader-body">
   <header class="directory-header">
@@ -48,7 +48,19 @@
       <a class="qr-icon-button" href="quran.html" aria-label="Senarai surah" title="Senarai surah">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
       </a>
-      <p class="qr-bar-title" aria-live="polite"><strong id="bar-title">Al-Quran</strong><small id="bar-meta"></small></p>
+      <button id="surah-picker-toggle" class="qr-bar-title" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="surah-picker" title="Pilih surah lain">
+        <span class="qr-bar-name"><strong id="bar-title">Al-Quran</strong><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>
+        <small id="bar-meta" aria-live="polite"></small>
+      </button>
+      <div id="surah-picker" class="qr-picker" role="dialog" aria-label="Pilih surah" hidden>
+        <label class="qr-picker-search" for="surah-picker-search">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <span class="sr-only">Cari surah</span>
+          <input id="surah-picker-search" type="search" autocomplete="off" placeholder="Cari surah, cth. Yasin atau 36" />
+        </label>
+        <ol id="surah-picker-list" class="qr-picker-list"></ol>
+        <p id="surah-picker-empty" class="qr-picker-empty" hidden>Tiada surah sepadan.</p>
+      </div>
       <div class="qr-bar-actions">
         <button id="mode-toggle" class="qr-mode-toggle" type="button" aria-label="Tukar ke paparan Flip mushaf">
           <svg class="icon-flip" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg>
@@ -144,7 +156,7 @@
   <script src="sw-register.js?v=20260822-8"></script>
   <script src="blog-config.js?v=20260811-1"></script>
   <script src="quran-data.js?v=20260929-1"></script>
-  <script src="quran.js?v=20260929-7"></script>
+  <script src="quran.js?v=20260929-10"></script>
 </body>
 </html>
 

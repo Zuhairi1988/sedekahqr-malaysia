@@ -141,6 +141,7 @@
     || (globalThis.SEDEKAHQR_BLOG?.supabaseUrl ? `${globalThis.SEDEKAHQR_BLOG.supabaseUrl}/functions/v1/quran-page` : '');
   const tajweedFonts = Boolean(globalThis.CSS?.supports?.('font-tech(color-COLRv1)'));
   const pageFontUrl = (page) => `https://verses.quran.foundation/fonts/quran/hafs/${tajweedFonts ? 'v4/colrv1' : 'v2'}/woff2/p${page}.woff2`;
+  const phoneLayout = window.matchMedia('(max-width: 640px)');
   const pageFonts = new Map();
   const loadPageFont = (page) => {
     if (!pageFonts.has(page)) {
@@ -181,8 +182,13 @@
         });
         lines.append(row);
       } else if (line.t === 'h') {
+        // Surah header band: a medallion at each end around the name cartouche.
         const header = glyphBlock('glyph-header');
-        header.append(createArabicLine('glyph-header-name', `سُورَةُ ${surahs[line.s - 1]?.arabic || ''}`));
+        header.append(
+          glyphBlock('glyph-medallion'),
+          createArabicLine('glyph-header-name', `سُورَةُ ${surahs[line.s - 1]?.arabic || ''}`),
+          glyphBlock('glyph-medallion'),
+        );
         lines.append(header);
       } else if (line.t === 'b') {
         lines.append(createArabicLine('glyph-bismillah', bismillah));
@@ -190,15 +196,23 @@
         lines.append(glyphBlock('glyph-line is-empty'));
       }
     });
-    sheet.append(running, lines, glyphBlock('glyph-folio', toArabicDigits(page)));
+    // The patterned border band is the sheet itself; the text sits on a paper panel inside it.
+    const panel = glyphBlock('glyph-panel');
+    const folio = glyphBlock('glyph-folio');
+    folio.append(glyphBlock('', toArabicDigits(page)));
+    panel.append(running, lines, folio);
+    sheet.append(panel);
     return sheet;
   };
   // One font size for the whole page: the widest line just fills the text block and every
   // row keeps its height. Short lines (such as a surah's last) are centred, as in print.
   const fitGlyphPage = (sheet) => {
-    // Keep the proportions of a printed page: on wide screens the book narrows to fit its height.
+    // Keep the proportions of a printed page on wide screens; on phones the page fills the width
+    // and its patterned side bands sit under the page-turn buttons.
     const bookElement = sheet.closest('.book');
-    if (bookElement) bookElement.style.maxWidth = `${Math.min(760, Math.round(bookElement.clientHeight * 0.64))}px`;
+    if (bookElement) {
+      bookElement.style.maxWidth = phoneLayout.matches ? '' : `${Math.min(760, Math.round(bookElement.clientHeight * 0.64))}px`;
+    }
     const container = sheet.querySelector('.glyph-lines');
     const rows = [...container.querySelectorAll('.glyph-line:not(.is-empty)')];
     if (!rows.length || !container.clientWidth) return;
@@ -588,11 +602,87 @@
   };
   settingsToggle.addEventListener('click', () => {
     const open = settingsPanel.hidden;
+    closeSurahPicker();
     settingsPanel.hidden = !open;
     settingsToggle.setAttribute('aria-expanded', String(open));
   });
+
+  // Surah picker: the surah name in the bar opens a searchable list of all 114 surahs.
+  const pickerToggle = $('#surah-picker-toggle');
+  const picker = $('#surah-picker');
+  const pickerSearch = $('#surah-picker-search');
+  const pickerList = $('#surah-picker-list');
+  // Letters only, so "yasin", "Ya-Sin" and "Yaseen" all match; Arabic loses its harakat.
+  const normalizeSearch = (text) => String(text).toLowerCase()
+    .replace(/[ً-ٰٟۖ-ۭ]/g, '')
+    .replace(/[^a-z0-9؀-ۿ]/g, '');
+  const pickerItems = surahs.map((surah) => {
+    const item = document.createElement('li');
+    const choose = document.createElement('button');
+    choose.type = 'button';
+    choose.className = 'qr-picker-item';
+    choose.dataset.surah = surah.number;
+    const number = document.createElement('span');
+    number.className = 'qr-picker-number';
+    number.textContent = surah.number;
+    const name = document.createElement('span');
+    name.className = 'qr-picker-name';
+    const title = document.createElement('strong');
+    title.textContent = surah.name;
+    const detail = document.createElement('small');
+    detail.textContent = `${surah.meaning !== surah.name ? `${surah.meaning} · ` : ''}${surah.ayahs} ayat`;
+    name.append(title, detail);
+    choose.append(number, name, createArabicLine('qr-picker-arabic', surah.arabic));
+    item.append(choose);
+    item.dataset.search = normalizeSearch(`${surah.name} ${surah.english} ${surah.meaning} ${surah.arabic}`);
+    return item;
+  });
+  pickerList.append(...pickerItems);
+  const filterPicker = () => {
+    const raw = pickerSearch.value.trim();
+    const query = normalizeSearch(raw);
+    let shown = 0;
+    pickerItems.forEach((item, index) => {
+      const match = !query || (/^\d+$/.test(raw) ? String(index + 1) === raw : item.dataset.search.includes(query));
+      item.hidden = !match;
+      if (match) shown += 1;
+    });
+    $('#surah-picker-empty').hidden = shown > 0;
+  };
+  function closeSurahPicker() {
+    picker.hidden = true;
+    pickerToggle.setAttribute('aria-expanded', 'false');
+  }
+  const openSurahPicker = () => {
+    closeSettings();
+    picker.hidden = false;
+    pickerToggle.setAttribute('aria-expanded', 'true');
+    pickerSearch.value = '';
+    filterPicker();
+    pickerItems.forEach((item, index) => item.firstChild.classList.toggle('is-current', index + 1 === currentSurah));
+    const currentItem = pickerItems[currentSurah - 1];
+    if (currentItem) pickerList.scrollTop = currentItem.offsetTop - pickerList.clientHeight / 2 + currentItem.offsetHeight / 2;
+    // Focus the search box only with a keyboard or mouse; on phones it would pop the keyboard over the list.
+    if (!phoneLayout.matches) pickerSearch.focus();
+  };
+  pickerToggle.addEventListener('click', () => (picker.hidden ? openSurahPicker() : closeSurahPicker()));
+  pickerSearch.addEventListener('input', filterPicker);
+  pickerSearch.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    pickerItems.find((item) => !item.hidden)?.firstChild.click();
+  });
+  pickerList.addEventListener('click', (event) => {
+    const choice = event.target.closest('.qr-picker-item');
+    if (!choice) return;
+    const number = Number(choice.dataset.surah);
+    closeSurahPicker();
+    currentPage = 0;
+    void loadSurah(number);
+  });
+
   document.addEventListener('click', (event) => {
     if (!settingsPanel.hidden && !event.target.closest('#reader-settings, #settings-toggle')) closeSettings();
+    if (!picker.hidden && !event.target.closest('#surah-picker, #surah-picker-toggle')) closeSurahPicker();
   });
   const switchMode = (mode) => {
     if (mode === readerMode) return;
@@ -645,7 +735,10 @@
   flipPrevious.addEventListener('click', () => turnPage(-1));
   flipNext.addEventListener('click', () => turnPage(1));
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeSettings();
+    if (event.key === 'Escape') {
+      closeSettings();
+      closeSurahPicker();
+    }
     if (readerMode !== 'flip' || event.target.closest?.('select, input, textarea')) return;
     if (event.key === 'ArrowRight') turnPage(1);
     else if (event.key === 'ArrowLeft') turnPage(-1);
