@@ -8,14 +8,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0d513f" />
   <meta name="description" content="Baca Al-Quran dengan teks Arab dan terjemahan Bahasa Melayu di SedekahQR." />
-  <title>The Quran - SedekahQR</title>
+  <title>Al-Quran - SedekahQR</title>
   <link rel="icon" href="/favicon.png?v=20260822-2" type="image/png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/sedekahqr-icon-192.png?v=20260822-1" />
   <link rel="manifest" href="manifest.webmanifest?v=20260822-1" />
   <link rel="stylesheet" href="styles.css?v=20260812-1" />
-  <link rel="stylesheet" href="quran.css?v=20260821-5" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" />
+  <link rel="stylesheet" href="quran.css?v=20260929-7" />
 </head>
-<body class="directory-body quran-body">
+<body class="directory-body quran-body quran-home-body">
   <header class="directory-header">
     <div class="directory-container header-inner">
       <a class="directory-brand" href="/" aria-label="SedekahQR - halaman utama">
@@ -26,7 +29,7 @@
         <a href="/">Homepage</a>
         <a href="/#direktori">Direktori</a>
         <a href="/#panduan">Cara Sedekah</a>
-        <a href="quran.html" aria-current="page">The Quran</a>
+        <a href="quran.html" aria-current="page">Al-Quran</a>
         <a href="blog.html">Artikel</a>
       </nav>
       <button class="mobile-menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-page-menu"><span></span><span></span><span></span></button>
@@ -40,16 +43,48 @@
     </div>
   </header>
 
-  <main class="quran-main directory-container">
-    <section class="quran-landing" aria-labelledby="quran-title">
-      <p class="quran-eyebrow">BACAAN HARIAN</p>
-      <h1 id="quran-title">The Quran</h1>
-      <p class="quran-landing-intro">Baca ayat suci Al-Quran bersama terjemahan Bahasa Melayu dan audio bacaan.</p>
-      <a class="quran-reading-entry" href="quran-reader.html" aria-label="Mulakan bacaan Al-Quran">
-        <img src="assets/quran-rehal.png" alt="Al-Quran terbuka di atas rehal kayu" width="1200" height="960" />
-        <span class="quran-reading-entry-caption"><strong>Mulakan bacaan</strong><small>Tekan Al-Quran untuk memilih Surah atau halaman</small></span>
-      </a>
+  <main class="qh">
+    <section class="qh-hero" aria-labelledby="quran-title">
+      <p class="qh-hero-arabic" lang="ar" dir="rtl">ٱلْقُرْآنُ ٱلْكَرِيمُ</p>
+      <h1 id="quran-title">Al-Quran</h1>
+      <p class="qh-lead">Baca dengan tenang, bersama terjemahan Bahasa Melayu dan audio bacaan.</p>
+      <p class="q-ornament" aria-hidden="true">&#9670;</p>
+      <label class="qh-search" for="surah-search">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <span class="sr-only">Cari surah</span>
+        <input id="surah-search" type="search" autocomplete="off" placeholder="Cari surah, cth. Yasin atau 36" />
+      </label>
+      <a id="flip-link" class="qh-flip-link" href="quran-reader.html?page=1&amp;mode=flip">Baca secara Flip (mushaf) &#8594;</a>
     </section>
+
+    <a id="continue-reading" class="qh-continue" href="quran-reader.html" hidden>
+      <span class="qh-continue-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg></span>
+      <span><small>Sambung bacaan</small><strong id="continue-title"></strong><small id="continue-meta"></small></span>
+      <span class="qh-continue-arrow" aria-hidden="true">&#8594;</span>
+    </a>
+
+    <section class="qh-section" aria-labelledby="popular-title">
+      <h2 id="popular-title" class="q-eyebrow">Surah pilihan</h2>
+      <nav class="qh-chips" aria-labelledby="popular-title">
+        <a class="qh-chip" href="quran-reader.html?surah=36">Yasin</a>
+        <a class="qh-chip" href="quran-reader.html?surah=18">Al-Kahfi</a>
+        <a class="qh-chip" href="quran-reader.html?surah=67">Al-Mulk</a>
+        <a class="qh-chip" href="quran-reader.html?surah=56">Al-Waqi'ah</a>
+        <a class="qh-chip" href="quran-reader.html?surah=55">Ar-Rahman</a>
+        <a class="qh-chip" href="quran-reader.html?surah=32">As-Sajdah</a>
+      </nav>
+    </section>
+
+    <div class="qh-list-head">
+      <div class="q-segment" role="tablist" aria-label="Senarai mengikut">
+        <button id="surah-tab" class="is-active" type="button" role="tab" aria-selected="true" aria-controls="surah-list" data-list="surah">Surah</button>
+        <button id="juz-tab" type="button" role="tab" aria-selected="false" aria-controls="juz-list" data-list="juz">Juz</button>
+      </div>
+      <p id="list-count" class="q-eyebrow" aria-live="polite">114 surah</p>
+    </div>
+    <ol id="surah-list" class="qh-list" role="tabpanel" aria-labelledby="surah-tab"></ol>
+    <ol id="juz-list" class="qh-list" role="tabpanel" aria-labelledby="juz-tab" hidden></ol>
+    <p id="list-empty" class="qh-empty" hidden>Tiada surah sepadan dengan carian anda.</p>
   </main>
   <footer class="directory-footer">
     <div class="directory-container">
@@ -65,10 +100,12 @@
     </div>
   </footer>
 
-  <script src="language.js?v=20260821-3"></script>
+  <script src="language.js?v=20260929-2"></script>
   <script src="nav-menu.js?v=20260812-1"></script>
   <script src="analytics.js?v=20260813-3"></script>
   <script src="sw-register.js?v=20260822-8"></script>
+  <script src="quran-data.js?v=20260929-1"></script>
+  <script src="quran-home.js?v=20260929-2"></script>
 </body>
 </html>
 

@@ -13,9 +13,12 @@
   <link rel="apple-touch-icon" href="/assets/sedekahqr-icon-192.png?v=20260822-1" />
   <link rel="manifest" href="manifest.webmanifest?v=20260822-1" />
   <link rel="stylesheet" href="styles.css?v=20260812-1" />
-  <link rel="stylesheet" href="quran.css?v=20260822-5" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" />
+  <link rel="stylesheet" href="quran.css?v=20260929-7" />
 </head>
-<body class="directory-body quran-body">
+<body class="directory-body quran-body quran-reader-body">
   <header class="directory-header">
     <div class="directory-container header-inner">
       <a class="directory-brand" href="/" aria-label="SedekahQR - halaman utama">
@@ -40,56 +43,85 @@
     </div>
   </header>
 
-  <main class="quran-main directory-container">
+  <main class="qr">
+    <div class="qr-bar">
+      <a class="qr-icon-button" href="quran.html" aria-label="Senarai surah" title="Senarai surah">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+      </a>
+      <p class="qr-bar-title" aria-live="polite"><strong id="bar-title">Al-Quran</strong><small id="bar-meta"></small></p>
+      <div class="qr-bar-actions">
+        <button id="mode-toggle" class="qr-mode-toggle" type="button" aria-label="Tukar ke paparan Flip mushaf">
+          <svg class="icon-flip" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg>
+          <svg class="icon-ayah" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path></svg>
+          <span id="mode-toggle-label">Flip</span>
+        </button>
+        <button id="settings-toggle" class="qr-icon-button" type="button" aria-label="Tetapan bacaan" title="Tetapan bacaan" aria-expanded="false" aria-controls="reader-settings">Aa</button>
+      </div>
+      <div id="reader-settings" class="qr-settings" role="dialog" aria-label="Tetapan bacaan" hidden>
+        <div class="qr-setting">
+          <span>Paparan</span>
+          <div class="q-segment" role="tablist" aria-label="Mod bacaan">
+            <button type="button" role="tab" aria-selected="true" class="is-active" data-reader-mode="ayah">Ayat</button>
+            <button type="button" role="tab" aria-selected="false" data-reader-mode="flip">Flip</button>
+          </div>
+        </div>
+        <div id="font-setting" class="qr-setting">
+          <span>Saiz tulisan Arab</span>
+          <div class="qr-stepper">
+            <button id="font-smaller" type="button" aria-label="Kecilkan tulisan Arab">A&#8722;</button>
+            <output id="font-size-label">100%</output>
+            <button id="font-larger" type="button" aria-label="Besarkan tulisan Arab">A+</button>
+          </div>
+        </div>
+        <label id="translation-setting" class="qr-setting qr-switch"><span>Terjemahan</span><input id="translation-toggle" type="checkbox" checked /></label>
+        <label class="qr-setting"><span>Pergi ke halaman</span><select id="page-select"><option value="">Pilih</option></select></label>
+      </div>
+    </div>
 
     <section class="quran-reader" aria-label="Pembaca Al-Quran">
-      <div class="quran-reader-tabs" role="tablist" aria-label="Mod bacaan Al-Quran">
-        <button id="ayah-mode-tab" class="quran-reader-tab is-active" type="button" role="tab" aria-selected="true" data-reader-mode="ayah">Ayat ke Ayat</button>
-        <button id="flip-mode-tab" class="quran-reader-tab" type="button" role="tab" aria-selected="false" data-reader-mode="flip">Flip</button>
-      </div>
-      <div class="quran-filter-bar">
-        <label class="quran-filter-select" for="surah-select" aria-label="Pilih Surah"><select id="surah-select"><option value="">Surah</option></select></label>
-        <label class="quran-filter-select" for="page-select" aria-label="Pilih Halaman"><select id="page-select"><option value="">Halaman</option></select></label>
-        <p id="surah-status" class="quran-status" aria-live="polite">Memuatkan senarai surah...</p>
-      </div>
       <div id="quran-flip-navigation" class="quran-flip-navigation" hidden aria-label="Navigasi halaman mushaf">
         <button id="flip-previous" class="quran-flip-button" type="button" aria-label="Halaman sebelumnya" title="Halaman sebelumnya">&#8592;</button>
-        <span id="flip-page-indicator" class="quran-flip-page-indicator" aria-live="polite">Halaman 1</span>
         <button id="flip-next" class="quran-flip-button" type="button" aria-label="Halaman seterusnya" title="Halaman seterusnya">&#8594;</button>
       </div>
 
       <section class="quran-content" aria-live="polite">
-        <div id="quran-empty" class="quran-empty">
-          <p class="quran-eyebrow">MULAKAN BACAAN</p>
-          <h2>Pilih surah atau halaman</h2>
-          <p>Gunakan dropdown di atas untuk mula membaca Al-Quran.</p>
-        </div>
+        <p id="quran-loading" class="qr-loading">Memuatkan ayat...</p>
         <article id="surah-reader" hidden>
-          <header class="surah-heading">
-            <div>
-              <p id="surah-meta" class="quran-eyebrow"></p>
-              <h2 id="surah-title"></h2>
-              <p id="surah-translation"></p>
-            </div>
-            <p id="surah-arabic-name" class="surah-arabic-name" lang="ar" dir="rtl"></p>
+          <header class="qr-surah-head">
+            <p id="surah-arabic-name" class="qr-surah-ar" lang="ar" dir="rtl"></p>
+            <h1 id="surah-title"></h1>
+            <p id="surah-meta" class="qr-surah-meta"></p>
+            <p class="q-ornament" aria-hidden="true">&#9670;</p>
           </header>
-          <section class="surah-audio" aria-label="Audio bacaan surah">
-            <div>
-              <p class="quran-eyebrow">DENGAR BACAAN</p>
-              <p>Sheikh Mishary Rashid Alafasy</p>
+          <div id="surah-audio" class="qr-audio">
+            <button id="audio-toggle" class="qr-audio-play" type="button" aria-label="Main bacaan">
+              <svg class="icon-play" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z"></path></svg>
+              <svg class="icon-pause" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" hidden><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
+            </button>
+            <div class="qr-audio-body">
+              <span class="qr-audio-title">Dengar bacaan</span>
+              <span class="qr-audio-reciter">Sheikh Mishary Rashid Alafasy</span>
+              <input id="audio-progress" type="range" min="0" max="1000" value="0" aria-label="Kedudukan audio" />
             </div>
-            <audio id="surah-audio" controls preload="none">Audio tidak disokong oleh pelayar anda.</audio>
-          </section>
-          <p id="translation-credit" class="translation-credit"></p>
+            <span id="audio-time" class="qr-audio-time">0:00</span>
+            <audio id="surah-audio-player" preload="none"></audio>
+          </div>
           <div id="ayah-list" class="ayah-list"></div>
+          <nav id="surah-nav" class="qr-surah-nav" aria-label="Surah lain">
+            <a id="previous-surah" href="#"><small>Surah sebelumnya</small><strong></strong></a>
+            <a id="next-surah" class="is-next" href="#"><small>Surah seterusnya</small><strong></strong></a>
+          </nav>
+          <p class="translation-credit">Terjemahan Bahasa Melayu: Abdullah Muhammad Basmeih. Audio: Mishary Rashid Alafasy.</p>
         </article>
         <div id="quran-error" class="quran-error" hidden>
           <h2>Tidak dapat memuatkan Al-Quran</h2>
           <p>Semak sambungan internet anda dan cuba semula.</p>
-          <button id="retry-quran" class="quran-primary-button" type="button">Cuba semula</button>
+          <button id="retry-quran" class="q-button" type="button">Cuba semula</button>
         </div>
       </section>
-    </section>  </main>
+    </section>
+  </main>
+
 
   <footer class="directory-footer">
     <div class="directory-container">
@@ -105,11 +137,12 @@
     </div>
   </footer>
 
-  <script src="language.js?v=20260821-3"></script>
+  <script src="language.js?v=20260929-2"></script>
   <script src="nav-menu.js?v=20260812-1"></script>
   <script src="analytics.js?v=20260813-3"></script>
   <script src="sw-register.js?v=20260822-8"></script>
-  <script src="quran.js?v=20260822-3"></script>
+  <script src="quran-data.js?v=20260929-1"></script>
+  <script src="quran.js?v=20260929-6"></script>
 </body>
 </html>
 
