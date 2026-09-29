@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sedekahqr-shell-v82';
+const CACHE_NAME = 'sedekahqr-shell-v83';
 const APP_SHELL = [
   './',
   './index.html',
@@ -61,7 +61,8 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      // Only older app-shell caches; other caches (such as the Quran text) belong to the pages.
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith('sedekahqr-shell-') && key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });

@@ -93,9 +93,37 @@
     if (first) window.location.href = first.querySelector('a').href;
   });
 
+  // Surah text is fetched into the reader's on-device cache ahead of the click (on hover or touch,
+  // and for "continue reading"), so the reader opens the surah without waiting. Same cache and URL as quran.js.
+  const readsAyahMode = () => {
+    try { return JSON.parse(localStorage.getItem('sedekahqr-quran-settings'))?.mode !== 'flip'; } catch { return true; }
+  };
+  const warmed = new Set();
+  const prefetchSurah = async (number) => {
+    if (!globalThis.caches || warmed.has(number) || navigator.connection?.saveData || !readsAyahMode()) return;
+    warmed.add(number);
+    try {
+      const url = `https://api.alquran.cloud/v1/surah/${number}/editions/quran-uthmani,ms.basmeih`;
+      const cache = await caches.open('sedekahqr-quran-text-v1');
+      if (await cache.match(url)) return;
+      const response = await fetch(url);
+      if (response.ok) await cache.put(url, response);
+    } catch {
+      warmed.delete(number);
+    }
+  };
+  ['pointerover', 'pointerdown', 'focusin'].forEach((type) => surahList.addEventListener(type, (event) => {
+    const item = event.target.closest('li[data-number]');
+    if (item) void prefetchSurah(Number(item.dataset.number));
+  }, { passive: true }));
+
   // "Continue reading" returns to the last surah and ayah (or mushaf page) opened in the reader.
   try {
     const last = JSON.parse(localStorage.getItem(lastReadingKey));
+    if (last?.type === 'surah' && surahs[last.value - 1]) {
+      const idle = globalThis.requestIdleCallback || ((callback) => setTimeout(callback, 1500));
+      idle(() => void prefetchSurah(last.value));
+    }
     const link = document.querySelector('#continue-reading');
     if (last?.type === 'surah' && surahs[last.value - 1]) {
       const surah = surahs[last.value - 1];

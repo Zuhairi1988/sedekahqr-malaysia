@@ -45,12 +45,36 @@
   const saveReading = (reading) => {
     try { localStorage.setItem(lastReadingKey, JSON.stringify(reading)); } catch {}
   };
-  const request = async (path) => {
-    const response = await fetch(`${api}${path}`);
-    if (!response.ok) throw new Error('Quran API request failed');
-    const payload = await response.json();
-    if (!payload?.data) throw new Error('Invalid Quran API response');
-    return payload.data;
+  // Quran text never changes, so every response is kept on the device: a surah opened once,
+  // or fetched ahead of time, opens instantly afterwards. Requests already on their way are shared.
+  const textCacheName = 'sedekahqr-quran-text-v1';
+  const openTextCache = () => (globalThis.caches ? caches.open(textCacheName).catch(() => null) : Promise.resolve(null));
+  const requests = new Map();
+  const request = (path) => {
+    const url = `${api}${path}`;
+    if (!requests.has(url)) {
+      requests.set(url, (async () => {
+        const cache = await openTextCache();
+        let response = await cache?.match(url).catch(() => null);
+        if (!response) {
+          response = await fetch(url);
+          if (!response.ok) throw new Error('Quran API request failed');
+          if (cache) cache.put(url, response.clone()).catch(() => {});
+        }
+        const payload = await response.json();
+        if (!payload?.data) throw new Error('Invalid Quran API response');
+        return payload.data;
+      })().finally(() => requests.delete(url)));
+    }
+    return requests.get(url);
+  };
+  const surahPath = (number) => `/surah/${number}/editions/quran-uthmani,ms.basmeih`;
+  // Fetch ahead only when the reader is not saving data.
+  const warmed = new Set();
+  const prefetchSurah = (number) => {
+    if (number < 1 || number > 114 || warmed.has(number) || navigator.connection?.saveData) return;
+    warmed.add(number);
+    request(surahPath(number)).catch(() => warmed.delete(number));
   };
   const updateHistory = (params) => {
     const search = new URLSearchParams(params);
@@ -270,12 +294,21 @@
   };
   const showReader = () => {
     loading.hidden = true;
+    error.hidden = true;
     reader.hidden = false;
   };
   const showError = () => {
     loading.hidden = true;
     reader.hidden = true;
     error.hidden = false;
+  };
+  // A thin line under the bar while the next surah or page is on its way; the current text stays.
+  // It only appears if the wait is noticeable, so cached pages never flash it.
+  let busyTimer = 0;
+  const setBusy = (busy) => {
+    clearTimeout(busyTimer);
+    if (busy) busyTimer = setTimeout(() => document.body.classList.add('quran-busy'), 150);
+    else document.body.classList.remove('quran-busy');
   };
 
   // A small custom player: one button, a progress line and the time.
@@ -323,10 +356,34 @@
       link.hidden = !target;
       if (!target) return;
       link.href = `quran-reader.html?surah=${target.number}`;
+      link.dataset.surah = target.number;
       link.querySelector('strong').textContent = `${target.number}. ${target.name}`;
     });
   };
+  // Previous/next surah open in place (already fetched ahead) instead of reloading the page.
+  $('#surah-nav').addEventListener('click', (event) => {
+    const link = event.target.closest('a[data-surah]');
+    if (!link || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    void loadSurah(Number(link.dataset.surah));
+  });
 
+  const setSurahHead = (surah) => {
+    $('#surah-arabic-name').textContent = `سُورَةُ ${surah.arabic}`;
+    $('#surah-title').textContent = surah.name;
+    $('#surah-meta').textContent = [surah.meaning !== surah.name ? surah.meaning : '', surah.madaniyah ? 'Madaniyah' : 'Makkiyah', `${surah.ayahs} ayat`].filter(Boolean).join(' · ');
+  };
+  // Placeholder lines shaped like ayahs, shown only on the very first load of the reader.
+  const showSkeleton = () => {
+    ayahList.replaceChildren(...Array.from({ length: 4 }, () => {
+      const block = document.createElement('div');
+      block.className = 'ayah-skeleton';
+      block.setAttribute('aria-hidden', 'true');
+      block.append(document.createElement('span'), document.createElement('span'), document.createElement('span'));
+      return block;
+    }));
+  };
+  let surahLoad = 0;
   const loadSurah = async (number, scrollToAyah = 0) => {
     const surah = surahs[number - 1];
     if (!surah) return;
@@ -335,27 +392,43 @@
       void loadPage(surah.startPage, 0, surah.number);
       return;
     }
+    const load = ++surahLoad;
     currentPage = 0;
     barTitle.textContent = surah.name;
     barMeta.textContent = `${surah.ayahs} ayat`;
     document.title = `${surah.name} - Al-Quran - SedekahQR`;
-    showLoading();
     resetAudio();
+    // Everything known without the network is shown at once. A surah already on the device
+    // renders straight away; otherwise the current text stays until the new one arrives.
+    const firstLoad = reader.hidden || !ayahList.querySelector('.ayah');
+    let skeletonTimer = 0;
+    if (firstLoad) {
+      setSurahHead(surah);
+      setSurahNav(surah);
+      audioWrap.hidden = true;
+      ayahList.replaceChildren();
+      skeletonTimer = setTimeout(showSkeleton, 120);
+      showReader();
+    } else setBusy(true);
     try {
-      const editions = await request(`/surah/${surah.number}/editions/quran-uthmani,ms.basmeih`);
+      const editions = await request(surahPath(surah.number));
+      clearTimeout(skeletonTimer);
+      // A newer choice (another surah, a page, or Flip) wins over a surah that arrives late.
+      if (load !== surahLoad || currentPage || readerMode === 'flip') return;
       const arabic = editions.find((edition) => edition.identifier === 'quran-uthmani') || editions[0];
       const malay = editions.find((edition) => edition.identifier === 'ms.basmeih') || editions[1];
       // Surah responses omit the per-ayah surah object that page responses include.
       const ayahs = arabic.ayahs.map((ayah) => ({ ...ayah, surah: { number: arabic.number, name: arabic.name } }));
-      $('#surah-arabic-name').textContent = arabic.name;
-      $('#surah-title').textContent = surah.name;
-      $('#surah-meta').textContent = [surah.meaning !== surah.name ? surah.meaning : '', surah.madaniyah ? 'Madaniyah' : 'Makkiyah', `${surah.ayahs} ayat`].filter(Boolean).join(' · ');
+      setSurahHead(surah);
       audioWrap.hidden = false;
       audio.src = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surah.number}.mp3`;
       setSurahNav(surah);
       renderAyahs(ayahs, malay?.ayahs);
+      setBusy(false);
       showReader();
       updateHistory({ surah: surah.number });
+      prefetchSurah(surah.number + 1);
+      prefetchSurah(surah.number - 1);
       saveReading({ type: 'surah', value: surah.number, ayah: scrollToAyah || 1 });
       const target = scrollToAyah > 1 ? document.getElementById(`ayah-${scrollToAyah}`) : null;
       if (target) {
@@ -363,7 +436,12 @@
         // The Arabic web font can shift the layout once it arrives, so settle on the ayah again.
         document.fonts?.ready.then(() => target.scrollIntoView({ block: 'start' }));
       } else window.scrollTo({ top: 0 });
-    } catch { showError(); }
+    } catch {
+      clearTimeout(skeletonTimer);
+      if (load !== surahLoad || currentPage || readerMode === 'flip') return;
+      setBusy(false);
+      showError();
+    }
   };
 
   const updateFlipNavigation = () => {
@@ -383,11 +461,14 @@
   const pageRequests = new Map();
   let glyphFailures = 0;
   const fetchGlyphPage = async (page) => {
+    // The page layout and its font come from different servers, so both are fetched together.
+    const font = loadPageFont(page);
+    font.catch(() => {});
     const response = await fetch(`${mushafApi}?page=${page}`);
     if (!response.ok) throw new Error('Mushaf page request failed');
     const layout = await response.json();
     if (!Array.isArray(layout?.lines)) throw new Error('Invalid mushaf page');
-    await loadPageFont(page);
+    await font;
     return { kind: 'glyph', page, layout, surahs: layout.surahs };
   };
   const fetchTextPage = (page) => request(`/page/${page}/quran-uthmani`).then((result) => ({
@@ -509,9 +590,11 @@
       updateFlipNavigation();
       barMeta.textContent = `Halaman ${page} / 604`;
       if (!book?.isConnected) showLoading();
+      else setBusy(true);
     }
     try {
       const pageInfo = await fetchPage(page);
+      setBusy(false);
       if (animate) {
         if (turn) return;
         turn = beginTurn(direction, pageInfo);
@@ -526,6 +609,7 @@
       commitFlipPage(page, pageInfo, surahHint);
     } catch {
       turn = null;
+      setBusy(false);
       showError();
     }
   };
@@ -543,13 +627,15 @@
     updateFlipNavigation();
     barTitle.textContent = (surahs[surahHint - 1] || surahForPage(selectedPage)).name;
     barMeta.textContent = `Halaman ${selectedPage} / 604`;
-    showLoading();
+    if (!reader.hidden && ayahList.querySelector('.ayah')) setBusy(true);
+    else showLoading();
     try {
       const [arabicPage, malayPage] = await Promise.all([
         request(`/page/${selectedPage}/quran-uthmani`),
         request(`/page/${selectedPage}/ms.basmeih`),
       ]);
       if (currentPage !== selectedPage || readerMode === 'flip') return;
+      setBusy(false);
       nameSurahOnPage(arabicPage.ayahs.map((ayah) => ayah.surah?.number), surahHint);
       document.title = `Halaman ${selectedPage} - Al-Quran - SedekahQR`;
       audioWrap.hidden = true;
@@ -558,7 +644,10 @@
       window.scrollTo({ top: 0 });
       saveReading({ type: 'page', value: selectedPage, mode: 'ayah' });
       updateHistory({ page: selectedPage });
-    } catch { showError(); }
+    } catch {
+      setBusy(false);
+      showError();
+    }
   };
 
   // Settings: reading mode, Arabic size and translation, remembered on this device.
@@ -671,6 +760,15 @@
     if (event.key !== 'Enter') return;
     pickerItems.find((item) => !item.hidden)?.firstChild.click();
   });
+  // Start fetching as soon as a finger or pointer rests on a surah, before the click lands.
+  const warmSurah = (number) => {
+    if (readerMode === 'flip') fetchPage(surahs[number - 1].startPage).catch(() => {});
+    else prefetchSurah(number);
+  };
+  ['pointerdown', 'pointerover'].forEach((type) => pickerList.addEventListener(type, (event) => {
+    const choice = event.target.closest('.qr-picker-item');
+    if (choice) warmSurah(Number(choice.dataset.surah));
+  }, { passive: true }));
   pickerList.addEventListener('click', (event) => {
     const choice = event.target.closest('.qr-picker-item');
     if (!choice) return;

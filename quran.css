@@ -176,8 +176,19 @@ body.quran-flip-active .qr-bar { position: relative; top: 0; margin: 0 -12px; pa
   .mushaf-bismillah { font-size: 16px; }
   .quran-flip-button { width: 32px; height: 32px; font-size: .95rem; }
 }
+/* Waiting for the next surah or page: a thin moving line under the bar while the current text stays. */
+.quran-busy .qr-bar::after { content: ''; position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--q-accent), transparent) no-repeat; background-size: 40% 100%; animation: q-busy 1s ease-in-out infinite; }
+@keyframes q-busy { from { background-position: -60% 0; } to { background-position: 160% 0; } }
+.quran-busy .ayah-list, .quran-busy .book { opacity: .6; transition: opacity .2s; }
+/* First open: ayah-shaped placeholders under the surah title, until the text arrives. */
+.ayah-skeleton { display: grid; gap: 12px; padding: 24px 0 26px; border-bottom: 1px solid var(--q-line); }
+.ayah-skeleton span { height: 14px; border-radius: 7px; background: linear-gradient(90deg, var(--q-line) 25%, rgba(255, 255, 255, .6) 50%, var(--q-line) 75%); background-size: 200% 100%; animation: q-shimmer 1.4s ease-in-out infinite; }
+.ayah-skeleton span:first-child { justify-self: end; width: 88%; height: 26px; }
+.ayah-skeleton span:nth-child(2) { width: 100%; }
+.ayah-skeleton span:last-child { width: 62%; }
+@keyframes q-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .qr-loading::before { animation: none; }
+  .qr-loading::before, .quran-busy .qr-bar::after, .ayah-skeleton span { animation: none; }
 }
 .quran-body .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
