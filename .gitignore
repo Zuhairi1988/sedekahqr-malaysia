@@ -84,6 +84,8 @@ supabase/.singapore-secrets.txt
 !scripts/generated-article-slugs.json
 !scripts/deploy_generate_article_draft.ps1
 !scripts/sync_ai_secrets_from_env.ps1
+!scripts/sync_quran_secrets_from_env.ps1
+!scripts/deploy_quran_page.ps1
 !.github/
 !.github/workflows/
 !.github/workflows/publish-static-articles.yml

@@ -197,11 +197,37 @@ body.quran-flip-active .qr-bar { position: relative; top: 0; margin: 0 -12px; pa
 .quran-reader.is-flip-mode .quran-content { touch-action: pan-y; clip-path: inset(0 -100vw); }
 .book { position: relative; height: 100%; max-width: 760px; margin: 0 auto; perspective: 3600px; }
 .book .mushaf-page { position: absolute; inset: 0; max-width: none; margin: 0; }
-.book::after { content: ; position: absolute; z-index: 1; inset: 0; border-radius: 6px; background: linear-gradient(to right, rgba(52, 38, 12, .28), rgba(52, 38, 12, 0) 65%); opacity: 0; pointer-events: none; }
+.book::after { content: ''; position: absolute; z-index: 1; inset: 0; border-radius: 6px; background: linear-gradient(to right, rgba(52, 38, 12, .28), rgba(52, 38, 12, 0) 65%); opacity: 0; pointer-events: none; }
 .book.is-turning::after { opacity: calc(var(--lift, 0) * .85); }
 .book.is-turning { cursor: grabbing; user-select: none; }
 .book-leaf { position: absolute; z-index: 2; inset: 0; transform-origin: left center; transform-style: preserve-3d; will-change: transform; }
 .book-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.book-front::after { content: ; position: absolute; inset: 0; border-radius: 6px; background: linear-gradient(to left, rgba(52, 38, 12, .3), rgba(52, 38, 12, .06) 45%, rgba(52, 38, 12, 0) 70%); opacity: var(--lift, 0); pointer-events: none; }
+.book-front::after { content: ''; position: absolute; inset: 0; border-radius: 6px; background: linear-gradient(to left, rgba(52, 38, 12, .3), rgba(52, 38, 12, .06) 45%, rgba(52, 38, 12, 0) 70%); opacity: var(--lift, 0); pointer-events: none; }
 .book-back { overflow: hidden; border: 1px solid #dccca6; border-radius: 6px; background: linear-gradient(to left, #e9dfc4, #f7f0dd 22%, #fdf9ee 60%, #f6efdc); box-shadow: 0 12px 32px rgba(70, 56, 24, .12); transform: rotateY(180deg); }
-.book-back::after { content: ; position: absolute; inset: 0; background: linear-gradient(to right, rgba(52, 38, 12, .22), rgba(52, 38, 12, 0) 60%); opacity: var(--lift, 0); }
+.book-back::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(52, 38, 12, .22), rgba(52, 38, 12, 0) 60%); opacity: var(--lift, 0); }
+
+/* Printed-mushaf page: KFGQPC glyph lines inside a green and gold frame. */
+.mushaf-page.is-glyph { display: flex; flex-direction: column; padding: 22px 24px 18px; border: 0; outline: 0; border-radius: 4px; background: #fffdf5; box-shadow: 0 12px 32px rgba(70, 56, 24, .12); }
+.mushaf-page.is-glyph::before { content: ''; position: absolute; inset: 7px; border: 5px solid #2f6b4f; border-radius: 3px; box-shadow: inset 0 0 0 2px #fffdf5, inset 0 0 0 3px #c9a24a; pointer-events: none; }
+.glyph-running { position: relative; display: flex; flex: 0 0 auto; justify-content: space-between; margin: 0 4px 4px; color: #2f6b4f; font-family: var(--q-arabic); font-size: 12px; line-height: 1.6; }
+.glyph-lines { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; color: #1a1a1a; line-height: 1; }
+.glyph-lines.is-centered { justify-content: center; }
+.glyph-lines > * { flex: 1 1 0; min-height: 0; }
+.glyph-lines.is-centered > * { flex: 0 0 calc(100% / 15); }
+.glyph-line { display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+.glyph-line.is-short { justify-content: center; gap: .12em; }
+.glyph-line.is-measuring { justify-content: flex-start; gap: 0; }
+/* Header and bismillah text scale with the row height (the block holds 15 rows), not with the glyph size. */
+.glyph-lines, .glyph-header { container-type: size; }
+.glyph-header { display: flex; align-items: center; justify-content: center; }
+.glyph-header-name { display: flex; align-items: center; justify-content: center; width: 94%; height: 86%; margin: 0; overflow: hidden; border: 2px solid #2f6b4f; border-radius: 999px; background: linear-gradient(#f1e3bd, #fbf4de 50%, #f1e3bd); box-shadow: inset 0 0 0 3px #fffdf5, inset 0 0 0 4px #c9a24a; color: #1f4d39; font-family: var(--q-arabic); font-size: 1em; font-size: 46cqh; line-height: 1; }
+.glyph-bismillah { display: flex; align-items: center; justify-content: center; margin: 0; color: #1a1a1a; font-family: var(--q-arabic); font-size: 1em; font-size: 3.2cqh; line-height: 1; }
+.glyph-folio { position: relative; flex: 0 0 auto; color: #2f6b4f; font-family: var(--q-arabic); font-size: 13px; line-height: 1.8; text-align: center; }
+.mushaf-credit { display: none; margin: 6px 0 0; color: var(--q-faint); font-size: .68rem; text-align: center; }
+.quran-reader.is-flip-mode .mushaf-credit { display: block; flex: 0 0 auto; }
+@media (max-width: 640px) {
+  .mushaf-page.is-glyph { padding: 18px 16px 14px; }
+  .mushaf-page.is-glyph::before { inset: 5px; border-width: 4px; }
+  .glyph-running { font-size: 10px; }
+  .glyph-folio { font-size: 11px; }
+}

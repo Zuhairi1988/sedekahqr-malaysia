@@ -86,6 +86,12 @@
   const minimumMushafFontSize = 15;
   const fitNow = (page) => {
     if (!page.isConnected) return;
+    if (page.classList.contains('is-glyph')) {
+      fitGlyphPage(page);
+      return;
+    }
+    const bookElement = page.closest('.book');
+    if (bookElement) bookElement.style.maxWidth = '';
     const texts = [...page.querySelectorAll('.mushaf-text')];
     if (!texts.length) return;
     page.classList.remove('is-scrollable');
@@ -127,6 +133,86 @@
     });
     return mushafPage;
   };
+
+  // ---------- Madinah mushaf pages drawn with the KFGQPC page fonts, via Quran Foundation ----------
+  // Every page has its own font whose glyphs are whole words, so the 15 lines match the printed
+  // mushaf. Colour tajweed (COLRv1) where the browser supports it; Safari gets the black edition.
+  const mushafApi = globalThis.SEDEKAHQR_MUSHAF_API
+    || (globalThis.SEDEKAHQR_BLOG?.supabaseUrl ? `${globalThis.SEDEKAHQR_BLOG.supabaseUrl}/functions/v1/quran-page` : '');
+  const tajweedFonts = Boolean(globalThis.CSS?.supports?.('font-tech(color-COLRv1)'));
+  const pageFontUrl = (page) => `https://verses.quran.foundation/fonts/quran/hafs/${tajweedFonts ? 'v4/colrv1' : 'v2'}/woff2/p${page}.woff2`;
+  const pageFonts = new Map();
+  const loadPageFont = (page) => {
+    if (!pageFonts.has(page)) {
+      const face = new FontFace(`qpc-p${page}`, `url(${pageFontUrl(page)})`, { display: 'block' });
+      pageFonts.set(page, face.load()
+        .then((loaded) => { document.fonts.add(loaded); return loaded; })
+        .catch((fontError) => { pageFonts.delete(page); throw fontError; }));
+    }
+    return pageFonts.get(page);
+  };
+  const juzForPage = (page) => data.juz.reduce((found, [start], index) => (start <= page ? index + 1 : found), 1);
+  const glyphBlock = (className, text = '') => {
+    const block = document.createElement('div');
+    block.className = className;
+    if (text) block.textContent = text;
+    return block;
+  };
+  const buildGlyphPage = ({ page, layout }) => {
+    const sheet = document.createElement('section');
+    sheet.className = 'mushaf-page is-glyph';
+    sheet.dataset.page = page;
+    const running = glyphBlock('glyph-running');
+    running.lang = 'ar';
+    running.dir = 'rtl';
+    running.append(glyphBlock('', `سُورَةُ ${surahs[(layout.surahs[0] || 1) - 1].arabic}`), glyphBlock('', `الجُزْءُ ${toArabicDigits(juzForPage(page))}`));
+    const lines = glyphBlock(`glyph-lines${layout.centered ? ' is-centered' : ''}`);
+    lines.dir = 'rtl';
+    lines.style.fontFamily = `qpc-p${page}`;
+    lines.setAttribute('role', 'img');
+    lines.setAttribute('aria-label', `Halaman ${page} mushaf Al-Quran`);
+    layout.lines.forEach((line) => {
+      if (line.t === 'w') {
+        const row = glyphBlock('glyph-line');
+        line.w.forEach((code) => {
+          const word = document.createElement('span');
+          word.textContent = code;
+          row.append(word);
+        });
+        lines.append(row);
+      } else if (line.t === 'h') {
+        const header = glyphBlock('glyph-header');
+        header.append(createArabicLine('glyph-header-name', `سُورَةُ ${surahs[line.s - 1]?.arabic || ''}`));
+        lines.append(header);
+      } else if (line.t === 'b') {
+        lines.append(createArabicLine('glyph-bismillah', bismillah));
+      } else {
+        lines.append(glyphBlock('glyph-line is-empty'));
+      }
+    });
+    sheet.append(running, lines, glyphBlock('glyph-folio', toArabicDigits(page)));
+    return sheet;
+  };
+  // One font size for the whole page: the widest line just fills the text block and every
+  // row keeps its height. Short lines (such as a surah's last) are centred, as in print.
+  const fitGlyphPage = (sheet) => {
+    // Keep the proportions of a printed page: on wide screens the book narrows to fit its height.
+    const bookElement = sheet.closest('.book');
+    if (bookElement) bookElement.style.maxWidth = `${Math.min(760, Math.round(bookElement.clientHeight * 0.64))}px`;
+    const container = sheet.querySelector('.glyph-lines');
+    const rows = [...container.querySelectorAll('.glyph-line:not(.is-empty)')];
+    if (!rows.length || !container.clientWidth) return;
+    const probe = 100;
+    container.style.fontSize = `${probe}px`;
+    rows.forEach((row) => row.classList.add('is-measuring'));
+    const widths = rows.map((row) => [...row.children].reduce((sum, word) => sum + word.offsetWidth, 0));
+    rows.forEach((row) => row.classList.remove('is-measuring'));
+    const rowHeight = container.clientHeight / (container.classList.contains('is-centered') ? 15 : container.children.length);
+    const size = Math.min((container.clientWidth * 0.985 * probe) / Math.max(...widths), rowHeight / 1.55);
+    container.style.fontSize = `${size.toFixed(2)}px`;
+    rows.forEach((row, index) => row.classList.toggle('is-short', widths[index] * (size / probe) < container.clientWidth * 0.8));
+  };
+  const buildFlipPage = (pageInfo) => (pageInfo.kind === 'glyph' ? buildGlyphPage(pageInfo) : buildMushafPage(pageInfo.ayahs));
   const renderAyahs = (arabicAyahs, malayAyahs, isPageView = false) => {
     const translationByNumber = new Map((malayAyahs || []).map((ayah) => [ayah.number, ayah.text]));
     ayahList.replaceChildren();
@@ -273,8 +359,7 @@
     flipNext.disabled = currentPage >= 604;
   };
   // Name the surah being read: the one asked for, else the page's first surah.
-  const nameSurahOnPage = (ayahs, surahHint) => {
-    const pageSurahs = ayahs.map((ayah) => ayah.surah?.number);
+  const nameSurahOnPage = (pageSurahs, surahHint) => {
     currentSurah = pageSurahs.includes(surahHint) ? surahHint : pageSurahs[0];
     barTitle.textContent = surahs[currentSurah - 1]?.name || 'Al-Quran';
   };
@@ -282,11 +367,28 @@
   // ---------- Flip book: pages turn like paper leaves, by button, key or drag ----------
   const pageData = new Map();
   const pageRequests = new Map();
+  let glyphFailures = 0;
+  const fetchGlyphPage = async (page) => {
+    const response = await fetch(`${mushafApi}?page=${page}`);
+    if (!response.ok) throw new Error('Mushaf page request failed');
+    const layout = await response.json();
+    if (!Array.isArray(layout?.lines)) throw new Error('Invalid mushaf page');
+    await loadPageFont(page);
+    return { kind: 'glyph', page, layout, surahs: layout.surahs };
+  };
+  const fetchTextPage = (page) => request(`/page/${page}/quran-uthmani`).then((result) => ({
+    kind: 'text', page, ayahs: result.ayahs, surahs: [...new Set(result.ayahs.map((ayah) => ayah.surah?.number))],
+  }));
+  // The printed-mushaf page first; if the mushaf service or its font is unavailable, the
+  // Amiri text page instead. After two failures in a row this visit stays on text pages.
   const fetchPage = (page) => {
     if (pageData.has(page)) return Promise.resolve(pageData.get(page));
     if (!pageRequests.has(page)) {
-      pageRequests.set(page, request(`/page/${page}/quran-uthmani`)
-        .then((result) => { pageData.set(page, result.ayahs); return result.ayahs; })
+      const pending = mushafApi && glyphFailures < 2
+        ? fetchGlyphPage(page).then((result) => { glyphFailures = 0; return result; }, () => { glyphFailures += 1; return fetchTextPage(page); })
+        : fetchTextPage(page);
+      pageRequests.set(page, pending
+        .then((result) => { pageData.set(page, result); return result; })
         .finally(() => pageRequests.delete(page)));
     }
     return pageRequests.get(page);
@@ -299,10 +401,10 @@
   let book = null;
   let turn = null;
 
-  const showBookPage = (ayahs) => {
+  const showBookPage = (pageInfo) => {
     book = document.createElement('div');
     book.className = 'book';
-    const page = buildMushafPage(ayahs);
+    const page = buildFlipPage(pageInfo);
     page.classList.add('is-current');
     book.append(page);
     ayahList.replaceChildren(book);
@@ -315,9 +417,9 @@
     book.style.setProperty('--lift', Math.sin((Math.abs(angle) / 180) * Math.PI).toFixed(3));
   };
   // The leaf turns on the page's left edge, the spine: 0deg lies on the book, -180deg has turned over.
-  const beginTurn = (step, ayahs) => {
+  const beginTurn = (step, pageInfo) => {
     const current = book.querySelector('.mushaf-page.is-current');
-    const incoming = buildMushafPage(ayahs);
+    const incoming = buildFlipPage(pageInfo);
     const leaf = document.createElement('div');
     leaf.className = 'book-leaf';
     const front = document.createElement('div');
@@ -372,11 +474,11 @@
     };
     window.requestAnimationFrame(tick);
   });
-  const commitFlipPage = (page, ayahs, surahHint = 0) => {
+  const commitFlipPage = (page, pageInfo, surahHint = 0) => {
     currentPage = page;
     pageSelect.value = String(page);
     updateFlipNavigation();
-    nameSurahOnPage(ayahs, surahHint);
+    nameSurahOnPage(pageInfo.surahs, surahHint);
     barMeta.textContent = `Halaman ${page} / 604`;
     document.title = `Halaman ${page} - Al-Quran - SedekahQR`;
     saveReading({ type: 'page', value: page, mode: 'flip' });
@@ -395,19 +497,19 @@
       if (!book?.isConnected) showLoading();
     }
     try {
-      const ayahs = await fetchPage(page);
+      const pageInfo = await fetchPage(page);
       if (animate) {
         if (turn) return;
-        turn = beginTurn(direction, ayahs);
+        turn = beginTurn(direction, pageInfo);
         await animateLeaf(turn, turn.to, 760, easeInOut);
         endTurn(turn, true);
         turn = null;
       } else {
         if (currentPage !== page) return;
-        showBookPage(ayahs);
+        showBookPage(pageInfo);
         showReader();
       }
-      commitFlipPage(page, ayahs, surahHint);
+      commitFlipPage(page, pageInfo, surahHint);
     } catch {
       turn = null;
       showError();
@@ -434,7 +536,7 @@
         request(`/page/${selectedPage}/ms.basmeih`),
       ]);
       if (currentPage !== selectedPage || readerMode === 'flip') return;
-      nameSurahOnPage(arabicPage.ayahs, surahHint);
+      nameSurahOnPage(arabicPage.ayahs.map((ayah) => ayah.surah?.number), surahHint);
       document.title = `Halaman ${selectedPage} - Al-Quran - SedekahQR`;
       audioWrap.hidden = true;
       renderAyahs(arabicPage.ayahs, malayPage.ayahs, true);
