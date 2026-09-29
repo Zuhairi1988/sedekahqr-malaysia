@@ -789,7 +789,13 @@
       card.className = 'campaign-qr-result';
       const created = new Intl.DateTimeFormat('ms-MY', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(report.created_at));
       const type = { recipient_name: 'Nama penerima', qr_invalid: 'QR tidak boleh digunakan', location: 'Lokasi', other: 'Isu lain' }[report.report_type] || report.report_type;
-      card.innerHTML = `<div><strong>${report.qr_name}</strong><small>${type} · ${created}</small><p>${report.details}</p></div>`;
+      // Report fields come from the public form, so render them as text only.
+      const body = document.createElement('div');
+      const name = document.createElement('strong'); name.textContent = report.qr_name;
+      const meta = document.createElement('small'); meta.textContent = `${type} · ${created}`;
+      const details = document.createElement('p'); details.textContent = report.details;
+      body.append(name, meta, details);
+      card.append(body);
       const controls = document.createElement('div');
       controls.className = 'campaign-qr-filters';
       const select = document.createElement('select');

@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const toast = document.getElementById('site-toast');
       if (toast) {
-        toast.innerHTML = 'Sedekah ' + donorName + ' RM' + amount + ' diterima untuk program ' + program + '.';
+        toast.textContent = 'Sedekah ' + donorName + ' RM' + amount + ' diterima untuk program ' + program + '.';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
       }
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const toast = document.getElementById('site-toast');
       if (toast) {
-        toast.innerHTML = 'Status QR bayaran: disahkan (demo).';
+        toast.textContent = 'Status QR bayaran: disahkan (demo).';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2500);
       }
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const toast = document.getElementById('site-toast');
       if (toast) {
-        toast.innerHTML = 'Reminder WhatsApp didaftarkan untuk ' + name + '.';
+        toast.textContent = 'Reminder WhatsApp didaftarkan untuk ' + name + '.';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
       }
