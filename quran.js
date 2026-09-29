@@ -235,7 +235,8 @@
     // and its patterned side bands sit under the page-turn buttons.
     const bookElement = sheet.closest('.book');
     if (bookElement) {
-      bookElement.style.maxWidth = phoneLayout.matches ? '' : `${Math.min(760, Math.round(bookElement.clientHeight * 0.64))}px`;
+      const pages = bookElement.classList.contains('is-spread') ? 2 : 1;
+      bookElement.style.maxWidth = phoneLayout.matches ? '' : `${Math.min(760 * pages, Math.round(bookElement.clientHeight * 0.64 * pages))}px`;
     }
     const container = sheet.querySelector('.glyph-lines');
     const rows = [...container.querySelectorAll('.glyph-line:not(.is-empty)')];
@@ -444,12 +445,26 @@
     }
   };
 
+  // Wider screens show an open mushaf: the odd page on the right and the even page on the left,
+  // read right to left, so the next spread comes by turning the left page over to the right.
+  // Phones show one page at a time.
+  const isSpread = () => readerMode === 'flip' && !phoneLayout.matches;
+  const spreadStart = (page) => (page % 2 ? page : page - 1);
+  const pageStep = () => (isSpread() ? 2 : 1);
+  const lastStart = () => (isSpread() ? 603 : 604);
   const updateFlipNavigation = () => {
     const isFlip = readerMode === 'flip';
     flipNavigation.hidden = !isFlip;
-    flipPrevious.disabled = currentPage <= 1;
-    flipNext.disabled = currentPage >= 604;
+    // In an open mushaf the next spread lies to the left, so the left button goes forward.
+    const [forward, back] = isSpread() ? [flipPrevious, flipNext] : [flipNext, flipPrevious];
+    forward.disabled = currentPage >= lastStart();
+    back.disabled = currentPage <= 1;
+    [[forward, 'Halaman seterusnya'], [back, 'Halaman sebelumnya']].forEach(([button, label]) => {
+      button.setAttribute('aria-label', label);
+      button.title = label;
+    });
   };
+  const pagesLabel = (page) => (isSpread() ? `Halaman ${page}–${page + 1}` : `Halaman ${page}`);
   // Name the surah being read: the one asked for, else the page's first surah.
   const nameSurahOnPage = (pageSurahs, surahHint) => {
     currentSurah = pageSurahs.includes(surahHint) ? surahHint : pageSurahs[0];
@@ -488,22 +503,37 @@
     }
     return pageRequests.get(page);
   };
+  // What the book shows at a position: one page on phones, or a right/left pair when open.
+  const spreadView = (page, right, left) => ({ page, right, left, surahs: [...right.surahs, ...left.surahs] });
+  const fetchView = (page) => (isSpread()
+    ? Promise.all([fetchPage(page), fetchPage(page + 1)]).then(([right, left]) => spreadView(page, right, left))
+    : fetchPage(page));
+  const viewReady = (page) => pageData.has(page) && (!isSpread() || pageData.has(page + 1));
+  const cachedView = (page) => (isSpread() ? spreadView(page, pageData.get(page), pageData.get(page + 1)) : pageData.get(page));
   // Neighbouring pages are fetched ahead so a turn or drag can start instantly.
-  const prefetchAround = (page) => [page + 1, page - 1].forEach((neighbour) => {
+  const prefetchAround = (page) => (isSpread() ? [page + 2, page + 3, page - 2, page - 1] : [page + 1, page - 1]).forEach((neighbour) => {
     if (neighbour >= 1 && neighbour <= 604) fetchPage(neighbour).catch(() => {});
   });
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let book = null;
   let turn = null;
 
-  const showBookPage = (pageInfo) => {
+  // Pages lying in the open book sit in the right or left half; pages on a turning leaf fill it.
+  const placePage = (pageElement, side) => {
+    pageElement.classList.remove('at-right', 'at-left');
+    if (side) pageElement.classList.add(`at-${side}`);
+    return pageElement;
+  };
+  const showBookPage = (view) => {
     book = document.createElement('div');
-    book.className = 'book';
-    const page = buildFlipPage(pageInfo);
-    page.classList.add('is-current');
-    book.append(page);
+    book.className = view.right ? 'book is-spread' : 'book';
+    const pages = view.right
+      ? [placePage(buildFlipPage(view.right), 'right'), placePage(buildFlipPage(view.left), 'left')]
+      : [buildFlipPage(view)];
+    pages.forEach((page) => page.classList.add('is-current'));
+    book.append(...pages);
     ayahList.replaceChildren(book);
-    fitMushafPage(page);
+    pages.forEach(fitMushafPage);
   };
   const setLeafAngle = (leafTurn, angle) => {
     leafTurn.angle = angle;
@@ -511,8 +541,8 @@
     // 0 while the leaf lies flat, 1 when it stands upright: drives the shading and cast shadow.
     book.style.setProperty('--lift', Math.sin((Math.abs(angle) / 180) * Math.PI).toFixed(3));
   };
-  // The leaf turns on the page's left edge, the spine: 0deg lies on the book, -180deg has turned over.
-  const beginTurn = (step, pageInfo) => {
+  // One page: the leaf turns on the page's left edge, the spine: 0deg lies on the book, -180deg has turned over.
+  const beginPageTurn = (step, pageInfo) => {
     const current = book.querySelector('.mushaf-page.is-current');
     const incoming = buildFlipPage(pageInfo);
     const leaf = document.createElement('div');
@@ -537,7 +567,60 @@
     setLeafAngle(leafTurn, leafTurn.from);
     return leafTurn;
   };
-  const endTurn = (leafTurn, completed) => {
+  // Open mushaf: a leaf turns on the spine in the middle. Next lifts the left page and lays it
+  // on the right (0 to 180deg), its back being the new right page, with the new left page beneath.
+  // Previous lifts the right page over to the left (0 to -180deg).
+  const beginSpreadTurn = (step, view) => {
+    const currentRight = book.querySelector(':scope > .mushaf-page.at-right');
+    const currentLeft = book.querySelector(':scope > .mushaf-page.at-left');
+    const incomingRight = placePage(buildFlipPage(view.right), 'right');
+    const incomingLeft = placePage(buildFlipPage(view.left), 'left');
+    const leaf = document.createElement('div');
+    leaf.className = `book-leaf at-${step > 0 ? 'left' : 'right'}`;
+    const front = document.createElement('div');
+    front.className = 'book-face book-front';
+    const back = document.createElement('div');
+    back.className = 'book-face book-back';
+    leaf.append(front, back);
+    if (step > 0) {
+      book.prepend(incomingLeft);
+      front.append(placePage(currentLeft, null));
+      back.append(placePage(incomingRight, null));
+    } else {
+      book.prepend(incomingRight);
+      front.append(placePage(currentRight, null));
+      back.append(placePage(incomingLeft, null));
+    }
+    book.append(leaf);
+    fitNow(incomingRight);
+    fitNow(incomingLeft);
+    book.classList.add('is-turning');
+    const leafTurn = { spread: true, step, leaf, currentRight, currentLeft, incomingRight, incomingLeft, from: 0, to: step > 0 ? 180 : -180, angle: 0 };
+    setLeafAngle(leafTurn, 0);
+    return leafTurn;
+  };
+  const endSpreadTurn = (leafTurn, completed) => {
+    const { step, leaf, currentRight, currentLeft, incomingRight, incomingLeft } = leafTurn;
+    if (completed) {
+      currentRight.remove();
+      currentLeft.remove();
+      // The page on the back of the leaf now lies flat on the other side.
+      book.append(step > 0 ? placePage(incomingRight, 'right') : placePage(incomingLeft, 'left'));
+      incomingRight.classList.add('is-current');
+      incomingLeft.classList.add('is-current');
+    } else {
+      book.append(step > 0 ? placePage(currentLeft, 'left') : placePage(currentRight, 'right'));
+      incomingRight.remove();
+      incomingLeft.remove();
+    }
+    leaf.remove();
+    book.classList.remove('is-turning');
+    book.style.removeProperty('--lift');
+    (completed ? [incomingRight, incomingLeft] : [currentRight, currentLeft]).forEach(fitMushafPage);
+  };
+  const beginTurn = (step, view) => (view.right ? beginSpreadTurn(step, view) : beginPageTurn(step, view));
+  const endTurn = (leafTurn, completed) => (leafTurn.spread ? endSpreadTurn(leafTurn, completed) : endPageTurn(leafTurn, completed));
+  const endPageTurn = (leafTurn, completed) => {
     const { step, leaf, current, incoming } = leafTurn;
     if (step > 0 && !completed) book.append(current);
     if (step < 0 && completed) {
@@ -574,26 +657,29 @@
     pageSelect.value = String(page);
     updateFlipNavigation();
     nameSurahOnPage(pageInfo.surahs, surahHint);
-    barMeta.textContent = `Halaman ${page} / 604`;
-    document.title = `Halaman ${page} - Al-Quran - SedekahQR`;
+    barMeta.textContent = `${pagesLabel(page)} / 604`;
+    document.title = `${pagesLabel(page)} - Al-Quran - SedekahQR`;
     saveReading({ type: 'page', value: page, mode: 'flip' });
     updateHistory({ page });
     prefetchAround(page);
   };
-  const loadFlipPage = async (page, direction, surahHint) => {
+  const loadFlipPage = async (requested, direction, surahHint) => {
     if (turn) return;
-    const animate = Boolean(direction) && book?.isConnected && Math.abs(page - currentPage) === 1 && !reduceMotion.matches;
+    // An open book always starts a spread on its odd, right-hand page.
+    const page = isSpread() ? spreadStart(requested) : requested;
+    const sameLayout = book?.isConnected && book.classList.contains('is-spread') === isSpread();
+    const animate = Boolean(direction) && sameLayout && Math.abs(page - currentPage) === pageStep() && !reduceMotion.matches;
     audioWrap.hidden = true;
     if (!animate) {
       currentPage = page;
       pageSelect.value = String(page);
       updateFlipNavigation();
-      barMeta.textContent = `Halaman ${page} / 604`;
+      barMeta.textContent = `${pagesLabel(page)} / 604`;
       if (!book?.isConnected) showLoading();
       else setBusy(true);
     }
     try {
-      const pageInfo = await fetchPage(page);
+      const pageInfo = await fetchView(page);
       setBusy(false);
       if (animate) {
         if (turn) return;
@@ -824,22 +910,24 @@
     });
   }, { passive: true });
 
-  // → and a swipe to the left go forward; ← and a swipe to the right go back.
+  // One page (phones): → and a swipe to the left go forward; ← and a swipe to the right go back.
+  // Open mushaf: the other way round, since the next spread lies to the left.
+  const forwardSign = () => (isSpread() ? -1 : 1);
   const turnPage = (step) => {
     if (readerMode !== 'flip') return;
-    const target = currentPage + step;
-    if (target >= 1 && target <= 604) void loadPage(target, step);
+    const target = currentPage + step * pageStep();
+    if (target >= 1 && target <= lastStart()) void loadPage(target, step);
   };
-  flipPrevious.addEventListener('click', () => turnPage(-1));
-  flipNext.addEventListener('click', () => turnPage(1));
+  flipPrevious.addEventListener('click', () => turnPage(-forwardSign()));
+  flipNext.addEventListener('click', () => turnPage(forwardSign()));
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       closeSettings();
       closeSurahPicker();
     }
     if (readerMode !== 'flip' || event.target.closest?.('select, input, textarea')) return;
-    if (event.key === 'ArrowRight') turnPage(1);
-    else if (event.key === 'ArrowLeft') turnPage(-1);
+    if (event.key === 'ArrowRight') turnPage(forwardSign());
+    else if (event.key === 'ArrowLeft') turnPage(-forwardSign());
   });
   // Drag a page with a finger or mouse: the leaf follows the hand, and letting go past about
   // a third of the way (or with a quick flick) completes the turn; otherwise it falls back.
@@ -858,26 +946,30 @@
         if (Math.abs(deltaY) > 14) drag = null;
         return;
       }
-      const step = deltaX < 0 ? 1 : -1;
-      const target = currentPage + step;
-      if (target < 1 || target > 604 || turn) {
+      // One page turns forward with a drag to the left; an open mushaf with a drag to the right.
+      const step = (deltaX < 0) === !isSpread() ? 1 : -1;
+      const target = currentPage + step * pageStep();
+      if (target < 1 || target > lastStart() || turn) {
         drag = null;
         return;
       }
-      if (!pageData.has(target)) {
+      if (!viewReady(target)) {
         // Not fetched yet: fall back to a normal turn when the finger lifts.
         drag.pendingStep = step;
-        fetchPage(target).catch(() => {});
+        fetchView(target).catch(() => {});
         return;
       }
       drag.active = true;
       drag.step = step;
       drag.target = target;
+      drag.span = isSpread() ? book.clientWidth / 2 : book.clientWidth;
       try { content.setPointerCapture(event.pointerId); } catch {}
-      turn = beginTurn(step, pageData.get(target));
+      turn = beginTurn(step, cachedView(target));
     }
-    drag.progress = Math.max(0, Math.min(1, (drag.step > 0 ? -deltaX : deltaX) / book.clientWidth));
-    setLeafAngle(turn, drag.step > 0 ? -180 * drag.progress : -180 + 180 * drag.progress);
+    // How far the hand has moved in the direction this leaf travels.
+    const along = (drag.step > 0) === isSpread() ? deltaX : -deltaX;
+    drag.progress = Math.max(0, Math.min(1, along / drag.span));
+    setLeafAngle(turn, turn.from + (turn.to - turn.from) * drag.progress);
   });
   const releaseDrag = async (event, cancelled = false) => {
     if (!drag || event.pointerId !== drag.id) return;
@@ -893,13 +985,20 @@
     await animateLeaf(leafTurn, completed ? leafTurn.to : leafTurn.from, 560, easeOut);
     endTurn(leafTurn, completed);
     turn = null;
-    if (completed) commitFlipPage(released.target, pageData.get(released.target));
+    if (completed) commitFlipPage(released.target, cachedView(released.target));
   };
   content.addEventListener('pointerup', (event) => { void releaseDrag(event); });
   content.addEventListener('pointercancel', (event) => { void releaseDrag(event, true); });
   window.addEventListener('resize', () => {
-    const mushafPage = book?.isConnected ? book.querySelector('.mushaf-page.is-current') : null;
-    if (mushafPage && !turn) fitMushafPage(mushafPage);
+    if (!book?.isConnected || turn) return;
+    book.querySelectorAll('.mushaf-page.is-current').forEach(fitMushafPage);
+  });
+  // Rotating a tablet or resizing a window across the phone width switches between one page
+  // and the open mushaf, staying on the same place.
+  phoneLayout.addEventListener('change', () => {
+    if (readerMode !== 'flip' || !book?.isConnected || turn) return;
+    updateFlipNavigation();
+    void loadFlipPage(currentPage, 0, currentSurah);
   });
 
   // The bar sits under the site's sticky header, whose height differs between phone and desktop.

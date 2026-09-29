@@ -217,6 +217,21 @@ body.quran-flip-active .qr-bar { position: relative; top: 0; margin: 0 -12px; pa
 .book-back { overflow: hidden; border: 1px solid #dccca6; border-radius: 6px; background: linear-gradient(to left, #e9dfc4, #f7f0dd 22%, #fdf9ee 60%, #f6efdc); box-shadow: 0 12px 32px rgba(70, 56, 24, .12); transform: rotateY(180deg); }
 .book-back::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(52, 38, 12, .22), rgba(52, 38, 12, 0) 60%); opacity: var(--lift, 0); }
 
+/* Open mushaf on wider screens: odd page on the right, even page on the left, meeting at the spine.
+   Leaves turn on the spine: the left one towards the right (next), the right one towards the left. */
+body.quran-flip-active .qr:has(.book.is-spread) { width: min(1360px, calc(100% - 24px)); }
+.book.is-spread { max-width: 1520px; }
+.book.is-spread > .mushaf-page.at-right { left: 50%; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.book.is-spread > .mushaf-page.at-left { right: 50%; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.book.is-spread::after { display: none; }
+.book.is-spread::before { content: ''; position: absolute; z-index: 1; top: 0; bottom: 0; left: calc(50% - 22px); width: 44px; background: linear-gradient(to right, rgba(52, 38, 12, 0), rgba(52, 38, 12, .16) 50%, rgba(52, 38, 12, 0)); pointer-events: none; }
+.book.is-spread .book-leaf.at-left { right: 50%; transform-origin: right center; }
+.book.is-spread .book-leaf.at-right { left: 50%; transform-origin: left center; }
+.book.is-spread .book-face .mushaf-page { inset: 0; }
+.book.is-spread .book-back { border: 0; border-radius: 0; background: #fffcf3; }
+.book.is-spread .book-leaf.at-right .book-front::after { background: linear-gradient(to right, rgba(52, 38, 12, .3), rgba(52, 38, 12, .06) 45%, rgba(52, 38, 12, 0) 70%); }
+.book.is-spread .book-leaf.at-right .book-back::after { background: linear-gradient(to left, rgba(52, 38, 12, .22), rgba(52, 38, 12, 0) 60%); }
+
 /* Printed-mushaf page: KFGQPC glyph lines on a paper panel inside a patterned border band.
    The band uses an original interlaced-circle (petal) motif drawn in SVG below. */
 .mushaf-page.is-glyph {
