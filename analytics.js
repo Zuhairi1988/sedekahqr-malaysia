@@ -21,9 +21,11 @@
 
   const getAnalyticsPath = () => {
     const pathname = location.pathname.replace(/^\/sedekahqr-malaysia(?=\/|$)/, '') || '/';
-    if (/\/admin\.html$/.test(pathname)) return null;
+    if (/\/admin(-[a-z]+)?\.html$/.test(pathname)) return null;
     if (/\/blog\.html$/.test(pathname)) return '/blog';
     if (/\/quran\.html$/.test(pathname)) return '/al-quran';
+    // Reading a surah or mushaf page counts under Al-Quran, not the homepage.
+    if (/\/quran-reader\.html$/.test(pathname)) return '/al-quran/baca';
     if (/\/hadis\.html$/.test(pathname)) return '/hadis';
     if (/\/profile\.html$/.test(pathname)) {
       const id = new URLSearchParams(location.search).get('id') || 'tidak-diketahui';
@@ -34,7 +36,11 @@
       const safeSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 160);
       return `/artikel/${safeSlug || 'tidak-diketahui'}`;
     }
-    return '/';
+    const namedPages = { about: '/tentang', privacy: '/privasi', terms: '/terma', contact: '/hubungi', editorial: '/editorial', 404: '/tidak-dijumpai' };
+    const page = pathname.match(/\/([a-z0-9-]+)\.html$/)?.[1];
+    if (!page || page === 'index') return '/';
+    // Any other page is counted under its own name rather than as the homepage.
+    return namedPages[page] || `/${page}`;
   };
 
   const getDetectedLocation = () => {
