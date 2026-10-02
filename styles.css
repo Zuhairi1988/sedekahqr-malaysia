@@ -2105,7 +2105,9 @@
 }
 
 .reminder-modal-actions button {
-  height: 44px;
+  /* Grows when a label wraps to two lines on narrow phones, instead of clipping it. */
+  min-height: 44px;
+  line-height: 1.25;
   border-radius: 5px;
   font-weight: 900;
   cursor: pointer;
@@ -2119,7 +2121,7 @@
 .reminder-primary,
 .reminder-secondary {
   flex: 1 1 auto;
-  padding: 0 18px;
+  padding: 9px 14px;
 }
 
 .reminder-primary {
@@ -4909,5 +4911,63 @@ a {
 @media (max-width: 460px) {
   .reminder-days-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Small phones (most Android phones are 360-412px wide): the header row of logo, language
+   switch, icon buttons and menu must fit the screen. Items get more compact, and if space is
+   still short the name gives way first, so the menu button is never pushed off-screen. */
+@media (max-width: 420px) {
+  .header-inner {
+    grid-template-columns: minmax(0, max-content) 1fr auto;
+    gap: 6px;
+  }
+
+  .directory-brand {
+    min-width: 0;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .brand-wordmark {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .directory-brand .brand-wordmark strong {
+    font-size: clamp(15px, 4.4vw, 17px);
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    gap: 3px;
+  }
+
+  .header-page-actions {
+    gap: 6px;
+  }
+
+  .language-switch button {
+    min-width: 26px;
+    padding: 0 5px;
+  }
+
+  .mobile-menu-toggle {
+    width: 32px;
+    height: 32px;
+    padding: 7px;
+  }
+}
+
+/* The smallest phones (320-359px) show the logo without the name. */
+@media (max-width: 359px) {
+  .brand-wordmark {
+    display: none;
   }
 }
