@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sedekahqr-shell-v83';
+const CACHE_NAME = 'sedekahqr-shell-v84';
 const APP_SHELL = [
   './',
   './index.html',
@@ -39,7 +39,7 @@ const APP_SHELL = [
   './sw-register.js',
   './push-config.js',
   './prayer-zones.js',
-  './qr-data.js?v=20260926-1',
+  './qr-data.js?v=20261007-1',
   './manifest.webmanifest',
   './assets/sedekahqr-logo.svg',
   './favicon.ico',

@@ -548,6 +548,11 @@ document.addEventListener('DOMContentLoaded', () => {
       address: 'Jalan Tok Guru, Kampung Cina, 15586 Kota Bharu, Kelantan, Malaysia',
       latitude: 6.1276501,
       longitude: 102.2469829
+    },
+    'selangor-143-surau-at-taufiqiyyah-bandar-puncak-alam': {
+      address: 'Surau At-Taufiqiyyah, Seksyen 9, 42300 Bandar Puncak Alam, Selangor, Malaysia',
+      latitude: 3.2297516,
+      longitude: 101.4129394
     }
   };
 
